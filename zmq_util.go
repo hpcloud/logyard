@@ -16,10 +16,6 @@ func NewMessage(data []byte) *Message {
 	return &Message{parts[0], parts[1]}
 }
 
-func (msg *Message) Bytes() []byte {
-	return []byte(msg.Key + " " + msg.Value)
-}
-
 type SubscribeStream struct {
 	ctx    zmq.Context
 	addr   string
@@ -45,17 +41,19 @@ func (ss *SubscribeStream) run() {
 	socket, err := ss.ctx.NewSocket(zmq.SUB)
 	if err != nil {
 		ss.Kill(err)
+		close(ss.Ch)
 		return
 	}
-	println(ss.filter)
 	err = socket.SetSockOptString(zmq.SUBSCRIBE, ss.filter)
 	if err != nil {
 		ss.Kill(err)
+		close(ss.Ch)
 		return
 	}
 	err = socket.Connect(ss.addr)
 	if err != nil {
-		ss.Kill(err)
+		ss.Killf("Couldn't connect to %s: %s", ss.addr, err)
+		close(ss.Ch)
 		return
 	}
 

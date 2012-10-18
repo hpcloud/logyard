@@ -13,7 +13,7 @@ type Forwarder struct {
 
 const (
 	PUBLISHER_ADDR  = "tcp://127.0.0.1:5559"
-	SUBSCRIBER_ADDR = "tcp://127.0.0.1:5560"
+	SUBSCRIBER_ADDR = "tcp://*:5560"
 )
 
 func NewForwarder() (*Forwarder, error) {

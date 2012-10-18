@@ -36,15 +36,19 @@ install:	fmt bin/logyard bin/send bin/recv
 doozer:
 	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v github.com/ActiveState/doozer/cmd/doozer
 
-bin/logyard:	*.go cmd/logyard/*.go
+# FIXME: the go tool should be doing this.
+
+$(GOPATH)/pkg/*/logyard.a:	*.go
 	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard
+
+bin/logyard:	cmd/logyard/*.go $(GOPATH)/pkg/*/logyard.a
 	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard/cmd/logyard
 
-bin/send:	*.go cmd/send/*.go
+bin/send:	cmd/send/*.go $(GOPATH)/pkg/*/logyard.a
 	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard
 	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard/cmd/send
 
-bin/recv:	*.go cmd/recv/*.go
+bin/recv:	cmd/recv/*.go $(GOPATH)/pkg/*/logyard.a
 	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard
 	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard/cmd/recv
 

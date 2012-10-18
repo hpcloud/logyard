@@ -2,6 +2,7 @@ package logyard
 
 import (
 	zmq "github.com/alecthomas/gozmq"
+	"strings"
 )
 
 type Client struct {
@@ -13,7 +14,6 @@ func NewClient() *Client {
 	return new(Client)
 }
 
-// StreamSend streams the message to local logyard instance.
 func (c *Client) Send(key string, value string) error {
 	err := c.init(true)
 	if err != nil {
@@ -23,12 +23,13 @@ func (c *Client) Send(key string, value string) error {
 	return c.pubSock.Send([]byte(key+" "+value), 0)
 }
 
-func (c *Client) Recv(filter string) *SubscribeStream {
+func (c *Client) Recv(filter string) (*SubscribeStream, error) {
 	err := c.init(false)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return NewSubscribeStream(c.ctx, SUBSCRIBER_ADDR, filter)
+	addr := strings.Replace(SUBSCRIBER_ADDR, "*", "127.0.0.1", 1)
+	return NewSubscribeStream(c.ctx, addr, filter), nil
 }
 
 func (c *Client) init(send bool) error {
