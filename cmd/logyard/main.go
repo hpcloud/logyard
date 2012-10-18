@@ -1,10 +1,15 @@
 package main
 
 import (
-	"github.com/ActiveState/tail"
-	_ "logyard"
+	"log"
+	"logyard"
 )
 
 func main() {
-	_, _ = tail.TailFile("/no/such/file", tail.Config{Follow: true})
+	f, err := logyard.NewForwarder()
+	if err != nil {
+		panic(err)
+	}
+	log.Println("Running forwarder ", f)
+	f.Run()
 }

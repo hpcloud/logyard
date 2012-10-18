@@ -22,20 +22,31 @@ setup-repos:
 	#git clone -q https://github.com/ActiveState/radix	 		$(GOPATH)/src/github.com/fzzbt/radix
 	#git clone -q https://github.com/ActiveState/gouuid	 		$(GOPATH)/src/github.com/nu7hatch/gouuid
 	#git clone -q https://github.com/ActiveState/colors.git      $(GOPATH)/src/github.com/wsxiaoys/colors
-	#git clone -q https://github.com/ActiveState/fsnotify.git 	$(GOPATH)/src/github.com/howeyc/fsnotify
+	git clone -q https://github.com/ActiveState/fsnotify.git 	$(GOPATH)/src/github.com/howeyc/fsnotify
 
 setup-prepare:
+	# treat the current project as a go import.
 	ln -sf `pwd` $(GOPATH)/src/
 	mkdir -p bin
+	# pull rest of the dependencies and build them
+	go get -v logyard 
 
-install:	bin/logyard
+install:	fmt bin/logyard bin/send bin/recv
 
 doozer:
 	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v github.com/ActiveState/doozer/cmd/doozer
 
-bin/logyard:	*.go cmd/*/*.go
+bin/logyard:	*.go cmd/logyard/*.go
 	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard
 	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard/cmd/logyard
+
+bin/send:	*.go cmd/send/*.go
+	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard
+	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard/cmd/send
+
+bin/recv:	*.go cmd/recv/*.go
+	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard
+	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard/cmd/recv
 
 push:	fmt
 	rsync -4 -rtv . stackato@stackato-$(VM).local:/s/vcap/logyard/ --exclude .git --exclude bin
