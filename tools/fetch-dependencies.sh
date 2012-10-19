@@ -5,8 +5,7 @@
 PBF=http://mercurial.activestate.com/stackato-mirrors/goprotobuf/
 mkdir -p $GOPATH/src/launchpad.net
 
-# XXX: requires ssh keys
-git clone -q git@github.com:ActiveState/tail.git 			$(GOPATH)/src/github.com/srid/tail
+git clone -q gitolite@gitolite.activestate.com:tail.git 			$(GOPATH)/src/github.com/srid/tail
 
 bzr branch -q lp:tomb 										$(GOPATH)/src/launchpad.net/tomb
 git clone -q https://github.com/ActiveState/fsnotify.git 	$(GOPATH)/src/github.com/howeyc/fsnotify
