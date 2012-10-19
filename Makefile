@@ -19,7 +19,7 @@ setup-prepare:
 	# pull rest of the dependencies and build them
 	go get -v logyard 
 
-install:	fmt bin/logyard bin/send bin/recv bin/systail
+install:	fmt bin/logyard bin/send bin/recv bin/systail bin/apptail
 
 doozer:
 	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v github.com/ActiveState/doozer/cmd/doozer
@@ -44,6 +44,10 @@ bin/recv:	cmd/recv/*.go $(GOPATH)/pkg/*/logyard.a
 bin/systail:	cmd/systail/*.go $(GOPATH)/pkg/*/logyard.a
 	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard
 	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard/cmd/systail
+
+bin/apptail:	cmd/apptail/*.go $(GOPATH)/pkg/*/logyard.a
+	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard
+	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard/cmd/apptail
 
 push:	fmt
 	rsync -4 -rtv . stackato@stackato-$(VM).local:/s/logyard/ --exclude .git --exclude bin

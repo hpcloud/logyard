@@ -4,11 +4,19 @@ import (
 	"fmt"
 	"log"
 	"logyard"
+	"os"
 )
+
+func getPrefix() string {
+	if len(os.Args) > 1 {
+		return os.Args[1]
+	}
+	return ""
+}
 
 func main() {
 	c := logyard.NewClient()
-	ss, err := c.Recv("")
+	ss, err := c.Recv(getPrefix())
 	if err != nil {
 		log.Fatal(err)
 	}

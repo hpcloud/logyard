@@ -15,8 +15,8 @@ git clone -q https://github.com/ActiveState/doozer 			$(GOPATH)/src/github.com/A
 git clone -q https://github.com/ActiveState/pretty 			$(GOPATH)/src/github.com/kr/pretty
 #git clone -q https://github.com/ActiveState/doozerconfig 	$(GOPATH)/src/github.com/ActiveState/doozerconfig
 
-#git clone -q https://github.com/ActiveState/nats	 		$(GOPATH)/src/github.com/apcera/nats
+git clone -q https://github.com/ActiveState/nats	 		$(GOPATH)/src/github.com/apcera/nats
 #git clone -q https://github.com/ActiveState/radix	 		$(GOPATH)/src/github.com/fzzbt/radix
-#git clone -q https://github.com/ActiveState/gouuid	 		$(GOPATH)/src/github.com/nu7hatch/gouuid
+git clone -q https://github.com/ActiveState/gouuid	 		$(GOPATH)/src/github.com/nu7hatch/gouuid
 #git clone -q https://github.com/ActiveState/colors.git      $(GOPATH)/src/github.com/wsxiaoys/colors
 
