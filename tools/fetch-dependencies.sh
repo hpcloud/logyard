@@ -7,7 +7,8 @@ set -xe
 PBF=http://mercurial.activestate.com/stackato-mirrors/goprotobuf/
 mkdir -p $GOPATH/src/launchpad.net
 
-git clone -q gitolite@gitolite.activestate.com:tail 			$GOPATH/src/github.com/srid/tail
+# fetched during install.sh. FIXME
+# git clone -q gitolite@gitolite.activestate.com:tail 			$GOPATH/src/github.com/srid/tail
 
 bzr branch -q lp:tomb 										$GOPATH/src/launchpad.net/tomb
 git clone -q https://github.com/ActiveState/fsnotify.git 	$GOPATH/src/github.com/howeyc/fsnotify
