@@ -1,5 +1,5 @@
 GOBIN    	= $(shell pwd)/bin
-VM	    	= zzw5
+VM	    	= eb3n
 
 default:	install
 
@@ -50,7 +50,7 @@ bin/apptail:	cmd/apptail/*.go $(GOPATH)/pkg/*/logyard.a
 	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard/cmd/apptail
 
 push:	fmt
-	rsync -4 -rtv . stackato@stackato-$(VM).local:/s/logyard/ --exclude .git --exclude bin
+	rsync -4 -rtv . stackato@stackato-$(VM).local:/s/vcap/logyard/ --exclude .git --exclude bin
 
 fmt:
 	gofmt -w .
