@@ -1,28 +1,33 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/srid/tail"
 	"log"
 	"logyard"
 	"net"
+	"os"
 )
 
 func main() {
 	ipaddr, err := localIP()
 	if err != nil {
-		log.Fatalf(fmt.Sprintf("failed to determine local ip addr: %v", err))
+		log.Fatalf("Failed to determine IP addr: %v", err)
 	}
 	log.Println("Host IP: ", ipaddr)
 
 	c := logyard.NewClient()
 	tailers := []*tail.Tail{}
 
-	for _, process := range PROCESSES {
-		logfile := fmt.Sprintf("/s/logs/%s.log", process)
+	for process, logfile := range PROCESSES {
+		if logfile == "" {
+			logfile = fmt.Sprintf("/s/logs/%s.log", process)
+		}
 		nodeid := ipaddr.String()
 
+		log.Println("Tailing... ", logfile)
 		t, err := tail.TailFile(logfile, tail.Config{
 			MaxLineSize: 1500, // TODO: read from config
 			MustExist:   false,
@@ -39,15 +44,16 @@ func main() {
 
 		go func(process string, tail *tail.Tail) {
 			for line := range tail.Lines {
-				/* TODO json --
-				record := SystemProcessLogRecord{line.Text, line.UnixTime, c.Name, c.NodeID}
-				data, err := json.Marshal(record)
+				data, err := json.Marshal(map[string]interface{}{
+					"UnixTime": line.UnixTime,
+					"Text":     line.Text,
+					"Name":     process,
+					"NodeID":   nodeid})
 				if err != nil {
-					log.Fatal(err)
+					tail.Kill(err)
+					break
 				}
-				passage.Ch <- data */
-
-				err := c.Send("systail."+nodeid+"."+process, line.Text)
+				err = c.Send("systail."+nodeid+"."+process, string(data))
 				if err != nil {
 					log.Fatal("Failed to send: ", err)
 				}
@@ -58,9 +64,14 @@ func main() {
 	for _, tail := range tailers {
 		err := tail.Wait()
 		if err != nil {
-			log.Println("error from tail [on %s]: %s", tail.Filename, err)
+			log.Printf("error from tail [on %s]: %s", tail.Filename, err)
 		}
 	}
+
+	// we don't expect any of the tailers to exit with or without
+	// error.
+
+	os.Exit(1)
 }
 
 func localIP() (net.IP, error) {
