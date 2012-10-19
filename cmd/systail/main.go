@@ -53,7 +53,7 @@ func main() {
 					tail.Kill(err)
 					break
 				}
-				err = c.Send("systail."+nodeid+"."+process, string(data))
+				err = c.Send("systail."+process+"."+nodeid, string(data))
 				if err != nil {
 					log.Fatal("Failed to send: ", err)
 				}

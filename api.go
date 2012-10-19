@@ -23,13 +23,17 @@ func (c *Client) Send(key string, value string) error {
 	return c.pubSock.Send([]byte(key+" "+value), 0)
 }
 
-func (c *Client) Recv(filter string) (*SubscribeStream, error) {
+func (c *Client) Recv(filters []string) (*SubscribeStream, error) {
 	err := c.init(false)
 	if err != nil {
 		return nil, err
 	}
 	addr := strings.Replace(SUBSCRIBER_ADDR, "*", "127.0.0.1", 1)
-	return NewSubscribeStream(c.ctx, addr, filter), nil
+	return NewSubscribeStream(c.ctx, addr, filters), nil
+}
+
+func (c *Client) Close() {
+	c.ctx.Close()
 }
 
 func (c *Client) init(send bool) error {

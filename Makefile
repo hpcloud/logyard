@@ -19,34 +19,21 @@ setup-prepare:
 	# pull rest of the dependencies and build them
 	go get -v logyard 
 
-install:	fmt bin/logyard bin/send bin/recv bin/systail bin/apptail
+install:	fmt installall
 
 doozer:
 	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v github.com/ActiveState/doozer/cmd/doozer
 
-
-# FIXME: the go tool should be doing this.
-
-$(GOPATH)/pkg/*/logyard.a:	*.go
+# as i can never understand the behaviour of go build/install, it
+# would be better take a painful shortcut for now and build all files
+# without caring for modified files.
+installall:
 	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard
-
-bin/logyard:	cmd/logyard/*.go $(GOPATH)/pkg/*/logyard.a
+	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard/drain
 	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard/cmd/logyard
-
-bin/send:	cmd/send/*.go $(GOPATH)/pkg/*/logyard.a
-	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard
 	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard/cmd/send
-
-bin/recv:	cmd/recv/*.go $(GOPATH)/pkg/*/logyard.a
-	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard
 	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard/cmd/recv
-
-bin/systail:	cmd/systail/*.go $(GOPATH)/pkg/*/logyard.a
-	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard
 	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard/cmd/systail
-
-bin/apptail:	cmd/apptail/*.go $(GOPATH)/pkg/*/logyard.a
-	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard
 	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard/cmd/apptail
 
 push:	fmt

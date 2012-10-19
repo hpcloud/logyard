@@ -17,18 +17,18 @@ func NewMessage(data []byte) *Message {
 }
 
 type SubscribeStream struct {
-	ctx    zmq.Context
-	addr   string
-	filter string
-	Ch     chan *Message
+	ctx     zmq.Context
+	addr    string
+	filters []string
+	Ch      chan *Message
 	tomb.Tomb
 }
 
-func NewSubscribeStream(ctx zmq.Context, addr string, filter string) *SubscribeStream {
+func NewSubscribeStream(ctx zmq.Context, addr string, filters []string) *SubscribeStream {
 	ss := &SubscribeStream{}
 	ss.ctx = ctx
 	ss.addr = addr
-	ss.filter = filter
+	ss.filters = filters
 	ss.Ch = make(chan *Message)
 	go ss.run()
 	return ss
@@ -44,12 +44,16 @@ func (ss *SubscribeStream) run() {
 		close(ss.Ch)
 		return
 	}
-	err = socket.SetSockOptString(zmq.SUBSCRIBE, ss.filter)
-	if err != nil {
-		ss.Kill(err)
-		close(ss.Ch)
-		return
+
+	for _, filter := range ss.filters {
+		err = socket.SetSockOptString(zmq.SUBSCRIBE, filter)
+		if err != nil {
+			ss.Kill(err)
+			close(ss.Ch)
+			return
+		}
 	}
+
 	err = socket.Connect(ss.addr)
 	if err != nil {
 		ss.Killf("Couldn't connect to %s: %s", ss.addr, err)

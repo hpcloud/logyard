@@ -24,4 +24,6 @@ git clone -q https://github.com/apcera/nats	 		$GOPATH/src/github.com/apcera/nat
 
 #git clone -q https://github.com/ActiveState/doozerconfig 	$GOPATH/src/github.com/ActiveState/doozerconfig
 #git clone -q https://github.com/ActiveState/colors.git      $GOPATH/src/github.com/wsxiaoys/colors
+
+git clone -q https://github.com/fzzbt/radix	 		$GOPATH/src/github.com/fzzbt/radix
 #git clone -q https://github.com/ActiveState/radix	 		$GOPATH/src/github.com/fzzbt/radix

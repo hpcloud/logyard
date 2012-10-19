@@ -20,7 +20,7 @@ func main() {
 	flag.Parse()
 
 	c := logyard.NewClient()
-	ss, err := c.Recv(*Options.filter)
+	ss, err := c.Recv([]string{*Options.filter})
 	if err != nil {
 		log.Fatal(err)
 	}
