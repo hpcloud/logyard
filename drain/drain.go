@@ -25,6 +25,7 @@ func NewDrainManager() *DrainManager {
 	return &DrainManager{make(map[string]Drain)}
 }
 
+// StartDrain starts the drain and waits for it exit.
 func (dm *DrainManager) StartDrain(config DrainConfig) {
 	if _, ok := dm.running[config.Name]; ok {
 		log.Printf("drain[%s]: drain already exists", config.Name)
@@ -40,6 +41,8 @@ func (dm *DrainManager) StartDrain(config DrainConfig) {
 	if err != nil {
 		log.Printf("drain[%s]: exited with error -- %s", config.Name, err)
 	}
+
+	delete(dm.running, config.Name)
 }
 
 func Run() {
@@ -56,6 +59,13 @@ func Run() {
 		Type:    "redis",
 		Filters: []string{"systail.kato"},
 		Params:  map[string]interface{}{"key": "log.kato"}})
+
+	// app logs
+	go dm.StartDrain(DrainConfig{
+		Name:    "redis-apptail",
+		Type:    "redis",
+		Filters: []string{"apptail"},
+		Params:  nil})
 }
 
 func createDrain(drainType string) Drain {

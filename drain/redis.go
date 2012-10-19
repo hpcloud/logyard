@@ -32,16 +32,16 @@ func (d *RedisDrain) Start(config DrainConfig) {
 		return
 	}
 
-	var redisKey string
+	// store messages under `redisKey` (redis key). if it is empty,
+	// store them under that message's key.
+	redisKey := ""
 
+	// if a key is specified, use that instead of message's key.
 	if redisKeyInterface, ok := config.Params["key"]; ok {
 		if redisKey, ok = redisKeyInterface.(string); !ok {
 			d.Killf("redis key from `params` is of wrong type; expecting string")
 			return
 		}
-	} else {
-		d.Killf("a redis key must be specified in `params`")
-		return
 	}
 
 	// TODO: read from config
@@ -51,7 +51,11 @@ func (d *RedisDrain) Start(config DrainConfig) {
 		for {
 			select {
 			case msg := <-ss.Ch:
-				d.Lpushcircular(redisKey, msg.Value, listMaxLen)
+				key := msg.Key
+				if redisKey != "" {
+					key = redisKey
+				}
+				d.Lpushcircular(key, msg.Value, listMaxLen)
 			case <-d.Dying():
 				return
 			}
