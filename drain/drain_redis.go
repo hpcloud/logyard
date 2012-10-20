@@ -33,6 +33,7 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 	}
 
 	d.connect()
+	defer d.client.Close()
 
 	c := logyard.NewClient()
 	defer c.Close()
@@ -52,7 +53,11 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 					key = redisKey
 				}
 				// println(key, msg.Value, limit)
-				d.Lpushcircular(key, msg.Value, limit)
+				_, err := d.Lpushcircular(key, msg.Value, limit)
+				if err != nil {
+					d.Kill(err)
+					return
+				}
 			case <-d.Dying():
 				return
 			}
@@ -71,31 +76,30 @@ func (d *RedisDrain) connect() {
 	conf := redis.DefaultConfig()
 	conf.Database = 0               // same database used by CC 
 	conf.Address = "localhost:5454" // TODO: read from doozer
-	d.log.Printf("Connecting to redis %s\n", conf.Address)
 	d.client = redis.NewClient(conf)
+	d.log.Printf("Connected to redis %s", conf.Address)
 }
 
 // Lpushcircular works like LPUSH, but trims the right most element if length
 // exceeds maxlen. Returns the list length before trim.  
-// XXX: should this function return `reply` and/or `reply.Err`?
-func (d *RedisDrain) Lpushcircular(key string, item string, maxlen int) int {
+func (d *RedisDrain) Lpushcircular(key string, item string, maxlen int) (int, error) {
 	reply := d.client.Lpush(key, item)
 	if reply.Err != nil {
-		panic(reply.Err)
+		return -1, reply.Err
 	}
 
 	n, err := reply.Int()
 	if err != nil {
-		panic(err)
+		return -1, err
 	}
 
-	// keep the length of our 'circular' list under check
+	// Keep the length of the bounded list under check
 	if n > maxlen {
 		reply = d.client.Ltrim(key, 0, maxlen-1)
 		if reply.Err != nil {
-			panic(reply.Err)
+			return -1, reply.Err
 		}
 	}
 
-	return n
+	return n, nil
 }

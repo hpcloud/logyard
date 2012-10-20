@@ -34,7 +34,7 @@ func (manager *DrainManager) StartDrain(config *DrainConfig) {
 	log := NewDrainLogger(config)
 
 	if _, ok := manager.running[config.Name]; ok {
-		log.Printf("drain already exists")
+		log.Printf("Error: drain already exists")
 		return
 	}
 
@@ -62,7 +62,7 @@ func (manager *DrainManager) StartDrain(config *DrainConfig) {
 
 func NewDrainLogger(c *DrainConfig) *log.Logger {
 	l := log.New(os.Stderr, "", log.LstdFlags)
-	l.SetPrefix(fmt.Sprintf("-- %s (%s drain) -- ", c.Name, c.Type))
+	l.SetPrefix(fmt.Sprintf("-- %s/%s: ", c.Name, c.Type))
 	return l
 }
 
