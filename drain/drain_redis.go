@@ -5,6 +5,7 @@ import (
 	"launchpad.net/tomb"
 	"log"
 	"logyard"
+	"strconv"
 )
 
 type RedisDrain struct {
@@ -45,7 +46,19 @@ func (d *RedisDrain) Start(config DrainConfig) {
 	}
 
 	// TODO: read from config
-	listMaxLen := 1500
+	limit := 1500
+	if limitInterface, ok := config.Params["limit"]; ok {
+		if limitString, ok := limitInterface.(string); !ok {
+			d.Killf("limit key from `params` is of wrong type; expecting string")
+			return
+		} else {
+			var err error
+			if limit, err = strconv.Atoi(limitString); err != nil {
+				d.Killf("limit key from `params` is not a number -- %s", err)
+				return
+			}
+		}
+	}
 
 	go func() {
 		for {
@@ -55,7 +68,8 @@ func (d *RedisDrain) Start(config DrainConfig) {
 				if redisKey != "" {
 					key = redisKey
 				}
-				d.Lpushcircular(key, msg.Value, listMaxLen)
+				// println(key, msg.Value, limit)
+				d.Lpushcircular(key, msg.Value, limit)
 			case <-d.Dying():
 				return
 			}

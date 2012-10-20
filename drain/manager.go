@@ -4,12 +4,7 @@ import (
 	"log"
 )
 
-type DrainConfig struct {
-	Name    string                 // name of this particular drain instance
-	Type    string                 // drain type
-	Filters []string               // the messages a drain is interested in
-	Params  map[string]interface{} // params specific to a drain
-}
+var AVAILABLE_DRAINS = map[string]int{"redis": 0, "tcp": 0, "udp": 0}
 
 type Drain interface {
 	Start(DrainConfig)
@@ -34,7 +29,7 @@ func (dm *DrainManager) StartDrain(config DrainConfig) {
 	d := createDrain(config.Type)
 	dm.running[config.Name] = d
 
-	log.Printf("drain[%s]: starting drain", config.Name)
+	log.Printf("drain[%s]: Starting drain with config: %+v", config.Name, config)
 	d.Start(config)
 
 	err := d.Wait()
@@ -48,11 +43,11 @@ func (dm *DrainManager) StartDrain(config DrainConfig) {
 func Run() {
 	dm := NewDrainManager()
 	// sample drain: system logs
-	go dm.StartDrain(DrainConfig{
+	/*	go dm.StartDrain(DrainConfig{
 		Name:    "redis-system-logs",
 		Type:    "redis",
 		Filters: []string{"systail"},
-		Params:  map[string]interface{}{"key": "log.system"}})
+		Params:  map[string]interface{}{"key": "log.system"}})*/
 
 	go dm.StartDrain(DrainConfig{
 		Name:    "redis-kato-invokations",
@@ -61,11 +56,14 @@ func Run() {
 		Params:  map[string]interface{}{"key": "log.kato"}})
 
 	// app logs
-	go dm.StartDrain(DrainConfig{
-		Name:    "redis-apptail",
-		Type:    "redis",
-		Filters: []string{"apptail"},
-		Params:  nil})
+	// TODO: load that 1500 from config.yml:apptail/...
+	c, err := DrainConfigFromUri(
+		"redis-apptail",
+		"redis://core/?filter=apptail&limit=1500")
+	if err != nil {
+		log.Fatal(err)
+	}
+	go dm.StartDrain(*c)
 }
 
 func createDrain(drainType string) Drain {

@@ -75,5 +75,4 @@ func (ss *SubscribeStream) run() {
 	}()
 
 	<-ss.Dying()
-	close(ss.Ch)
 }

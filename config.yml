@@ -11,16 +11,10 @@ apptail:
 
 # pre-configured drains. more can be added later via doozer.
 drains:
-  applogs:
-    type: redis
-    description: "Bounded storage for application logs"
-    params:
-      # how many log lines per app to keep?
-      # heroku uses 1500; https://devcenter.heroku.com/articles/logging#log
-      max_records: 1500
-  kato_history:
-    type: redis
-    description: "Recent history of kato commands across the cluster"
-    params:
-      key: log.kato
-      max_records: 300
+  # Bounded storage for application logs, to be accessed from `s logs`.
+  # max_records: how many log lines per app to keep?
+  # heroku uses 1500; https://devcenter.heroku.com/articles/logging#log
+  applogs: "redis://core/?limit=1500&filter=apptail"
+  # Recent history of kato commands ran across the cluster
+  kato_history: "redis://core/?limit=256&filter=systail.kato"
+  # papertrail: "udp://logs.papertrailapp.com:35234/?filter=systail&filter=events"
