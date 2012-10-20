@@ -44,7 +44,7 @@ func DrainConfigFromUri(name string, uri string) (*DrainConfig, error) {
 		return nil, err
 	}
 	config := DrainConfig{Name: name, Type: url.Scheme}
-	if _, ok := AVAILABLE_DRAINS[config.Type]; !ok {
+	if _, ok := DRAINS[config.Type]; !ok {
 		return nil, fmt.Errorf("unknown drain type: %s", uri)
 	}
 

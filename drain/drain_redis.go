@@ -60,7 +60,9 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 	d.Kill(ss.Wait())
 }
 
-func (d *RedisDrain) Stop() {
+func (d *RedisDrain) Stop() error {
+	d.Kill(nil)
+	return d.Wait()
 }
 
 func (d *RedisDrain) connect() {
