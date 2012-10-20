@@ -30,6 +30,7 @@ doozer:
 installall:
 	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard
 	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard/drain
+	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard/stackato
 	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard/cmd/logyard
 	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard/cmd/send
 	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard/cmd/recv

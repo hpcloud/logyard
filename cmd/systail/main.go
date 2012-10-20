@@ -4,14 +4,49 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/srid/doozerconfig"
 	"github.com/srid/tail"
 	"log"
 	"logyard"
+	"logyard/stackato"
 	"net"
 	"os"
 )
 
+var Config struct {
+	MaxRecordSize int `doozer:"max_record_size"`
+}
+
+func LoadConfig() {
+	conn, headRev, err := stackato.NewDoozerClient("systail")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	key := "/proc/logyard/config/systail/"
+
+	doozerCfg := doozerconfig.New(conn, &Config, key)
+	err = doozerCfg.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Watch for config changes in doozer
+	go func() {
+		doozerCfg.Monitor(key+"*", headRev,
+			func(name string, value interface{}, err error) {
+				if err != nil {
+					log.Fatalf("Error processing config change in doozer: %s", err)
+					return
+				}
+				log.Printf("Config changed in doozer; %s=%v\n", name, value)
+			})
+	}()
+}
+
 func main() {
+	LoadConfig()
+
 	ipaddr, err := localIP()
 	if err != nil {
 		log.Fatalf("Failed to determine IP addr: %v", err)
@@ -29,7 +64,7 @@ func main() {
 
 		log.Println("Tailing... ", logfile)
 		t, err := tail.TailFile(logfile, tail.Config{
-			MaxLineSize: 1500, // TODO: read from config
+			MaxLineSize: Config.MaxLineSize,
 			MustExist:   false,
 			Follow:      true,
 			// ignore existing content, to support subsequent re-runs of systail

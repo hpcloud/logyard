@@ -1,0 +1,26 @@
+---
+# logyard configuration.
+# NOTE: configuration for non-logyard processes (eg: systail, apptail)
+# also live here. thus it is by no means generic.
+
+systail:
+  max_record_size: 1024
+
+apptail:
+  max_record_size: 1024
+
+# pre-configured drains. more can be added later via doozer.
+drains:
+  applogs:
+    type: redis
+    description: "Bounded storage for application logs"
+    params:
+      # how many log lines per app to keep?
+      # heroku uses 1500; https://devcenter.heroku.com/articles/logging#log
+      max_records: 1500
+  kato_history:
+    type: redis
+    description: "Recent history of kato commands across the cluster"
+    params:
+      key: log.kato
+      max_records: 300

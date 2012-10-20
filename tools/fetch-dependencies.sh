@@ -19,10 +19,8 @@ git clone -q https://github.com/ActiveState/gouuid	 		$GOPATH/src/github.com/nu7
 
 #git clone -q https://github.com/ActiveState/nats    $GOPATH/src/github.com/apcera/nats
 git clone -q https://github.com/apcera/nats	 		$GOPATH/src/github.com/apcera/nats
+git clone -q https://github.com/ActiveState/doozerconfig 	$GOPATH/src/github.com/srid/doozerconfig
 
-
-
-#git clone -q https://github.com/ActiveState/doozerconfig 	$GOPATH/src/github.com/ActiveState/doozerconfig
 #git clone -q https://github.com/ActiveState/colors.git      $GOPATH/src/github.com/wsxiaoys/colors
 
 git clone -q https://github.com/fzzbt/radix	 		$GOPATH/src/github.com/fzzbt/radix
