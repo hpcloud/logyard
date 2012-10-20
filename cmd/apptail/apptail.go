@@ -27,7 +27,7 @@ func AppInstanceStarted(c *logyard.Client, instance *AppInstance) {
 	for _, filename := range instance.LogFiles {
 		go func(filename string) {
 			tail, err := tail.TailFile(filename, tail.Config{
-				MaxLineSize: 1500, // TODO logyard.Config.MaxRecordSize,
+				MaxLineSize: Config.MaxRecordSize,
 				MustExist:   true,
 				Follow:      true,
 				Location:    -1,
