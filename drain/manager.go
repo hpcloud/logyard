@@ -1,11 +1,13 @@
 package drain
 
 import (
+	"fmt"
 	"log"
+	"os"
 )
 
 // DrainConstructor is a function that returns a new drain instance
-type DrainConstructor func() Drain
+type DrainConstructor func(*log.Logger) Drain
 
 // DRAINS is a map of drain type (string) to its constructur function
 var DRAINS = map[string]DrainConstructor{
@@ -29,31 +31,39 @@ func NewDrainManager() *DrainManager {
 
 // StartDrain starts the drain and waits for it exit.
 func (manager *DrainManager) StartDrain(config *DrainConfig) {
+	log := NewDrainLogger(config)
+
 	if _, ok := manager.running[config.Name]; ok {
-		log.Printf("drain[%s]: drain already exists", config.Name)
+		log.Printf("drain already exists")
 		return
 	}
 
 	var drain Drain
 
 	if constructor, ok := DRAINS[config.Type]; ok && constructor != nil {
-		drain = constructor()
+		drain = constructor(log)
 	} else {
-		log.Printf("unsupported drain %s for %s", config.Type, config.Name)
+		log.Printf("unsupported drain")
 		return
 	}
 
 	manager.running[config.Name] = drain
 
-	log.Printf("drain[%s]: Starting drain with config: %+v", config.Name, config)
+	log.Printf("Starting drain with config: %+v", config)
 	drain.Start(config)
 
 	err := drain.Wait()
 	if err != nil {
-		log.Printf("drain[%s]: exited with error -- %s", config.Name, err)
+		log.Printf("Exited with error -- %s", err)
 	}
 
 	delete(manager.running, config.Name)
+}
+
+func NewDrainLogger(c *DrainConfig) *log.Logger {
+	l := log.New(os.Stderr, "", log.LstdFlags)
+	l.SetPrefix(fmt.Sprintf("-- %s (%s drain) -- ", c.Name, c.Type))
+	return l
 }
 
 func Run() {

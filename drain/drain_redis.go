@@ -9,11 +9,13 @@ import (
 
 type RedisDrain struct {
 	client *redis.Client
+	log    *log.Logger
 	tomb.Tomb
 }
 
-func NewRedisDrain() Drain {
+func NewRedisDrain(log *log.Logger) Drain {
 	rd := &RedisDrain{}
+	rd.log = log
 	return rd
 }
 
@@ -69,7 +71,7 @@ func (d *RedisDrain) connect() {
 	conf := redis.DefaultConfig()
 	conf.Database = 0               // same database used by CC 
 	conf.Address = "localhost:5454" // TODO: read from doozer
-	log.Printf("Connecting to redis %s\n", conf.Address)
+	d.log.Printf("Connecting to redis %s\n", conf.Address)
 	d.client = redis.NewClient(conf)
 }
 
