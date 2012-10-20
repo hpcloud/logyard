@@ -5,7 +5,6 @@ import (
 	"launchpad.net/tomb"
 	"log"
 	"logyard"
-	"strconv"
 )
 
 type RedisDrain struct {
@@ -18,46 +17,28 @@ func NewRedisDrain() Drain {
 	return rd
 }
 
-func (d *RedisDrain) Start(config DrainConfig) {
-	d.connect()
-
+func (d *RedisDrain) Start(config *DrainConfig) {
 	defer d.Done()
+
+	// store messages under `redisKey` (redis key). if it is empty,
+	// store them under that message's key.
+	redisKey := config.GetParam("key", "")
+
+	limit, err := config.GetParamInt("limit", 1500)
+	if err != nil {
+		d.Killf("limit key from `params` is not a number -- %s", err)
+		return
+	}
+
+	d.connect()
 
 	c := logyard.NewClient()
 	defer c.Close()
 
 	ss, err := c.Recv(config.Filters)
-
 	if err != nil {
 		d.Kill(err)
 		return
-	}
-
-	// store messages under `redisKey` (redis key). if it is empty,
-	// store them under that message's key.
-	redisKey := ""
-
-	// if a key is specified, use that instead of message's key.
-	if redisKeyInterface, ok := config.Params["key"]; ok {
-		if redisKey, ok = redisKeyInterface.(string); !ok {
-			d.Killf("redis key from `params` is of wrong type; expecting string")
-			return
-		}
-	}
-
-	// TODO: read from config
-	limit := 1500
-	if limitInterface, ok := config.Params["limit"]; ok {
-		if limitString, ok := limitInterface.(string); !ok {
-			d.Killf("limit key from `params` is of wrong type; expecting string")
-			return
-		} else {
-			var err error
-			if limit, err = strconv.Atoi(limitString); err != nil {
-				d.Killf("limit key from `params` is not a number -- %s", err)
-				return
-			}
-		}
 	}
 
 	go func() {

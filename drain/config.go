@@ -3,13 +3,35 @@ package drain
 import (
 	"fmt"
 	"net/url"
+	"strconv"
 )
 
 type DrainConfig struct {
-	Name    string                 // name of this particular drain instance
-	Type    string                 // drain type
-	Filters []string               // the messages a drain is interested in
-	Params  map[string]interface{} // params specific to a drain
+	Name    string            // name of this particular drain instance
+	Type    string            // drain type
+	Filters []string          // the messages a drain is interested in
+	Params  map[string]string // params specific to a drain
+}
+
+// GetParam returns the corresponding param; else the default value (def)
+func (c *DrainConfig) GetParam(key string, def string) string {
+	if val, ok := c.Params[key]; ok {
+		return val
+	}
+	return def
+}
+
+func (c *DrainConfig) GetParamInt(key string, def int) (int, error) {
+	data := c.GetParam(key, "")
+	if data == "" {
+		return def, nil
+	}
+	var val int
+	var err error
+	if val, err = strconv.Atoi(data); err != nil {
+		return 0, err
+	}
+	return val, nil
 }
 
 // DrainConfigFromUri constructs a DrainConfig from a drain URI spec.
@@ -33,18 +55,10 @@ func DrainConfigFromUri(name string, uri string) (*DrainConfig, error) {
 		config.Filters = filters
 	}
 
-	config.Params = make(map[string]interface{})
+	config.Params = make(map[string]string)
 	for k, v := range params {
-		if len(v) == 1 {
-			config.Params[k] = v[0]
-		} else {
-			// XXX: we have not came across this case (non-filter
-			// multi-value keys), buf if we do, we must revist this
-			// code. a multi-value key with a single provided value
-			// would end up not treated as a list (as it would pass
-			// the preceding `if` condition).
-			config.Params[k] = v
-		}
+		// NOTE: multi value params are not supported.
+		config.Params[k] = v[0]
 	}
 
 	return &config, nil

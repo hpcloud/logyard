@@ -7,7 +7,7 @@ import (
 var AVAILABLE_DRAINS = map[string]int{"redis": 0, "tcp": 0, "udp": 0}
 
 type Drain interface {
-	Start(DrainConfig)
+	Start(*DrainConfig)
 	Stop()
 	Wait() error
 }
@@ -21,7 +21,7 @@ func NewDrainManager() *DrainManager {
 }
 
 // StartDrain starts the drain and waits for it exit.
-func (dm *DrainManager) StartDrain(config DrainConfig) {
+func (dm *DrainManager) StartDrain(config *DrainConfig) {
 	if _, ok := dm.running[config.Name]; ok {
 		log.Printf("drain[%s]: drain already exists", config.Name)
 		return
@@ -42,28 +42,21 @@ func (dm *DrainManager) StartDrain(config DrainConfig) {
 
 func Run() {
 	dm := NewDrainManager()
-	// sample drain: system logs
-	/*	go dm.StartDrain(DrainConfig{
-		Name:    "redis-system-logs",
-		Type:    "redis",
-		Filters: []string{"systail"},
-		Params:  map[string]interface{}{"key": "log.system"}})*/
 
-	go dm.StartDrain(DrainConfig{
-		Name:    "redis-kato-invokations",
-		Type:    "redis",
-		Filters: []string{"systail.kato"},
-		Params:  map[string]interface{}{"key": "log.kato"}})
-
+	sampleDrains := map[string]string{
+		"apptail":      "redis://core/?filter=apptail&limit=1500",
+		"kato_history": "redis://core/?filter=systail.kato&limit=256",
+		"systail":      "redis://core/?filter=systail&limit=400",
+	}
 	// app logs
 	// TODO: load that 1500 from config.yml:apptail/...
-	c, err := DrainConfigFromUri(
-		"redis-apptail",
-		"redis://core/?filter=apptail&limit=1500")
-	if err != nil {
-		log.Fatal(err)
+	for name, uri := range sampleDrains {
+		c, err := DrainConfigFromUri(name, uri)
+		if err != nil {
+			log.Fatal(err)
+		}
+		go dm.StartDrain(c)
 	}
-	go dm.StartDrain(*c)
 }
 
 func createDrain(drainType string) Drain {
