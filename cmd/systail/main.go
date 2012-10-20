@@ -64,7 +64,7 @@ func main() {
 
 		log.Println("Tailing... ", logfile)
 		t, err := tail.TailFile(logfile, tail.Config{
-			MaxLineSize: Config.MaxLineSize,
+			MaxLineSize: Config.MaxRecordSize,
 			MustExist:   false,
 			Follow:      true,
 			// ignore existing content, to support subsequent re-runs of systail
