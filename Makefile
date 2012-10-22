@@ -1,5 +1,5 @@
 GOBIN    	= $(shell pwd)/bin
-VM	    	= eb3n
+VM	    	= sf4r
 
 default:	install
 

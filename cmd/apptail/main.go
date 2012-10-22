@@ -10,6 +10,8 @@ import (
 )
 
 func main() {
+	LoadConfig()
+
 	uid := getUID()
 
 	logyardclient := logyard.NewClient()
