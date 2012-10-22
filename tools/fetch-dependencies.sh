@@ -9,6 +9,7 @@ mkdir -p $GOPATH/src/launchpad.net
 
 # fetched during install.sh. FIXME
 # git clone -q gitolite@gitolite.activestate.com:tail 			$GOPATH/src/github.com/srid/tail
+echo "WARNING: tail.git needs to be cloned manually"
 
 bzr branch -q lp:tomb 										$GOPATH/src/launchpad.net/tomb
 git clone -q https://github.com/ActiveState/fsnotify.git 	$GOPATH/src/github.com/howeyc/fsnotify
