@@ -14,7 +14,10 @@ func main() {
 
 	uid := getUID()
 
-	logyardclient := logyard.NewClient()
+	logyardclient, err := logyard.NewClientGlobal()
+	if err != nil {
+		log.Fatal(err)
+	}
 	natsclient := newNatsClient()
 
 	natsclient.Subscribe("logyard."+uid+".newinstance", func(instance *AppInstance) {

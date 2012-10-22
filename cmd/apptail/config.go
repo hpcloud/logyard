@@ -25,11 +25,11 @@ func LoadConfig() {
 	}
 
 	// Watch for config changes in doozer
-	go doozerCfg.Monitor(key+"*", func(name string, value interface{}, err error) {
+	go doozerCfg.Monitor(key+"*", func(change *doozerconfig.Change, err error) {
 		if err != nil {
 			log.Fatalf("Error processing config change in doozer: %s", err)
 			return
 		}
-		log.Printf("Config changed in doozer; %s=%v\n", name, value)
+		log.Printf("Config changed in doozer; %+v\n", change)
 	})
 }

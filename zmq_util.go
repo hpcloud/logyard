@@ -34,6 +34,10 @@ func NewSubscribeStream(ctx zmq.Context, addr string, filters []string) *Subscri
 	return ss
 }
 
+func (ss *SubscribeStream) Stop() error {
+	ss.Kill(nil)
+	return ss.Wait()
+}
 func (ss *SubscribeStream) run() {
 	defer ss.Done()
 
@@ -64,13 +68,23 @@ func (ss *SubscribeStream) run() {
 	// Read and stream the results in a channel
 	go func() {
 		for {
+			println("Waiting......")
 			data, err := socket.Recv(0)
 			if err != nil {
 				ss.Kill(err)
 				close(ss.Ch)
 				return
 			}
+
+			println("Selecting.......")
+			select {
+			case <-ss.Dying():
+				return
+			default:
+			}
+
 			ss.Ch <- NewMessage(data)
+
 		}
 	}()
 

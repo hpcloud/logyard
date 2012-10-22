@@ -3,6 +3,7 @@ package logyard
 import (
 	zmq "github.com/alecthomas/gozmq"
 	"strings"
+	"sync"
 )
 
 type Client struct {
@@ -10,8 +11,22 @@ type Client struct {
 	pubSock zmq.Socket
 }
 
-func NewClient() *Client {
-	return new(Client)
+func NewClient(ctx zmq.Context) *Client {
+	return &Client{ctx, nil}
+}
+
+var globalContext zmq.Context
+var globalContextErr error
+var once sync.Once
+
+func NewClientGlobal() (*Client, error) {
+	once.Do(func() {
+		globalContext, globalContextErr = zmq.NewContext()
+	})
+	if globalContextErr != nil {
+		return nil, globalContextErr
+	}
+	return NewClient(globalContext), nil
 }
 
 func (c *Client) Send(key string, value string) error {
@@ -37,15 +52,8 @@ func (c *Client) Close() {
 }
 
 func (c *Client) init(send bool) error {
-	var err error
-	if c.ctx == nil {
-		c.ctx, err = zmq.NewContext()
-		if err != nil {
-			return err
-		}
-	}
-
 	if send && c.pubSock == nil {
+		var err error
 		c.pubSock, err = c.ctx.NewSocket(zmq.PUB)
 		if err != nil {
 			return err

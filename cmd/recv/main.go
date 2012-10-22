@@ -19,7 +19,10 @@ var Options = options{
 func main() {
 	flag.Parse()
 
-	c := logyard.NewClient()
+	c, err := logyard.NewClientGlobal()
+	if err != nil {
+		log.Fatal(err)
+	}
 	ss, err := c.Recv([]string{*Options.filter})
 	if err != nil {
 		log.Fatal(err)

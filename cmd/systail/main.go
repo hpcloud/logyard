@@ -20,7 +20,10 @@ func main() {
 	}
 	log.Println("Host IP: ", ipaddr)
 
-	c := logyard.NewClient()
+	c, err := logyard.NewClientGlobal()
+	if err != nil {
+		log.Fatal(err)
+	}
 	tailers := []*tail.Tail{}
 
 	for process, logfile := range PROCESSES {

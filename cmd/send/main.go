@@ -9,7 +9,10 @@ import (
 )
 
 func main() {
-	c := logyard.NewClient()
+	c, err := logyard.NewClientGlobal()
+	if err != nil {
+		log.Fatal(err)
+	}
 	in := bufio.NewReader(os.Stdin)
 	for {
 		line, err := in.ReadString('\n')

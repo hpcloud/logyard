@@ -14,7 +14,9 @@ drains:
   # Bounded storage for application logs, to be accessed from `s logs`.
   # max_records: how many log lines per app to keep?
   # heroku uses 1500; https://devcenter.heroku.com/articles/logging#log
-  applogs: "redis://core/?limit=1500&filter=apptail"
+  apptail: "redis://core/?filter=apptail&limit=1500"
   # Recent history of kato commands ran across the cluster
-  kato_history: "redis://core/?limit=256&filter=systail.kato"
+  kato_history: "redis://core/?filter=systail.kato&limit=256"
+  # Recent logs from all nodes (WARNING: use only for dev/debug)
+  systail: "redis://core/?filter=systail&limit=400"
   # papertrail: "udp://logs.papertrailapp.com:35234/?filter=systail&filter=events"

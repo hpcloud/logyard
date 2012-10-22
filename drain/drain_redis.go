@@ -8,14 +8,16 @@ import (
 )
 
 type RedisDrain struct {
-	client *redis.Client
-	log    *log.Logger
+	client        *redis.Client
+	logyardClient *logyard.Client
+	log           *log.Logger
 	tomb.Tomb
 }
 
-func NewRedisDrain(log *log.Logger) Drain {
+func NewRedisDrain(log *log.Logger, logyardClient *logyard.Client) Drain {
 	rd := &RedisDrain{}
 	rd.log = log
+	rd.logyardClient = logyardClient
 	return rd
 }
 
@@ -34,8 +36,7 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 
 	d.connect()
 	defer d.client.Close()
-
-	c := logyard.NewClient()
+	c := d.logyardClient
 	defer c.Close()
 
 	ss, err := c.Recv(config.Filters)
@@ -59,6 +60,11 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 					return
 				}
 			case <-d.Dying():
+				d.log.Println("Dying and stopping stream...")
+				err = ss.Stop()
+				if err != nil {
+					d.log.Printf("Error stopping subscribe stream: %s\n", err)
+				}
 				return
 			}
 		}
@@ -68,6 +74,7 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 }
 
 func (d *RedisDrain) Stop() error {
+	d.log.Println("Stopping...")
 	d.Kill(nil)
 	return d.Wait()
 }
