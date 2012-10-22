@@ -1,4 +1,3 @@
-GOBIN    	= $(shell pwd)/bin
 VM	    	= sf4r
 
 default:	install
@@ -11,26 +10,22 @@ setup:	clean setup-repos setup-prepare
 # branches to ~/as/ and create a symlink to it from GOPATH/src/
 setup-repos:
 	tools/fetch-dependencies.sh
-
-setup-prepare:
-	mkdir -p bin
 	# pull rest of the dependencies and build them
 	go get -v logyard/...
 
 install:	fmt installall
 
 doozer:
-	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v github.com/ActiveState/doozer/cmd/doozer
+	GOPATH=$(GOPATH) go install -v github.com/ActiveState/doozer/cmd/doozer
 
 installall:
-	GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install -v logyard/...
+	GOPATH=$(GOPATH) go install -v logyard/...
 
 push:	fmt
-	rsync -4 -rtv . stackato@stackato-$(VM).local:/s/go/src/logyard/ --exclude .git --exclude bin
+	rsync -4 -rtv . stackato@stackato-$(VM).local:/s/go/src/logyard/ --exclude .git
 
 fmt:
 	gofmt -w .
 
 clean: 
 	GOPATH=$(GOPATH) go clean
-	rm -rf ./bin
