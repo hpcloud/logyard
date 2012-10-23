@@ -7,28 +7,34 @@ import (
 	"net"
 )
 
-type UdpDrain struct {
+// IPConnDrain is a drain based on net.IPConn
+type IPConnDrain struct {
 	log *log.Logger
 	tomb.Tomb
 }
 
-func NewUdpDrain(log *log.Logger) Drain {
-	rd := &UdpDrain{}
+func NewIPConnDrain(log *log.Logger) Drain {
+	rd := &IPConnDrain{}
 	rd.log = log
 	return rd
 }
 
-func (d *UdpDrain) Start(config *DrainConfig) {
+func (d *IPConnDrain) Start(config *DrainConfig) {
 	defer d.Done()
 
-	d.log.Println("Connecting to UDP addr ", config.Host)
-	conn, err := net.Dial("udp", config.Host)
+	if !(config.Scheme == "udp" || config.Scheme == "tcp") {
+		d.Killf("invalid scheme: %s", config.Scheme)
+		return
+	}
+
+	d.log.Printf("Connecting to %s addr %s\n", config.Scheme, config.Host)
+	conn, err := net.Dial(config.Scheme, config.Host)
 	if err != nil {
 		d.Kill(err)
 		return
 	}
 	defer conn.Close()
-	d.log.Println("Connected to UDP addr ", config.Host)
+	d.log.Printf("Connected to %s addr %s\n", config.Scheme, config.Host)
 
 	c, err := logyard.NewClientGlobal()
 	if err != nil {
@@ -74,7 +80,7 @@ func (d *UdpDrain) Start(config *DrainConfig) {
 	d.Kill(ss.Wait())
 }
 
-func (d *UdpDrain) Stop() error {
+func (d *IPConnDrain) Stop() error {
 	d.log.Println("Stopping...")
 	d.Kill(nil)
 	return d.Wait()

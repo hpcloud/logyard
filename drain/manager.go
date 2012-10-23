@@ -15,8 +15,8 @@ type DrainConstructor func(*log.Logger) Drain
 // DRAINS is a map of drain type (string) to its constructur function
 var DRAINS = map[string]DrainConstructor{
 	"redis": NewRedisDrain,
-	"tcp":   nil, // TODO
-	"udp":   NewUdpDrain}
+	"tcp":   NewIPConnDrain,
+	"udp":   NewIPConnDrain}
 
 type Drain interface {
 	Start(*DrainConfig)
