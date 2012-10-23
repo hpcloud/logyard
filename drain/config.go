@@ -1,17 +1,21 @@
 package drain
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"strconv"
+	"text/template"
 )
 
 type DrainConfig struct {
-	Name    string            // name of this particular drain instance
-	Type    string            // drain type
-	Host    string            // host+port part of the uri (optional in some drains)
-	Filters []string          // the messages a drain is interested in
-	Params  map[string]string // params specific to a drain
+	Name    string             // name of this particular drain instance
+	Type    string             // drain type
+	Host    string             // host+port part of the uri (optional in some drains)
+	Format  *template.Template // format message json using go's tempate library
+	Filters []string           // the messages a drain is interested in
+	Params  map[string]string  // params specific to a drain
 }
 
 // GetParam returns the corresponding param; else the default value (def)
@@ -35,6 +39,23 @@ func (c *DrainConfig) GetParamInt(key string, def int) (int, error) {
 	return val, nil
 }
 
+func (c *DrainConfig) FormatJSON(data string) ([]byte, error) {
+	if c.Format == nil {
+		return []byte(data + "\n"), nil
+	}
+	record := make(map[string]interface{})
+	err := json.Unmarshal([]byte(data), &record)
+	if err != nil {
+		return nil, err
+	}
+	var buf bytes.Buffer
+	err = c.Format.Execute(&buf, record)
+	if err != nil {
+		return nil, err
+	}
+	return append(buf.Bytes(), byte('\n')), nil
+}
+
 // DrainConfigFromUri constructs a DrainConfig from a drain URI spec.
 // Examples:
 //  - "redis://core/?max_records=1500&filter=apptail"
@@ -53,6 +74,7 @@ func DrainConfigFromUri(name string, uri string) (*DrainConfig, error) {
 
 	params := url.Query()
 
+	// parse filters
 	if filters, ok := params["filter"]; ok {
 		params.Del("filter")
 		config.Filters = filters
@@ -61,6 +83,21 @@ func DrainConfigFromUri(name string, uri string) (*DrainConfig, error) {
 		config.Filters = []string{""}
 	}
 
+	if len(config.Filters) == 0 {
+		panic("filters can't be empty")
+	}
+
+	// parse format
+	if format, ok := params["format"]; ok {
+		params.Del("format")
+		tmpl, err := template.New(name).Parse(format[0])
+		if err != nil {
+			return nil, err
+		}
+		config.Format = tmpl
+	}
+
+	// assign rest of the params
 	config.Params = make(map[string]string)
 	for k, v := range params {
 		// NOTE: multi value params are not supported.

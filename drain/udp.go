@@ -29,7 +29,6 @@ func (d *UdpDrain) Start(config *DrainConfig) {
 	}
 	defer conn.Close()
 	d.log.Println("Connected to UDP addr ", config.Host)
-	d.log.Printf("Filters %+v\n", config.Filters)
 
 	c, err := logyard.NewClientGlobal()
 	if err != nil {
@@ -49,8 +48,15 @@ func (d *UdpDrain) Start(config *DrainConfig) {
 			select {
 			case msg := <-ss.Ch:
 				println(msg.Key, msg.Value)
-				_, err := conn.Write([]byte(msg.Key + " " + msg.Value + "\n"))
+				data, err := config.FormatJSON(msg.Value)
 				if err != nil {
+					ss.Stop()
+					d.Kill(err)
+					return
+				}
+				_, err = conn.Write(data)
+				if err != nil {
+					ss.Stop()
 					d.Kill(err)
 					return
 				}

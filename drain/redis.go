@@ -55,9 +55,16 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 				if redisKey != "" {
 					key = redisKey
 				}
-				// println(key, msg.Value, limit)
-				_, err := d.Lpushcircular(key, msg.Value, limit)
+				data, err := config.FormatJSON(msg.Value)
 				if err != nil {
+					ss.Stop()
+					d.Kill(err)
+					return
+				}
+				// println(key, msg.Value, limit)
+				_, err = d.Lpushcircular(key, string(data), limit)
+				if err != nil {
+					ss.Stop()
 					d.Kill(err)
 					return
 				}
