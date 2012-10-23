@@ -27,5 +27,8 @@ push:	fmt
 fmt:
 	gofmt -w .
 
+test:
+	go test -v logyard/...
+
 clean: 
 	GOPATH=$(GOPATH) go clean
