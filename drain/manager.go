@@ -39,7 +39,7 @@ func NewDrainManager() *DrainManager {
 		make(map[string]Drain)}
 }
 
-// XXX: using tomb and channels to properly process start/stop events.
+// XXX: use tomb and channels to properly process start/stop events.
 
 // StopDrain starts the drain if it is running
 func (manager *DrainManager) StopDrain(drainName string) {
@@ -58,19 +58,23 @@ func (manager *DrainManager) StopDrain(drainName string) {
 }
 
 // StartDrain starts the drain and waits for it exit.
-func (manager *DrainManager) StartDrain(config *DrainConfig) {
-	log := NewDrainLogger(config)
-
-	if _, ok := manager.running[config.Name]; ok {
-		// XXX: don't use drain logger here.
-		log.Printf("Error: drain already exists")
+func (manager *DrainManager) StartDrain(name, uri string) {
+	if _, ok := manager.running[name]; ok {
+		log.Printf("Error: drain %s is already running", name)
 		return
 	}
 
+	config, err := DrainConfigFromUri(name, uri)
+	if err != nil {
+		log.Printf("Error parsing drain URI: %s\n", err)
+		return
+	}
+
+	dlog := NewDrainLogger(config)
 	var drain Drain
 
 	if constructor, ok := DRAINS[config.Type]; ok && constructor != nil {
-		drain = constructor(log, manager.logyardClient)
+		drain = constructor(dlog, manager.logyardClient)
 	} else {
 		log.Printf("unsupported drain")
 		return
@@ -78,12 +82,12 @@ func (manager *DrainManager) StartDrain(config *DrainConfig) {
 
 	manager.running[config.Name] = drain
 
-	log.Printf("Starting drain with config: %+v", config)
+	dlog.Printf("Starting drain with config: %+v", config)
 	drain.Start(config)
 
-	err := drain.Wait()
+	err = drain.Wait()
 	if err != nil {
-		log.Printf("Exited with error -- %s", err)
+		dlog.Printf("Exited with error -- %s", err)
 	}
 
 	delete(manager.running, config.Name)
@@ -91,7 +95,8 @@ func (manager *DrainManager) StartDrain(config *DrainConfig) {
 
 func NewDrainLogger(c *DrainConfig) *log.Logger {
 	l := log.New(os.Stderr, "", log.LstdFlags)
-	l.SetPrefix(fmt.Sprintf("-- %s/%s: ", c.Name, c.Type))
+	prefix := c.Name + "--" + c.Type
+	l.SetPrefix(fmt.Sprintf("[%25s] ", prefix))
 	return l
 }
 
@@ -99,7 +104,7 @@ var Config struct {
 	Drains map[string]string `doozer:"drains"`
 }
 
-func (manager *DrainManager) LoadConfig() {
+func (manager *DrainManager) MonitorDrainConfig() {
 	conn, headRev, err := stackato.NewDoozerClient("logyard")
 	if err != nil {
 		log.Fatal(err)
@@ -115,6 +120,11 @@ func (manager *DrainManager) LoadConfig() {
 		log.Fatal(err)
 	}
 
+	log.Printf("Found %d drains to start\n", len(Config.Drains))
+	for name, uri := range Config.Drains {
+		go manager.StartDrain(name, uri)
+	}
+
 	// Watch for config changes in doozer
 	go doozerCfg.Monitor(key+"drains/*", func(change *doozerconfig.Change, err error) {
 		if err != nil {
@@ -128,13 +138,7 @@ func (manager *DrainManager) LoadConfig() {
 				manager.StopDrain(change.Key)
 			case doozerconfig.SET:
 				manager.StopDrain(change.Key)
-				c, err := DrainConfigFromUri(change.Key, Config.Drains[change.Key])
-				if err != nil {
-					log.Printf("Error: cannot start drain %s=%s\n",
-						change.Key, change.Value)
-				} else {
-					go manager.StartDrain(c)
-				}
+				go manager.StartDrain(change.Key, Config.Drains[change.Key])
 			}
 		}
 	})
@@ -142,14 +146,5 @@ func (manager *DrainManager) LoadConfig() {
 
 func Run() {
 	manager := NewDrainManager()
-	manager.LoadConfig()
-
-	for name, uri := range Config.Drains {
-		log.Println(Config.Drains)
-		c, err := DrainConfigFromUri(name, uri)
-		if err != nil {
-			log.Fatal(err)
-		}
-		go manager.StartDrain(c)
-	}
+	manager.MonitorDrainConfig()
 }
