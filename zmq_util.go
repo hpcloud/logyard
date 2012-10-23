@@ -1,10 +1,26 @@
+// Higher-level abstractions on top of gozmq
 package logyard
 
 import (
 	zmq "github.com/alecthomas/gozmq"
 	"launchpad.net/tomb"
 	"strings"
+	"sync"
 )
+
+var globalContext zmq.Context
+var globalContextErr error
+var once sync.Once
+
+func initializeGlobalContext() {
+	globalContext, globalContextErr = zmq.NewContext()
+}
+
+// GetGlobalContext returns a global zmq Context for this process.
+func GetGlobalContext() (zmq.Context, error) {
+	once.Do(initializeGlobalContext)
+	return globalContext, globalContextErr
+}
 
 type Message struct {
 	Key   string
@@ -16,77 +32,92 @@ func NewMessage(data []byte) *Message {
 	return &Message{parts[0], parts[1]}
 }
 
-type SubscribeStream struct {
-	ctx     zmq.Context
+// SubChannel provides channel abstraction over zmq SUB sockets
+type SubChannel struct {
 	addr    string
 	filters []string
 	Ch      chan *Message
 	tomb.Tomb
 }
 
-func NewSubscribeStream(ctx zmq.Context, addr string, filters []string) *SubscribeStream {
-	ss := &SubscribeStream{}
-	ss.ctx = ctx
-	ss.addr = addr
-	ss.filters = filters
-	ss.Ch = make(chan *Message)
-	go ss.run()
-	return ss
+func NewSubChannel(addr string, filters []string) *SubChannel {
+	sub := new(SubChannel)
+	sub.addr = addr
+	sub.filters = filters
+	sub.Ch = make(chan *Message)
+	go sub.run()
+	return sub
 }
 
-func (ss *SubscribeStream) Stop() error {
-	ss.Kill(nil)
-	return ss.Wait()
-}
-func (ss *SubscribeStream) run() {
-	defer ss.Done()
+func (sub *SubChannel) run() {
+	defer sub.Done()
 
-	// Establish a connection and subscription filter
-	socket, err := ss.ctx.NewSocket(zmq.SUB)
+	ctx, err := GetGlobalContext()
 	if err != nil {
-		ss.Kill(err)
-		close(ss.Ch)
+		sub.Kill(err)
+		close(sub.Ch)
 		return
 	}
 
-	for _, filter := range ss.filters {
+	// Establish a connection and subscription filter
+	socket, err := ctx.NewSocket(zmq.SUB)
+	if err != nil {
+		sub.Kill(err)
+		close(sub.Ch)
+		return
+	}
+
+	for _, filter := range sub.filters {
 		err = socket.SetSockOptString(zmq.SUBSCRIBE, filter)
 		if err != nil {
-			ss.Kill(err)
-			close(ss.Ch)
+			sub.Kill(err)
+			close(sub.Ch)
 			return
 		}
 	}
 
-	err = socket.Connect(ss.addr)
+	err = socket.Connect(sub.addr)
 	if err != nil {
-		ss.Killf("Couldn't connect to %s: %s", ss.addr, err)
-		close(ss.Ch)
+		sub.Killf("Couldn't connect to %s: %s", sub.addr, err)
+		close(sub.Ch)
 		return
 	}
 
 	// Read and stream the results in a channel
 	go func() {
+		pollItems := []zmq.PollItem{
+			zmq.PollItem{socket, 0, zmq.POLLIN, 0}}
 		for {
-			println("Waiting......")
-			data, err := socket.Recv(0)
+			// timeout in microseconds
+			n, err := zmq.Poll(pollItems, 1000*1000)
 			if err != nil {
-				ss.Kill(err)
-				close(ss.Ch)
+				sub.Kill(err)
+				close(sub.Ch)
 				return
 			}
 
-			println("Selecting.......")
 			select {
-			case <-ss.Dying():
+			case <-sub.Dying():
 				return
 			default:
 			}
 
-			ss.Ch <- NewMessage(data)
-
+			if n > 0 {
+				data, err := socket.Recv(0)
+				if err != nil {
+					sub.Kill(err)
+					close(sub.Ch)
+					return
+				}
+				sub.Ch <- NewMessage(data)
+			}
 		}
 	}()
 
-	<-ss.Dying()
+	<-sub.Dying()
+}
+
+func (sub *SubChannel) Stop() error {
+	sub.Kill(nil)
+	return sub.Wait()
 }

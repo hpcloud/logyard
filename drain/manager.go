@@ -128,7 +128,7 @@ func (manager *DrainManager) LoadConfig() {
 				manager.StopDrain(change.Key)
 			case doozerconfig.SET:
 				manager.StopDrain(change.Key)
-				c, err := DrainConfigFromUri(change.Key, change.Value.(string))
+				c, err := DrainConfigFromUri(change.Key, Config.Drains[change.Key])
 				if err != nil {
 					log.Printf("Error: cannot start drain %s=%s\n",
 						change.Key, change.Value)

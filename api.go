@@ -3,9 +3,9 @@ package logyard
 import (
 	zmq "github.com/alecthomas/gozmq"
 	"strings"
-	"sync"
 )
 
+// XXX: rewrite the client api to separate read/write. very confusing otherwise.
 type Client struct {
 	ctx     zmq.Context
 	pubSock zmq.Socket
@@ -15,18 +15,12 @@ func NewClient(ctx zmq.Context) *Client {
 	return &Client{ctx, nil}
 }
 
-var globalContext zmq.Context
-var globalContextErr error
-var once sync.Once
-
 func NewClientGlobal() (*Client, error) {
-	once.Do(func() {
-		globalContext, globalContextErr = zmq.NewContext()
-	})
-	if globalContextErr != nil {
-		return nil, globalContextErr
+	ctx, err := GetGlobalContext()
+	if err != nil {
+		return nil, err
 	}
-	return NewClient(globalContext), nil
+	return NewClient(ctx), nil
 }
 
 func (c *Client) Send(key string, value string) error {
@@ -38,17 +32,19 @@ func (c *Client) Send(key string, value string) error {
 	return c.pubSock.Send([]byte(key+" "+value), 0)
 }
 
-func (c *Client) Recv(filters []string) (*SubscribeStream, error) {
+func (c *Client) Recv(filters []string) (*SubChannel, error) {
 	err := c.init(false)
 	if err != nil {
 		return nil, err
 	}
 	addr := strings.Replace(SUBSCRIBER_ADDR, "*", "127.0.0.1", 1)
-	return NewSubscribeStream(c.ctx, addr, filters), nil
+	return NewSubChannel(addr, filters), nil
 }
 
 func (c *Client) Close() {
-	c.ctx.Close()
+	if c.pubSock != nil {
+		c.pubSock.Close()
+	}
 }
 
 func (c *Client) init(send bool) error {
