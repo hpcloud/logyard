@@ -121,6 +121,7 @@ func (sub *SubChannel) run() {
 	<-sub.Dying()
 }
 
+// Stop stops this SubChannel with a max delay of 1 second.
 func (sub *SubChannel) Stop() error {
 	sub.Kill(nil)
 	return sub.Wait()
