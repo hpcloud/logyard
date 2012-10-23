@@ -42,7 +42,8 @@ func (manager *DrainManager) StopDrain(drainName string) {
 	manager.mux.Lock()
 	defer manager.mux.Unlock()
 	if drain, ok := manager.running[drainName]; ok {
-		log.Printf("Stopping drain %s\n", drainName)
+		log.Printf("Stopping drain %s ...\n", drainName)
+		// FIXME: drain.Stop could hang for various reasons. must handle it.
 		err := drain.Stop()
 		if err != nil {
 			log.Printf("Error stopping drain %s: %s\n", drainName, err)
@@ -134,7 +135,7 @@ func (manager *DrainManager) MonitorDrainConfig() {
 			log.Println("Error processing config change in doozer: %s", err)
 			return
 		}
-		log.Printf("Config changed in doozer; %+v\n", change)
+		log.Printf("Detected change in doozer drains config: %s\n", change.Key)
 		if change.FieldName == "Drains" {
 			switch change.Type {
 			case doozerconfig.DELETE:

@@ -33,7 +33,7 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 	}
 
 	d.connect()
-	defer d.client.Close()
+	defer d.disconnect()
 	c, err := logyard.NewClientGlobal()
 	if err != nil {
 		d.Kill(err)
@@ -57,26 +57,20 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 			}
 			data, err := config.FormatJSON(msg.Value)
 			if err != nil {
-				ss.Stop()
 				d.Kill(err)
 				return
 			}
-			// println(key, msg.Value, limit)
 			_, err = d.Lpushcircular(key, string(data), limit)
 			if err != nil {
-				ss.Stop()
 				d.Kill(err)
 				return
 			}
 		case <-d.Dying():
-			d.log.Println("Dying and stopping stream...")
-			err = ss.Stop()
-			if err != nil {
-				d.log.Printf("Error stopping subscribe stream: %s\n", err)
-			}
 			return
 		}
 	}
+
+	d.log.Println("Exiting")
 }
 
 func (d *RedisDrain) Stop() error {
@@ -86,11 +80,17 @@ func (d *RedisDrain) Stop() error {
 }
 
 func (d *RedisDrain) connect() {
+
 	conf := redis.DefaultConfig()
 	conf.Database = 0               // same database used by CC 
 	conf.Address = "localhost:5454" // TODO: read from doozer
+	d.log.Printf("Connecting to redis %s ...", conf.Address)
 	d.client = redis.NewClient(conf)
 	d.log.Printf("Connected to redis %s", conf.Address)
+}
+
+func (d *RedisDrain) disconnect() {
+	d.client.Close()
 }
 
 // Lpushcircular works like LPUSH, but trims the right most element if length

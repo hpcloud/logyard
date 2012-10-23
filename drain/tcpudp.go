@@ -24,11 +24,11 @@ func (d *IPConnDrain) Start(config *DrainConfig) {
 	defer d.Done()
 
 	if !(config.Scheme == "udp" || config.Scheme == "tcp") {
-		d.Killf("invalid scheme: %s", config.Scheme)
+		d.Killf("Invalid scheme: %s", config.Scheme)
 		return
 	}
 
-	d.log.Printf("Connecting to %s addr %s\n", config.Scheme, config.Host)
+	d.log.Printf("Connecting to %s addr %s ...", config.Scheme, config.Host)
 	conn, err := net.DialTimeout(config.Scheme, config.Host, 10*time.Second)
 	if err != nil {
 		d.Kill(err)
@@ -65,10 +65,10 @@ func (d *IPConnDrain) Start(config *DrainConfig) {
 				return
 			}
 		case <-d.Dying():
-			d.log.Println("Dying and stopping stream...")
 			return
 		}
 	}
+	d.log.Println("Exiting")
 }
 
 func (d *IPConnDrain) Stop() error {
