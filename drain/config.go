@@ -40,6 +40,7 @@ func (c *DrainConfig) GetParamInt(key string, def int) (int, error) {
 	return val, nil
 }
 
+// FormatJSON formats the given message and returns it with a newline
 func (c *DrainConfig) FormatJSON(data string) ([]byte, error) {
 	if c.Format == nil {
 		return []byte(data + "\n"), nil

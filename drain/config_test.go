@@ -40,7 +40,24 @@ func TestParams(_t *testing.T) {
 		Params:  map[string]string{"a": "foo", "b": "bar"}})
 }
 
-// TODO: test Format
+func TestFormat(_t *testing.T) {
+	t := &DrainConfigTest{_t}
+	formatEncoded := "%7B%7B.Name%7D%7D%40%7B%7B.NodeID%7D%7D%3A+%7B%7B.Text%7D%7D"
+	cfg, err := DrainConfigFromUri("loggly", "tcp://logs.loggly.com:123/?format=" + formatEncoded)
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := cfg.FormatJSON(`{"Name":"dea", "NodeID":"192", "Text":"started app"}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expected := "dea@192: started app\n"
+	if string(data) != expected {
+		t.Fatalf("FormatJSON returned unexpected value: `%s` -- expecting `%s`",
+			string(data), expected)
+	}
+}
+
 
 // Test library
 
