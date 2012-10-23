@@ -46,40 +46,37 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 		d.Kill(err)
 		return
 	}
+	defer ss.Stop()
 
-	go func() {
-		for {
-			select {
-			case msg := <-ss.Ch:
-				key := msg.Key
-				if redisKey != "" {
-					key = redisKey
-				}
-				data, err := config.FormatJSON(msg.Value)
-				if err != nil {
-					ss.Stop()
-					d.Kill(err)
-					return
-				}
-				// println(key, msg.Value, limit)
-				_, err = d.Lpushcircular(key, string(data), limit)
-				if err != nil {
-					ss.Stop()
-					d.Kill(err)
-					return
-				}
-			case <-d.Dying():
-				d.log.Println("Dying and stopping stream...")
-				err = ss.Stop()
-				if err != nil {
-					d.log.Printf("Error stopping subscribe stream: %s\n", err)
-				}
+	for {
+		select {
+		case msg := <-ss.Ch:
+			key := msg.Key
+			if redisKey != "" {
+				key = redisKey
+			}
+			data, err := config.FormatJSON(msg.Value)
+			if err != nil {
+				ss.Stop()
+				d.Kill(err)
 				return
 			}
+			// println(key, msg.Value, limit)
+			_, err = d.Lpushcircular(key, string(data), limit)
+			if err != nil {
+				ss.Stop()
+				d.Kill(err)
+				return
+			}
+		case <-d.Dying():
+			d.log.Println("Dying and stopping stream...")
+			err = ss.Stop()
+			if err != nil {
+				d.log.Printf("Error stopping subscribe stream: %s\n", err)
+			}
+			return
 		}
-	}()
-
-	d.Kill(ss.Wait())
+	}
 }
 
 func (d *RedisDrain) Stop() error {

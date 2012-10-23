@@ -5,6 +5,7 @@ import (
 	"log"
 	"logyard"
 	"net"
+	"time"
 )
 
 // IPConnDrain is a drain based on net.IPConn
@@ -28,7 +29,7 @@ func (d *IPConnDrain) Start(config *DrainConfig) {
 	}
 
 	d.log.Printf("Connecting to %s addr %s\n", config.Scheme, config.Host)
-	conn, err := net.Dial(config.Scheme, config.Host)
+	conn, err := net.DialTimeout(config.Scheme, config.Host, 10*time.Second)
 	if err != nil {
 		d.Kill(err)
 		return
@@ -48,36 +49,26 @@ func (d *IPConnDrain) Start(config *DrainConfig) {
 		d.Kill(err)
 		return
 	}
+	defer ss.Stop()
 
-	go func() {
-		for {
-			select {
-			case msg := <-ss.Ch:
-				println(msg.Key, msg.Value)
-				data, err := config.FormatJSON(msg.Value)
-				if err != nil {
-					ss.Stop()
-					d.Kill(err)
-					return
-				}
-				_, err = conn.Write(data)
-				if err != nil {
-					ss.Stop()
-					d.Kill(err)
-					return
-				}
-			case <-d.Dying():
-				d.log.Println("Dying and stopping stream...")
-				err = ss.Stop()
-				if err != nil {
-					d.log.Printf("Error stopping subscribe stream: %s\n", err)
-				}
+	for {
+		select {
+		case msg := <-ss.Ch:
+			data, err := config.FormatJSON(msg.Value)
+			if err != nil {
+				d.Kill(err)
 				return
 			}
+			_, err = conn.Write(data)
+			if err != nil {
+				d.Kill(err)
+				return
+			}
+		case <-d.Dying():
+			d.log.Println("Dying and stopping stream...")
+			return
 		}
-	}()
-
-	d.Kill(ss.Wait())
+	}
 }
 
 func (d *IPConnDrain) Stop() error {

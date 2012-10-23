@@ -48,17 +48,17 @@ func NewSubChannel(addr string, filters []string) *SubChannel {
 	sub.addr = addr
 	sub.filters = filters
 	sub.Ch = make(chan *Message)
-	go sub.run()
+	go sub.loop()
 	return sub
 }
 
-func (sub *SubChannel) run() {
+func (sub *SubChannel) loop() {
 	defer sub.Done()
+	defer close(sub.Ch)
 
 	ctx, err := GetGlobalContext()
 	if err != nil {
 		sub.Kill(err)
-		close(sub.Ch)
 		return
 	}
 
@@ -66,7 +66,6 @@ func (sub *SubChannel) run() {
 	socket, err := ctx.NewSocket(zmq.SUB)
 	if err != nil {
 		sub.Kill(err)
-		close(sub.Ch)
 		return
 	}
 
@@ -74,7 +73,6 @@ func (sub *SubChannel) run() {
 		err = socket.SetSockOptString(zmq.SUBSCRIBE, filter)
 		if err != nil {
 			sub.Kill(err)
-			close(sub.Ch)
 			return
 		}
 	}
@@ -82,43 +80,35 @@ func (sub *SubChannel) run() {
 	err = socket.Connect(sub.addr)
 	if err != nil {
 		sub.Killf("Couldn't connect to %s: %s", sub.addr, err)
-		close(sub.Ch)
 		return
 	}
 
 	// Read and stream the results in a channel
-	go func() {
-		pollItems := []zmq.PollItem{
-			zmq.PollItem{socket, 0, zmq.POLLIN, 0}}
-		for {
-			// timeout in microseconds
-			n, err := zmq.Poll(pollItems, 1000*1000)
+	pollItems := []zmq.PollItem{zmq.PollItem{socket, 0, zmq.POLLIN, 0}}
+
+	for {
+		// timeout in microseconds
+		n, err := zmq.Poll(pollItems, 1000*1000)
+		if err != nil {
+			sub.Kill(err)
+			return
+		}
+
+		select {
+		case <-sub.Dying():
+			return
+		default:
+		}
+
+		if n > 0 {
+			data, err := socket.Recv(0)
 			if err != nil {
 				sub.Kill(err)
-				close(sub.Ch)
 				return
 			}
-
-			select {
-			case <-sub.Dying():
-				close(sub.Ch)
-				return
-			default:
-			}
-
-			if n > 0 {
-				data, err := socket.Recv(0)
-				if err != nil {
-					sub.Kill(err)
-					close(sub.Ch)
-					return
-				}
-				sub.Ch <- NewMessage(data)
-			}
+			sub.Ch <- NewMessage(data)
 		}
-	}()
-
-	<-sub.Dying()
+	}
 }
 
 // Stop stops this SubChannel with a max delay of 1 second.
