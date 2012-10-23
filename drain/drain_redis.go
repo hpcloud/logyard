@@ -8,16 +8,14 @@ import (
 )
 
 type RedisDrain struct {
-	client        *redis.Client
-	logyardClient *logyard.Client
-	log           *log.Logger
+	client *redis.Client
+	log    *log.Logger
 	tomb.Tomb
 }
 
-func NewRedisDrain(log *log.Logger, logyardClient *logyard.Client) Drain {
+func NewRedisDrain(log *log.Logger) Drain {
 	rd := &RedisDrain{}
 	rd.log = log
-	rd.logyardClient = logyardClient
 	return rd
 }
 
@@ -36,7 +34,11 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 
 	d.connect()
 	defer d.client.Close()
-	c := d.logyardClient
+	c, err := logyard.NewClientGlobal()
+	if err != nil {
+		d.Kill(err)
+		return
+	}
 	defer c.Close()
 
 	ss, err := c.Recv(config.Filters)

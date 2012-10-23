@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"github.com/srid/doozerconfig"
 	"log"
-	"logyard"
 	"logyard/stackato"
 	"os"
 )
 
 // DrainConstructor is a function that returns a new drain instance
-type DrainConstructor func(*log.Logger, *logyard.Client) Drain
+type DrainConstructor func(*log.Logger) Drain
 
 // DRAINS is a map of drain type (string) to its constructur function
 var DRAINS = map[string]DrainConstructor{
@@ -25,18 +24,11 @@ type Drain interface {
 }
 
 type DrainManager struct {
-	logyardClient *logyard.Client
-	running       map[string]Drain // map of drain instance name to drain
+	running map[string]Drain // map of drain instance name to drain
 }
 
 func NewDrainManager() *DrainManager {
-	client, err := logyard.NewClientGlobal()
-	if err != nil {
-		log.Fatal(err)
-	}
-	return &DrainManager{
-		client,
-		make(map[string]Drain)}
+	return &DrainManager{make(map[string]Drain)}
 }
 
 // XXX: use tomb and channels to properly process start/stop events.
@@ -74,7 +66,7 @@ func (manager *DrainManager) StartDrain(name, uri string) {
 	var drain Drain
 
 	if constructor, ok := DRAINS[config.Type]; ok && constructor != nil {
-		drain = constructor(dlog, manager.logyardClient)
+		drain = constructor(dlog)
 	} else {
 		log.Printf("unsupported drain")
 		return
