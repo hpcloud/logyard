@@ -2,6 +2,7 @@ package logyard
 
 import (
 	zmq "github.com/alecthomas/gozmq"
+	"logyard/zmqch"
 	"strings"
 )
 
@@ -16,7 +17,7 @@ func NewClient(ctx zmq.Context) *Client {
 }
 
 func NewClientGlobal() (*Client, error) {
-	ctx, err := GetGlobalContext()
+	ctx, err := zmqch.GetGlobalContext()
 	if err != nil {
 		return nil, err
 	}
@@ -32,13 +33,13 @@ func (c *Client) Send(key string, value string) error {
 	return c.pubSock.Send([]byte(key+" "+value), 0)
 }
 
-func (c *Client) Recv(filters []string) (*SubChannel, error) {
+func (c *Client) Recv(filters []string) (*zmqch.SubChannel, error) {
 	err := c.init(false)
 	if err != nil {
 		return nil, err
 	}
 	addr := strings.Replace(SUBSCRIBER_ADDR, "*", "127.0.0.1", 1)
-	return NewSubChannel(addr, filters), nil
+	return zmqch.NewSubChannel(addr, filters), nil
 }
 
 func (c *Client) Close() {

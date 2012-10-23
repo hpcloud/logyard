@@ -1,5 +1,5 @@
-// Higher-level abstractions on top of gozmq
-package logyard
+// zmqch package provides channel abstractions for zeromq sockets.
+package zmqch
 
 import (
 	zmq "github.com/alecthomas/gozmq"
@@ -16,12 +16,15 @@ func initializeGlobalContext() {
 	globalContext, globalContextErr = zmq.NewContext()
 }
 
-// GetGlobalContext returns a global zmq Context for this process.
+// GetGlobalContext returns a singleton zmq Context for the current Go process.
 func GetGlobalContext() (zmq.Context, error) {
 	once.Do(initializeGlobalContext)
 	return globalContext, globalContextErr
 }
 
+// Message represents a zeromq message with two parts, Key and Value
+// separated by a single space assuming the convention that Key is
+// used to match against subscribe filters.
 type Message struct {
 	Key   string
 	Value string
@@ -36,7 +39,7 @@ func NewMessage(data []byte) *Message {
 type SubChannel struct {
 	addr    string
 	filters []string
-	Ch      chan *Message
+	Ch      chan *Message // Channel to read messages from
 	tomb.Tomb
 }
 
@@ -98,6 +101,7 @@ func (sub *SubChannel) run() {
 
 			select {
 			case <-sub.Dying():
+				close(sub.Ch)
 				return
 			default:
 			}
