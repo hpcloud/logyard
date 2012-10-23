@@ -16,7 +16,7 @@ type DrainConstructor func(*log.Logger) Drain
 var DRAINS = map[string]DrainConstructor{
 	"redis": NewRedisDrain,
 	"tcp":   nil, // TODO
-	"udp":   nil}
+	"udp":   NewUdpDrain}
 
 type Drain interface {
 	Start(*DrainConfig)

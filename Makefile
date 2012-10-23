@@ -22,7 +22,7 @@ installall:
 	GOPATH=$(GOPATH) go install -v logyard/...
 
 push:	fmt
-	rsync -4 -rtv . stackato@stackato-$(VM).local:/s/go/src/logyard/ --exclude .git
+	rsync -4 -rtv . stackato@stackato-$(VM).local:/s/go/src/logyard/ --exclude .git --exclude bin
 
 fmt:
 	gofmt -w .

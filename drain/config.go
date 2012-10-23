@@ -9,6 +9,7 @@ import (
 type DrainConfig struct {
 	Name    string            // name of this particular drain instance
 	Type    string            // drain type
+	Host    string            // host+port part of the uri (optional in some drains)
 	Filters []string          // the messages a drain is interested in
 	Params  map[string]string // params specific to a drain
 }
@@ -48,11 +49,16 @@ func DrainConfigFromUri(name string, uri string) (*DrainConfig, error) {
 		return nil, fmt.Errorf("unknown drain type: %s", uri)
 	}
 
+	config.Host = url.Host
+
 	params := url.Query()
 
 	if filters, ok := params["filter"]; ok {
 		params.Del("filter")
 		config.Filters = filters
+	} else {
+		// default filter: all 
+		config.Filters = []string{""}
 	}
 
 	config.Params = make(map[string]string)
