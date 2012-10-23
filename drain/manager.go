@@ -6,6 +6,7 @@ import (
 	"log"
 	"logyard/stackato"
 	"os"
+	"sync"
 )
 
 // DrainConstructor is a function that returns a new drain instance
@@ -24,17 +25,22 @@ type Drain interface {
 }
 
 type DrainManager struct {
+	mux     sync.Mutex       // mutex to protect Start/Stop
 	running map[string]Drain // map of drain instance name to drain
 }
 
 func NewDrainManager() *DrainManager {
-	return &DrainManager{make(map[string]Drain)}
+	manager := new(DrainManager)
+	manager.running = make(map[string]Drain)
+	return manager
 }
 
 // XXX: use tomb and channels to properly process start/stop events.
 
 // StopDrain starts the drain if it is running
 func (manager *DrainManager) StopDrain(drainName string) {
+	manager.mux.Lock()
+	defer manager.mux.Unlock()
 	if drain, ok := manager.running[drainName]; ok {
 		log.Printf("Stopping drain %s\n", drainName)
 		err := drain.Stop()
@@ -51,6 +57,9 @@ func (manager *DrainManager) StopDrain(drainName string) {
 
 // StartDrain starts the drain and waits for it exit.
 func (manager *DrainManager) StartDrain(name, uri string) {
+	manager.mux.Lock()
+	defer manager.mux.Unlock()
+
 	if _, ok := manager.running[name]; ok {
 		log.Printf("Error: drain %s is already running", name)
 		return
@@ -74,15 +83,17 @@ func (manager *DrainManager) StartDrain(name, uri string) {
 
 	manager.running[config.Name] = drain
 
-	dlog.Printf("Starting drain with config: %+v", config)
-	drain.Start(config)
+	// Start and wait for the drain to exit.
+	go func() {
+		dlog.Printf("Starting drain with config: %+v", config)
+		drain.Start(config)
 
-	err = drain.Wait()
-	if err != nil {
-		dlog.Printf("Exited with error -- %s", err)
-	}
-
-	delete(manager.running, config.Name)
+		err := drain.Wait()
+		if err != nil {
+			log.Printf("Drain %s exited with error -- %s", name, err)
+		}
+		delete(manager.running, name)
+	}()
 }
 
 func NewDrainLogger(c *DrainConfig) *log.Logger {
