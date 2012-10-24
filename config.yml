@@ -4,10 +4,10 @@
 # also live here. thus it is by no means generic.
 
 systail:
-  max_record_size: 1024
+  max_record_size: 950
 
 apptail:
-  max_record_size: 1024
+  max_record_size: 950
 
 # pre-configured drains. more can be added later via doozer.
 drains:
