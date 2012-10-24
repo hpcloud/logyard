@@ -1,10 +1,9 @@
-package drain
+package logyard
 
 import (
 	"github.com/fzzbt/radix/redis"
 	"launchpad.net/tomb"
 	"log"
-	"logyard"
 )
 
 type RedisDrain struct {
@@ -34,7 +33,7 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 
 	d.connect()
 	defer d.disconnect()
-	c, err := logyard.NewClientGlobal()
+	c, err := NewClientGlobal()
 	if err != nil {
 		d.Kill(err)
 		return

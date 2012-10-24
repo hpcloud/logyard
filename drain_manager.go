@@ -1,4 +1,4 @@
-package drain
+package logyard
 
 import (
 	"fmt"
@@ -108,7 +108,7 @@ var Config struct {
 	Drains map[string]string `doozer:"drains"`
 }
 
-func (manager *DrainManager) MonitorDrainConfig() {
+func (manager *DrainManager) Run() {
 	conn, headRev, err := stackato.NewDoozerClient("logyard")
 	if err != nil {
 		log.Fatal(err)
@@ -146,9 +146,4 @@ func (manager *DrainManager) MonitorDrainConfig() {
 			}
 		}
 	})
-}
-
-func Run() {
-	manager := NewDrainManager()
-	manager.MonitorDrainConfig()
 }

@@ -1,4 +1,4 @@
-package drain
+package logyard
 
 import (
 	"testing"
