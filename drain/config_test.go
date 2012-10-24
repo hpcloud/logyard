@@ -43,7 +43,7 @@ func TestParams(_t *testing.T) {
 func TestFormat(_t *testing.T) {
 	t := &DrainConfigTest{_t}
 	formatEncoded := "%7B%7B.Name%7D%7D%40%7B%7B.NodeID%7D%7D%3A+%7B%7B.Text%7D%7D"
-	cfg, err := DrainConfigFromUri("loggly", "tcp://logs.loggly.com:123/?format=" + formatEncoded)
+	cfg, err := DrainConfigFromUri("loggly", "tcp://logs.loggly.com:123/?format="+formatEncoded)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -57,7 +57,6 @@ func TestFormat(_t *testing.T) {
 			string(data), expected)
 	}
 }
-
 
 // Test library
 
@@ -104,4 +103,3 @@ func (t *DrainConfigTest) Verify(name string, uri string, config DrainConfig) {
 		}
 	}
 }
-
