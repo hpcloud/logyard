@@ -4,6 +4,7 @@ import (
 	"github.com/fzzbt/radix/redis"
 	"launchpad.net/tomb"
 	"log"
+	"logyard/stackato"
 )
 
 type RedisDrain struct {
@@ -31,7 +32,23 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 		return
 	}
 
-	d.connect()
+	database, err := config.GetParamInt("database", 0)
+	if err != nil {
+		d.Killf("invalid database specified: %s", err)
+		return
+	}
+
+	// HACK (stackato-specific): "core" translates to the cc redis
+	if config.Host == "core" {
+		ccredishost, err := stackato.GetCCRedisUri(Config.Doozer)
+		if err != nil {
+			d.Killf("cannot determine cc redis uri: %s", err)
+			return
+		}
+		config.Host = ccredishost
+	}
+
+	d.connect(config.Host, database)
 	defer d.disconnect()
 	c, err := NewClientGlobal()
 	if err != nil {
@@ -78,12 +95,11 @@ func (d *RedisDrain) Stop() error {
 	return d.Wait()
 }
 
-func (d *RedisDrain) connect() {
-
+func (d *RedisDrain) connect(addr string, database int) {
 	conf := redis.DefaultConfig()
-	conf.Database = 0               // same database used by CC 
-	conf.Address = "localhost:5454" // TODO: read from doozer
-	d.log.Printf("Connecting to redis %s ...", conf.Address)
+	conf.Database = database
+	conf.Address = addr
+	d.log.Printf("Connecting to redis %s[%d] ...", conf.Address, conf.Database)
 	d.client = redis.NewClient(conf)
 	d.log.Printf("Connected to redis %s", conf.Address)
 }

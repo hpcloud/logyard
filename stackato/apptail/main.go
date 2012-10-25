@@ -31,13 +31,12 @@ func main() {
 }
 
 func newNatsClient() *nats.EncodedConn {
-	// TODO: use doozer
-	natsUri := "nats://127.0.0.1:4222/"
-	log.Printf("Connecting to NATS %s \n", natsUri)
-	nc, err := nats.Connect(natsUri)
+	log.Printf("Connecting to NATS %s\n", Config.NatsUri)
+	nc, err := nats.Connect(Config.NatsUri)
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Printf("Connected to NATS %s\n", Config.NatsUri)
 	client, err := nats.NewEncodedConn(nc, "json")
 	if err != nil {
 		log.Fatal(err)

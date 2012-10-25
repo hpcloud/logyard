@@ -13,7 +13,8 @@ type DrainConfig struct {
 	Name    string // name of this particular drain instance
 	Type    string // drain type
 	Scheme  string
-	Host    string             // host+port part of the uri (optional in some drains)
+	Host    string // host+port part of the uri (optional in some drains)
+	Path    string
 	Format  *template.Template // format message json using go's tempate library
 	Filters []string           // the messages a drain is interested in
 	Params  map[string]string  // params specific to a drain
@@ -74,6 +75,7 @@ func DrainConfigFromUri(name string, uri string) (*DrainConfig, error) {
 
 	config.Scheme = url.Scheme
 	config.Host = url.Host
+	config.Path = url.Path
 
 	params := url.Query()
 

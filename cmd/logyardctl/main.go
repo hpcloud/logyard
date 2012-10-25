@@ -8,7 +8,7 @@ import (
 )
 
 func Init() {
-	conn, headRev, err := stackato.NewDoozerClient("logyard")
+	conn, headRev, err := stackato.NewDoozerClient("logyardctl")
 	if err != nil {
 		log.Fatal(err)
 	}

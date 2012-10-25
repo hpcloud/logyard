@@ -9,7 +9,7 @@ import (
 
 type logyardConfig struct {
 	Drains map[string]string `doozer:"drains"`
-	conn   *doozer.Conn
+	Doozer *doozer.Conn
 	Rev    int64                     // Doozer revision this config struct corresponds to
 	Ch     chan *doozerconfig.Change // Doozer changes to the Drains map
 }
@@ -28,7 +28,7 @@ func Init(conn *doozer.Conn, rev int64, monitor bool) {
 	Config.Drains = make(map[string]string)
 	Config.Ch = make(chan *doozerconfig.Change)
 	Config.Rev = rev
-	Config.conn = conn
+	Config.Doozer = conn
 	doozerCfg = doozerconfig.New(conn, rev, Config, DOOZER_PREFIX)
 	err := doozerCfg.Load()
 	if err != nil {
@@ -62,7 +62,7 @@ func Init(conn *doozer.Conn, rev int64, monitor bool) {
 
 // DeleteDrain deletes the drain from doozer tree
 func (Config *logyardConfig) DeleteDrain(name string) error {
-	err := Config.conn.Del(DOOZER_PREFIX+"drains/"+name, Config.Rev)
+	err := Config.Doozer.Del(DOOZER_PREFIX+"drains/"+name, Config.Rev)
 	if err != nil {
 		return err
 	}
@@ -75,7 +75,7 @@ func (Config *logyardConfig) AddDrain(name string, uri string) error {
 	if err != nil {
 		return err
 	}
-	_, err = Config.conn.Set(DOOZER_PREFIX+"drains/"+name, Config.Rev, data)
+	_, err = Config.Doozer.Set(DOOZER_PREFIX+"drains/"+name, Config.Rev, data)
 	if err != nil {
 		return err
 	}
