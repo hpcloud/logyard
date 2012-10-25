@@ -16,7 +16,7 @@ drains:
   # heroku uses 1500; https://devcenter.heroku.com/articles/logging#log
   apptail: "redis://core/?filter=apptail&limit=1500"
   # Recent history of kato commands ran across the cluster
-  kato_history: "redis://core/?filter=systail.kato&limit=256"
+  kato_history: "redis://core/?filter=systail.kato&limit=256&key=kato_history"
   # Recent logs from all nodes (WARNING: use only for dev/debug)
   systail: "redis://core/?filter=systail&limit=400"
   # Papertrail drain; note the query encoding.

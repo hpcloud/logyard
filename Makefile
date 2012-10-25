@@ -1,4 +1,4 @@
-VM	    	= sf4r
+VM	    	= pg3h
 
 default:	install
 
@@ -23,6 +23,9 @@ installall:
 
 push:	fmt
 	rsync -4 -rtv . stackato@stackato-$(VM).local:/s/go/src/logyard/ --exclude .git
+
+# compile and push; best used from within emacs (M-x compile)
+cpush:	install push
 
 fmt:
 	gofmt -w .
