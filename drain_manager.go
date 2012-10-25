@@ -2,7 +2,6 @@ package logyard
 
 import (
 	"fmt"
-	"github.com/ActiveState/doozer"
 	"github.com/srid/doozerconfig"
 	"log"
 	"os"
@@ -31,26 +30,12 @@ type DrainManager struct {
 	running   map[string]Drain // map of drain instance name to drain
 	doozerCfg *doozerconfig.DoozerConfig
 	doozerRev int64
-	Config    struct {
-		Drains map[string]string `doozer:"drains"`
-	}
 }
 
-// NewDrainManager creates a drain manager for drains configured in
-// doozer starting from a revision.
-func NewDrainManager(conn *doozer.Conn, rev int64) (*DrainManager, error) {
+func NewDrainManager() *DrainManager {
 	manager := new(DrainManager)
 	manager.running = make(map[string]Drain)
-
-	manager.Config.Drains = make(map[string]string)
-	manager.doozerRev = rev
-	manager.doozerCfg = doozerconfig.New(conn, rev, &manager.Config, configKey)
-	err := manager.doozerCfg.Load()
-	if err != nil {
-		return nil, err
-	}
-
-	return manager, nil
+	return manager
 }
 
 // XXX: use tomb and channels to properly process start/stop events.
@@ -86,7 +71,7 @@ func (manager *DrainManager) StartDrain(name, uri string) {
 
 	config, err := DrainConfigFromUri(name, uri)
 	if err != nil {
-		log.Printf("Error parsing drain URI: %s\n", err)
+		log.Printf("Error parsing drain URI (%s): %s\n", uri, err)
 		return
 	}
 
@@ -123,26 +108,20 @@ func NewDrainLogger(c *DrainConfig) *log.Logger {
 }
 
 func (manager *DrainManager) Run() {
-	log.Printf("Found %d drains to start\n", len(manager.Config.Drains))
-	for name, uri := range manager.Config.Drains {
+	log.Printf("Found %d drains to start\n", len(Config.Drains))
+	for name, uri := range Config.Drains {
 		go manager.StartDrain(name, uri)
 	}
 
 	// Watch for config changes in doozer
-	go manager.doozerCfg.Monitor(configKey+"drains/*", func(change *doozerconfig.Change, err error) {
-		if err != nil {
-			log.Println("Error processing config change in doozer: %s", err)
-			return
+	for change := range Config.Ch {
+		switch change.Type {
+		case doozerconfig.DELETE:
+			manager.StopDrain(change.Key)
+		case doozerconfig.SET:
+			manager.StopDrain(change.Key)
+			go manager.StartDrain(change.Key, Config.Drains[change.Key])
 		}
-		log.Printf("Detected change in doozer drains config: %s\n", change.Key)
-		if change.FieldName == "Drains" {
-			switch change.Type {
-			case doozerconfig.DELETE:
-				manager.StopDrain(change.Key)
-			case doozerconfig.SET:
-				manager.StopDrain(change.Key)
-				go manager.StartDrain(change.Key, manager.Config.Drains[change.Key])
-			}
-		}
-	})
+
+	}
 }

@@ -10,7 +10,7 @@ import (
 type subCommand interface {
 	Name() string
 	DefineFlags(*flag.FlagSet)
-	Run()
+	Run([]string)
 }
 
 type subCommandParser struct {
@@ -46,9 +46,9 @@ func Parse(commands ...subCommand) {
 	cmdname := flag.Arg(0)
 	if sc, ok := scp[cmdname]; ok {
 		sc.fs.Parse(flag.Args()[1:])
-		sc.cmd.Run()
+		sc.cmd.Run(sc.fs.Args())
 	} else {
-		fmt.Fprintf(os.Stderr, "error: %s is not a valid command", cmdname)
+		fmt.Fprintf(os.Stderr, "error: %s is not a valid command\n", cmdname)
 		flag.Usage()
 		os.Exit(1)
 	}
