@@ -31,7 +31,6 @@ func (cmd *add) Run(args []string) {
 	name := args[0]
 	Init()
 
-	// TODO: format
 	uri := fmt.Sprintf("%s://%s/?", *cmd.scheme, *cmd.host)
 	noQuery := true
 
