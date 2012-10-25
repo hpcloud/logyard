@@ -2,9 +2,9 @@ package logyard
 
 import (
 	"fmt"
+	"github.com/ActiveState/doozer"
 	"github.com/srid/doozerconfig"
 	"log"
-	"logyard/stackato"
 	"os"
 	"sync"
 )
@@ -24,15 +24,33 @@ type Drain interface {
 	Wait() error
 }
 
+const configKey = "/proc/logyard/config/"
+
 type DrainManager struct {
-	mux     sync.Mutex       // mutex to protect Start/Stop
-	running map[string]Drain // map of drain instance name to drain
+	mux       sync.Mutex       // mutex to protect Start/Stop
+	running   map[string]Drain // map of drain instance name to drain
+	doozerCfg *doozerconfig.DoozerConfig
+	doozerRev int64
+	Config    struct {
+		Drains map[string]string `doozer:"drains"`
+	}
 }
 
-func NewDrainManager() *DrainManager {
+// NewDrainManager creates a drain manager for drains configured in
+// doozer starting from a revision.
+func NewDrainManager(conn *doozer.Conn, rev int64) (*DrainManager, error) {
 	manager := new(DrainManager)
 	manager.running = make(map[string]Drain)
-	return manager
+
+	manager.Config.Drains = make(map[string]string)
+	manager.doozerRev = rev
+	manager.doozerCfg = doozerconfig.New(conn, rev, &manager.Config, configKey)
+	err := manager.doozerCfg.Load()
+	if err != nil {
+		return nil, err
+	}
+
+	return manager, nil
 }
 
 // XXX: use tomb and channels to properly process start/stop events.
@@ -104,33 +122,14 @@ func NewDrainLogger(c *DrainConfig) *log.Logger {
 	return l
 }
 
-var Config struct {
-	Drains map[string]string `doozer:"drains"`
-}
-
 func (manager *DrainManager) Run() {
-	conn, headRev, err := stackato.NewDoozerClient("logyard")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	Config.Drains = make(map[string]string)
-
-	key := "/proc/logyard/config/"
-
-	doozerCfg := doozerconfig.New(conn, headRev, &Config, key)
-	err = doozerCfg.Load()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Printf("Found %d drains to start\n", len(Config.Drains))
-	for name, uri := range Config.Drains {
+	log.Printf("Found %d drains to start\n", len(manager.Config.Drains))
+	for name, uri := range manager.Config.Drains {
 		go manager.StartDrain(name, uri)
 	}
 
 	// Watch for config changes in doozer
-	go doozerCfg.Monitor(key+"drains/*", func(change *doozerconfig.Change, err error) {
+	go manager.doozerCfg.Monitor(configKey+"drains/*", func(change *doozerconfig.Change, err error) {
 		if err != nil {
 			log.Println("Error processing config change in doozer: %s", err)
 			return
@@ -142,7 +141,7 @@ func (manager *DrainManager) Run() {
 				manager.StopDrain(change.Key)
 			case doozerconfig.SET:
 				manager.StopDrain(change.Key)
-				go manager.StartDrain(change.Key, Config.Drains[change.Key])
+				go manager.StartDrain(change.Key, manager.Config.Drains[change.Key])
 			}
 		}
 	})
