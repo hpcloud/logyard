@@ -9,14 +9,48 @@ import (
 	"strings"
 )
 
+// Filters is a slice of message filters
+type Filters []string
+
+func (f *Filters) String() string {
+	return fmt.Sprint(*f)
+}
+
+func (f *Filters) Set(value string) error {
+	*f = append(*f, value)
+	return nil
+}
+
+// Options are drain specific options (ssh's -o style)
+type Options map[string]string
+
+func (o *Options) String() string {
+	return fmt.Sprintf("%+v", map[string]string(*o))
+}
+
+func (o *Options) Set(value string) error {
+	if value == "" {
+		// default: no options
+		return nil
+	}
+	parts := strings.FieldsFunc(value, func(c rune) bool { return c == '=' })
+	if len(parts) != 2 {
+		return fmt.Errorf("options must be of the `key=value` format")
+	}
+	key, value := parts[0], parts[1]
+	if _, ok := (*o)[key]; ok {
+		return fmt.Errorf("duplication option '%s' specified", key)
+	}
+	(*o)[key] = value
+	return nil
+}
+
 // Example:
-//  .. add -scheme redis -host core -filter systail.kato -params "limit=200;key=kato_history" kato_history
+//  .. add -uri redis://core -filter systail.kato -o limit=200 -o key=kato_history kato_history
 type add struct {
-	scheme *string
-	host   *string
-	filter *string
-	format *string
-	params *string
+	uri     string
+	filters Filters
+	params  Options
 }
 
 func (cmd *add) Name() string {
@@ -24,11 +58,10 @@ func (cmd *add) Name() string {
 }
 
 func (cmd *add) DefineFlags(fs *flag.FlagSet) {
-	cmd.scheme = fs.String("scheme", "", "Drain scheme (eg: tcp, udp, redis)")
-	cmd.host = fs.String("host", "", "Drain hostname/port (eg: logs.loggly.com:12345)")
-	cmd.filter = fs.String("filter", "", "Message filters separated by ; (eg: systail;events)")
-	cmd.format = fs.String("format", "", "Template to format the json record (eg: {{.Node}}: {{.Text}})")
-	cmd.params = fs.String("params", "", "Drain specific params (eg: foo=2;bar=3)")
+	fs.StringVar(&cmd.uri, "uri", "", "Drain URI (eg: udp://logs.loggly.com:12345)")
+	fs.Var(&cmd.filters, "filter", "Message filter")
+	cmd.params = make(map[string]string)
+	fs.Var(&cmd.params, "o", "Drain options (eg: -o 'limit=100' or -o 'format={{.Text}}'")
 }
 
 func (cmd *add) Run(args []string) error {
@@ -36,40 +69,36 @@ func (cmd *add) Run(args []string) error {
 		return fmt.Errorf("need exactly one positional argument")
 	}
 	name := args[0]
+	uri := cmd.uri
+	if uri == "" {
+		return fmt.Errorf("need -uri")
+	}
+	if uri[len(uri)-1] != '/' {
+		uri += "/"
+	}
 
-	Init()
+	if !strings.Contains(uri, "://") {
+		return fmt.Errorf("not an URI: %s", uri)
+	}
 
-	uri := fmt.Sprintf("%s://%s/?", *cmd.scheme, *cmd.host)
 	query := url.Values{}
 
-	for _, filter := range strings.Split(*cmd.filter, ";") {
+	for _, filter := range cmd.filters {
 		query.Add("filter", filter)
 	}
 
-	if *cmd.format != "" {
-		query.Set("format", *cmd.format)
-	}
-
-	for _, param := range FieldsDelim(*cmd.params, ';') {
-		parts := FieldsDelim(param, '=')
-		if len(parts) != 2 {
-			return fmt.Errorf("invalid params argument")
-		}
-		key, value := parts[0], parts[1]
+	for key, value := range cmd.params {
 		query.Set(key, value)
 	}
 
-	uri += query.Encode()
+	uri += "?" + query.Encode()
 
-	fmt.Println(uri)
+	fmt.Println(name, uri)
+
+	Init()
 	err := logyard.Config.AddDrain(name, uri)
 	if err != nil {
 		log.Fatal(err)
 	}
 	return nil
-}
-
-// A version of string.Fields that accepts delimter string
-func FieldsDelim(s string, delim rune) []string {
-	return strings.FieldsFunc(s, func(c rune) bool { return c == delim })
 }
