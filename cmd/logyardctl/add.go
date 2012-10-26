@@ -28,14 +28,15 @@ func (cmd *add) DefineFlags(fs *flag.FlagSet) {
 	cmd.host = fs.String("host", "", "Drain hostname/port (eg: logs.loggly.com:12345)")
 	cmd.filter = fs.String("filter", "", "Message filters separated by ; (eg: systail;events)")
 	cmd.format = fs.String("format", "", "Template to format the json record (eg: {{.Node}}: {{.Text}})")
-	cmd.params = fs.String("params", "", "Custom drain specific params (eg: foo=2;bar=3)")
+	cmd.params = fs.String("params", "", "Drain specific params (eg: foo=2;bar=3)")
 }
 
-func (cmd *add) Run(args []string) {
+func (cmd *add) Run(args []string) error {
 	if len(args) != 1 {
-		fmt.Println(fmt.Errorf("need exactly one positional argument"))
+		return fmt.Errorf("need exactly one positional argument")
 	}
 	name := args[0]
+
 	Init()
 
 	uri := fmt.Sprintf("%s://%s/?", *cmd.scheme, *cmd.host)
@@ -62,4 +63,5 @@ func (cmd *add) Run(args []string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	return nil
 }

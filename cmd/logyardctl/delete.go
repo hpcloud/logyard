@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"logyard"
 )
@@ -16,12 +17,16 @@ func (cmd *delete) Name() string {
 func (cmd *delete) DefineFlags(fs *flag.FlagSet) {
 }
 
-func (cmd *delete) Run(args []string) {
+func (cmd *delete) Run(args []string) error {
 	Init()
+	if len(args) == 0 {
+		return fmt.Errorf("need at least one positional argument")
+	}
 	for _, name := range args {
 		err := logyard.Config.DeleteDrain(name)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
+	return nil
 }

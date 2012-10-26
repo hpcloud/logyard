@@ -1,4 +1,4 @@
-// A simple sub command parser based on the flag package
+// A simple sub command parser based on the flag package.
 package subcommand
 
 import (
@@ -10,7 +10,7 @@ import (
 type subCommand interface {
 	Name() string
 	DefineFlags(*flag.FlagSet)
-	Run([]string)
+	Run([]string) error
 }
 
 type subCommandParser struct {
@@ -46,7 +46,12 @@ func Parse(commands ...subCommand) {
 	cmdname := flag.Arg(0)
 	if sc, ok := scp[cmdname]; ok {
 		sc.fs.Parse(flag.Args()[1:])
-		sc.cmd.Run(sc.fs.Args())
+		err := sc.cmd.Run(sc.fs.Args())
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "command error: %s\n", err)
+			sc.fs.PrintDefaults()
+			os.Exit(1)
+		}
 	} else {
 		fmt.Fprintf(os.Stderr, "error: %s is not a valid command\n", cmdname)
 		flag.Usage()

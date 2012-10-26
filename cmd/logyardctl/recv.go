@@ -21,7 +21,7 @@ func (cmd *recv) DefineFlags(fs *flag.FlagSet) {
 	cmd.filter = fs.String("filter", "", "filter by message key pattern")
 }
 
-func (cmd *recv) Run(args []string) {
+func (cmd *recv) Run(args []string) error {
 	c, err := logyard.NewClientGlobal()
 	if err != nil {
 		log.Fatal(err)
@@ -41,4 +41,5 @@ func (cmd *recv) Run(args []string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	return nil
 }
