@@ -50,8 +50,11 @@ func (cmd *add) Run(args []string) error {
 		query.Set("format", *cmd.format)
 	}
 
-	for _, param := range strings.Split(*cmd.params, ";") {
-		parts := strings.Split(param, "=")
+	for _, param := range FieldsDelim(*cmd.params, ';') {
+		parts := FieldsDelim(param, '=')
+		if len(parts) != 2 {
+			return fmt.Errorf("invalid params argument")
+		}
 		key, value := parts[0], parts[1]
 		query.Set(key, value)
 	}
@@ -64,4 +67,9 @@ func (cmd *add) Run(args []string) error {
 		log.Fatal(err)
 	}
 	return nil
+}
+
+// A version of string.Fields that accepts delimter string
+func FieldsDelim(s string, delim rune) []string {
+	return strings.FieldsFunc(s, func(c rune) bool { return c == delim })
 }

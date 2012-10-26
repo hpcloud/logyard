@@ -1,4 +1,4 @@
-VM	    	= pg3h
+VM	    	= ny8r
 
 default:	install
 
