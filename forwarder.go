@@ -12,8 +12,9 @@ type Forwarder struct {
 }
 
 const (
-	PUBLISHER_ADDR  = "tcp://127.0.0.1:5559"
-	SUBSCRIBER_ADDR = "tcp://*:5560"
+	PUBLISHER_ADDR     = "tcp://127.0.0.1:5559"
+	SUBSCRIBER_ADDR    = "tcp://*:5560"
+	MEMORY_BUFFER_SIZE = 100
 )
 
 func NewForwarder() (*Forwarder, error) {
@@ -42,7 +43,7 @@ func NewForwarder() (*Forwarder, error) {
 	}
 
 	// backend speaks to subscribers
-	f.backend, err = f.ctx.NewSocket(zmq.PUB)
+	f.backend, err = NewPubSocket(f.ctx)
 	if err != nil {
 		f.ctx.Close()
 		return nil, err
@@ -54,6 +55,20 @@ func NewForwarder() (*Forwarder, error) {
 	}
 
 	return f, nil
+}
+
+func NewPubSocket(ctx zmq.Context) (zmq.Socket, error) {
+	sock, err := ctx.NewSocket(zmq.PUB)
+	if err != nil {
+		return nil, err
+	}
+	// prevent 0mq from infinitely buffering messages
+	err = sock.SetSockOptUInt64(zmq.HWM, MEMORY_BUFFER_SIZE)
+	if err != nil {
+		sock.Close()
+		return nil, err
+	}
+	return sock, nil
 }
 
 func (f *Forwarder) Run() {

@@ -1,4 +1,4 @@
-VM	    	= ny8r
+VM	    	= sf4r
 
 default:	install
 

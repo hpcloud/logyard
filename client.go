@@ -51,7 +51,7 @@ func (c *Client) Close() {
 func (c *Client) init(send bool) error {
 	if send && c.pubSock == nil {
 		var err error
-		c.pubSock, err = c.ctx.NewSocket(zmq.PUB)
+		c.pubSock, err = NewPubSocket(c.ctx)
 		if err != nil {
 			return err
 		}
