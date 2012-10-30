@@ -41,7 +41,8 @@ func AppInstanceStarted(c *logyard.Client, instance *AppInstance) {
 				data, err := json.Marshal(map[string]interface{}{
 					"Text":          line.Text,
 					"LogFilename":   filepath.Base(filename),
-					"UnixTime":      line.UnixTime,
+					"UnixTime":      line.Time.Unix(),
+					"HumanTime":     line.Time.Format("2006-01-02T15:04:05-07:00"), // heroku-format
 					"InstanceIndex": instance.Index,
 					"InstanceType":  instance.Type})
 				if err != nil {

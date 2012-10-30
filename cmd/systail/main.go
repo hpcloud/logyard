@@ -50,7 +50,7 @@ func main() {
 		go func(process string, tail *tail.Tail) {
 			for line := range tail.Lines {
 				data, err := json.Marshal(map[string]interface{}{
-					"UnixTime": line.UnixTime,
+					"UnixTime": line.Time.Unix(),
 					"Text":     line.Text,
 					"Name":     process,
 					"NodeID":   nodeid})
