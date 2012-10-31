@@ -4,7 +4,9 @@
 # also live here. thus it is by no means generic.
 
 systail:
-  max_record_size: 950
+  # this value should be large enough to not make events trip up on
+  # json unmarshall errors too often. 2048 should be good enough.
+  max_record_size: 2048
 
 apptail:
   max_record_size: 950
