@@ -34,7 +34,11 @@ func main() {
 		}
 		prefix := "event." + record.NodeID
 
-		event := ParseEvent(record.Name, record.Text)
+		event, err := parser.Parse(record.Name, record.Text)
+		if err != nil {
+			log.Printf("Error parsing an event: %s", err)
+			continue
+		}
 		if event != nil {
 			event.NodeID = record.NodeID
 			event.UnixTime = record.UnixTime
