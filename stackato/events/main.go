@@ -6,6 +6,14 @@ import (
 	"logyard"
 )
 
+// TODO: share it with systail
+type SystailRecord struct {
+	UnixTime int64
+	Text     string
+	Name     string
+	NodeID   string
+}
+
 func main() {
 	logyardclient, err := logyard.NewClientGlobal()
 	if err != nil {
@@ -17,15 +25,18 @@ func main() {
 		log.Fatal(err)
 	}
 	for message := range sub.Ch {
-		// TODO: use apptail's struct to unmarshal
-		record := map[string]interface{}{}
-		json.Unmarshal([]byte(message.Value), &record)
-		prefix := ("event." + record["NodeID"].(string))
+		var record SystailRecord
+		err := json.Unmarshal([]byte(message.Value), &record)
+		if err != nil {
+			log.Fatalf("failed to decode json: %s; ignoring.", err)
+			continue
+		}
+		prefix := ("event." + record.NodeID)
 
-		event := ParseEvent(record["Name"].(string), record["Text"].(string))
+		event := ParseEvent(record.Name, record.Text)
 		if event != nil {
-			event.NodeID = record["NodeID"].(string)
-			event.UnixTime = int64(record["UnixTime"].(float64))
+			event.NodeID = record.NodeID
+			event.UnixTime = record.UnixTime
 			data, err := json.Marshal(event)
 			if err != nil {
 				log.Fatal(err)
