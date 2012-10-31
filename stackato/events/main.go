@@ -28,10 +28,11 @@ func main() {
 		var record SystailRecord
 		err := json.Unmarshal([]byte(message.Value), &record)
 		if err != nil {
-			log.Fatalf("failed to decode json: %s; ignoring.", err)
+			log.Printf("Error: failed to parse json: %s; ignoring record: %s",
+				err, message.Value)
 			continue
 		}
-		prefix := ("event." + record.NodeID)
+		prefix := "event." + record.NodeID
 
 		event := ParseEvent(record.Name, record.Text)
 		if event != nil {
