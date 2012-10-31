@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -14,15 +15,15 @@ func TestSampleLogs(t *testing.T) {
 			if event == nil {
 				t.Fatalf("no event detected for: %s", event_parser.Sample)
 			}
-			// we care only about the Type/Process fields; rest of
-			// the fields (Description, Info) are not needed to be
-			// tested yet.
 			if event.Process != process {
 				t.Fatalf("misdetection process %s != %s -- for: %s", event.Process, process, event_parser.Sample)
 			}
 			if event.Type != event_type {
 				t.Fatalf("misdetection type %s != %s -- for: %s", event.Type, event_type, event_parser.Sample)
 			}
+			// TODO: we should test the Desc field as well. meanwhile,
+			// displaying the desc to the user.
+			fmt.Printf("<< %19s >> -- %s\n", event.Type, event.Desc)
 		}
 	}
 }

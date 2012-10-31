@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"regexp"
 	"text/template"
 )
@@ -35,7 +36,7 @@ func (tmpl SimpleEventHandler) HandleEvent(results []string, event *Event) error
 	var output bytes.Buffer
 	err := tmpl.Execute(&output, results)
 	if err != nil {
-		return err
+		return fmt.Errorf("error in custom event handler %s; %s", event.Type, err)
 	}
 	event.Desc = output.String()
 	return nil

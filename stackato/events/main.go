@@ -15,6 +15,8 @@ type SystailRecord struct {
 }
 
 func main() {
+	parser.DeleteSamples()
+
 	logyardclient, err := logyard.NewClientGlobal()
 	if err != nil {
 		log.Fatal(err)
