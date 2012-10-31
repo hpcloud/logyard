@@ -57,7 +57,7 @@ func (parser Parser) Parse(group_name string, text string) (*Event, error) {
 	}
 	if matcher, ok := parser.matchers[group_name]; ok {
 		if event_type, results := matcher.Match(text); results != nil {
-			event := Event{Type: event_type, Process: group_name}
+			event := Event{Type: event_type, Process: group_name, Severity: "INFO"}
 			if event_parser := group[event_type]; ok {
 				err := event_parser.Handler.HandleEvent(results, &event)
 				if err != nil {
@@ -80,24 +80,24 @@ func init() {
 				Substring: "entered RUNNING state",
 				Re:        `(\w+) entered RUNNING`,
 				Sample:    `INFO success: memcached_node entered RUNNING state, process has ...`,
-				Handler:   s("Process '$1' started on a node")},
+				Handler:   s("INFO", "Process '$1' started on a node")},
 			"process_stop": &EventParser{
 				Substring: "stopped",
 				Re:        `stopped: (\w+) \((.+)\)`,
 				Sample:    `INFO stopped: mysql_node (terminated by SIGKILL)`,
-				Handler:   s("Process '$1' stopped on a node ($2)")},
+				Handler:   s("WARNING", "Process '$1' stopped on a node ($2)")},
 			"process_exit": &EventParser{
 				Substring: "exited",
 				Re:        `exited: (\w+) \((.+)\)`,
 				Sample:    `INFO exited: dea (exit status 1; not expected)`,
-				Handler:   s("Process '$1' crashed on a node ($2)")},
+				Handler:   s("FATAL", "Process '$1' crashed on a node ($2)")},
 		},
 		"kato": map[string]*EventParser{
 			"kato_action": &EventParser{
 				Substring: "INVOKE",
 				Re:        `INVOKE (.+)`,
 				Sample:    `[info] (12339) INVOKE kato start`,
-				Handler:   s("kato action taken on a node: $1"),
+				Handler:   s("INFO", "kato action taken on a node: $1"),
 			},
 		},
 		"heath_manager": map[string]*EventParser{
@@ -105,7 +105,7 @@ func init() {
 				Substring: "Analyzed",
 				Re:        `Analyzed (\d+) running and (\d+) down apps in (\S+)$`,
 				Sample:    `INFO -- Analyzed 3 running and 0 down apps in 95.9ms`,
-				Handler:   s("HM analyzed $1 running apps and $2 down apps"),
+				Handler:   s("INFO", "HM analyzed $1 running apps and $2 down apps"),
 			},
 		},
 		"cloud_controller": map[string]*EventParser{
@@ -122,6 +122,7 @@ func init() {
 					}
 					event.Desc = fmt.Sprintf("No DEA can accept app '%v' of runtime '%v'; retrying...",
 						info["name"], info["runtime"])
+					event.Severity = "WARNING"
 					return nil
 				}),
 			},
@@ -168,7 +169,7 @@ func init() {
 				// record. nor does it mention the result status
 				// (success/failure).
 				Sample:  `INFO -- Task, id=1e117625577284da3dc4f47bb780f0ae completed, result=`,
-				Handler: s("Completed staging an application; task $1"),
+				Handler: s("INFO", "Completed staging an application; task $1"),
 			},
 		},
 		"dea": map[string]*EventParser{
@@ -191,13 +192,13 @@ func init() {
 				Substring: "Stopping instance",
 				Re:        `Stopping instance \(name=(\S+).+instance=(\w+)`,
 				Sample:    `INFO -- Stopping instance (name=gtd app_id=5 instance=db82a00d5aa9ce968616b34e8f99109b index=0)`,
-				Handler:   s("Stopping application instance '$1' ($2)"),
+				Handler:   s("INFO", "Stopping application instance '$1' ($2)"),
 			},
 			"dea_ready": &EventParser{
 				Substring: "ready for connections",
 				Re:        `Instance \(name=(\S+).+instance=(\w+).+is ready for connections`,
 				Sample:    `INFO -- Instance (name=gtd2 app_id=8 instance=be34dd00d7a53801a38a87105dc332e6 index=0) is ready for connections, notifying system of statu`,
-				Handler:   s("Application '$1' instance '$2' is now running"),
+				Handler:   s("INFO", "Application '$1' instance '$2' is now running"),
 			},
 		},
 	})
