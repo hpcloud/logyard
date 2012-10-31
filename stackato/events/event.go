@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"regexp"
-	"strings"
 )
 
 type Event struct {
@@ -21,26 +19,26 @@ type EventDetector func(text string) *Event
 var eventDetectors map[string]EventDetector
 
 // re is a re cache
-var re map[string]*regexp.Regexp
+var matchers map[string]*MultiRegexpMatcher
 
 func init() {
-	re = map[string]*regexp.Regexp{
-		"cc_start": regexp.MustCompile(`Sending start message (.+) to DEA (\w+)`),
-	}
-	eventDetectors = map[string]EventDetector{
-		"supervisord": func(text string) *Event {
-			if strings.Contains(text, "entered RUNNING state") {
-				return &Event{Type: "process_started", Desc: "Something?? entered running state"}
-			}
-			return nil
-		},
-		"cloud_controller": func(text string) *Event {
-			if strings.Contains(text, "Sending start message") {
-				results := re["cc_start"].FindStringSubmatch(text)
-				if results == nil {
-					return nil // TODO: nope, just fall over
-				}
-				println(results)
+	matchers = map[string]*MultiRegexpMatcher{}
+	matchers["supervisord"] = NewMultiRegexpMatcher()
+	matchers["supervisord"].MustAdd("process_started", "entered RUNNING state", `entered`)
+	matchers["cloud_controller"] = NewMultiRegexpMatcher()
+	matchers["cloud_controller"].MustAdd("cc_start", "Sending start message", `Sending start message (.+) to DEA (\w+)`)
+}
+
+func ParseEvent(process string, record string) *Event {
+	if matcher, ok := matchers[process]; ok {
+		if event_type, results := matcher.Match(record); results != nil {
+			switch event_type {
+			case "process_started":
+				return &Event{
+					Type: event_type,
+					Process: process,
+					Desc: "Something?? was strted"}
+			case "cc_start":
 				infoJson, _ := results[1], results[2]
 				var info map[string]interface{}
 				// XXX: doing this merely to extract the appname ...maybe we shouldn't?
@@ -49,10 +47,13 @@ func init() {
 					log.Printf("Error: failed to parse the json in a cc_start record: %s", err)
 					return nil
 				}
-				desc := fmt.Sprintf("Starting application %v", info["name"])
-				return &Event{Type: "cc_start", Desc: desc, Info: infoJson}
+				return &Event{
+					Type: "cc_start",
+					Process: process,
+					Desc: fmt.Sprintf("Starting application '%v'", info["name"]),
+					Info: infoJson}
 			}
-			return nil
-		},
+		}
 	}
+	return nil
 }

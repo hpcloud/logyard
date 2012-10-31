@@ -21,20 +21,15 @@ func main() {
 		json.Unmarshal([]byte(message.Value), &record)
 		prefix := ("event." + record["NodeID"])
 
-		// XXX: get something working first; then clean up and optimize
-		if detector, ok := eventDetectors[record["Name"]]; ok {
-			event := detector(record["Text"])
-			if event != nil {
-				event.NodeID = record["NodeID"]
-				event.Process = record["Name"]
-				data, err := json.Marshal(event)
-				if err != nil {
-					log.Fatal(err)
-				}
-				log.Printf("Got event: %+v", event)
-				logyardclient.Send(prefix, string(data))
-
+		event := ParseEvent(record["Name"], record["Text"])
+		if event != nil {
+			event.NodeID = record["NodeID"]
+			data, err := json.Marshal(event)
+			if err != nil {
+				log.Fatal(err)
 			}
+			log.Printf("Got event: %+v", event)
+			logyardclient.Send(prefix, string(data))
 		}
 
 	}
