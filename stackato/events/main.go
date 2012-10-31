@@ -34,11 +34,10 @@ func main() {
 				err, message.Value)
 			continue
 		}
-		prefix := "event." + record.NodeID
 
 		event, err := parser.Parse(record.Name, record.Text)
 		if err != nil {
-			log.Printf("Error parsing an event: %s", err)
+			log.Printf("Error parsing an event from %s: %s -- source: %s", record.Name, err, record.Text)
 			continue
 		}
 		if event != nil {
@@ -49,7 +48,7 @@ func main() {
 				log.Fatal(err)
 			}
 			log.Printf("Got event: %+v", event)
-			logyardclient.Send(prefix, string(data))
+			logyardclient.Send("event."+event.Type, string(data))
 		}
 
 	}

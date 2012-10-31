@@ -184,7 +184,7 @@ func init() {
 					if err != nil {
 						return err
 					}
-					event.Desc = fmt.Sprintf("Starting application instance '%v'", info["name"])
+					event.Desc = fmt.Sprintf("Starting application '%v' instance #%v", info["name"], info["index"])
 					return nil
 				}),
 			},
@@ -192,7 +192,7 @@ func init() {
 				Substring: "Stopping instance",
 				Re:        `Stopping instance \(name=(\S+).+instance=(\w+)`,
 				Sample:    `INFO -- Stopping instance (name=gtd app_id=5 instance=db82a00d5aa9ce968616b34e8f99109b index=0)`,
-				Handler:   s("INFO", "Stopping application instance '$1' ($2)"),
+				Handler:   s("INFO", "Stopping an instance of '$1' ($2)"),
 			},
 			"dea_ready": &EventParser{
 				Substring: "ready for connections",
