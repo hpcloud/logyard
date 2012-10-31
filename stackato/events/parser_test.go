@@ -1,4 +1,4 @@
-package main
+package events
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 )
 
 func TestSampleLogs(t *testing.T) {
+	parser := NewStackatoParser()
 	for process, event_types := range parser.tree {
 		for event_type, event_parser := range event_types {
 			event, err := parser.Parse(process, event_parser.Sample)

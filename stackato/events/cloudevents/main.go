@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"logyard"
+	"logyard/stackato/events"
 )
 
 // TODO: share it with systail
@@ -15,6 +16,7 @@ type SystailRecord struct {
 }
 
 func main() {
+	parser := events.NewStackatoParser()
 	parser.DeleteSamples()
 
 	logyardclient, err := logyard.NewClientGlobal()

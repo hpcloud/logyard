@@ -1,6 +1,6 @@
 // provides fast matching algorithms
 // TODO: aho-corasic on substring matching
-package main
+package events
 
 import (
 	"regexp"

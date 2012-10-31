@@ -1,4 +1,4 @@
-package main
+package events
 
 import (
 	"encoding/json"
@@ -20,8 +20,6 @@ type Parser struct {
 	tree     map[string]EventParserGroup
 	matchers map[string]*MultiRegexpMatcher
 }
-
-var parser Parser
 
 func NewParser(tree map[string]EventParserGroup) Parser {
 	return Parser{tree: tree, matchers: make(map[string]*MultiRegexpMatcher)}
@@ -72,9 +70,9 @@ func (parser Parser) Parse(group_name string, text string) (*Event, error) {
 	panic("not reachable")
 }
 
-func init() {
+func NewStackatoParser() Parser {
 	s := NewSimpleEventHandler
-	parser = NewParser(map[string]EventParserGroup{
+	parser := NewParser(map[string]EventParserGroup{
 		"supervisord": map[string]*EventParser{
 			"process_start": &EventParser{
 				Substring: "entered RUNNING state",
@@ -204,4 +202,6 @@ func init() {
 	})
 
 	parser.Build()
+
+	return parser
 }
