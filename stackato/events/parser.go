@@ -112,14 +112,12 @@ func NewStackatoParser() Parser {
 				Re:        `No resources available to start instance (.+)$`,
 				Sample:    `WARN -- No resources available to start instance {"droplet":6,"name":"sinatra-env","uris":["sinatra-env.stackato-sf4r.local"],"runtime":"ruby18","framework":"sinatra","sha1":"4b89d4df0815603765b9e3c4864ca909c88564c4","executableFile":"/var/vcap/shared/droplets/droplet_6","executableUri":"http://172.16.145.180:9022/staged_droplets/6/4b89d4df0815603765b9e3c4864ca909c88564c4","version":"4b89d4df0815603765b9e3c4864ca909c88564c4-2","services":[],"limits":{"mem":128,"disk":2048,"fds":256,"sudo":false},"env":[],"group":"s@s.com","index":0,"repos":["deb mirror://mirrors.ubuntu.com/mirrors.txt precise main restricted universe multiverse","deb mirror://mirrors.ubuntu.com/mirrors.txt precise-updates main restricted universe multiverse","deb http://security.ubuntu.com/ubuntu precise-security main universe"]}`,
 				Handler: CustomEventHandler(func(results []string, event *Event) error {
-					event.Info = results[1]
-					var info map[string]interface{}
-					err := json.Unmarshal([]byte(event.Info), &info)
+					err := json.Unmarshal([]byte(results[1]), &event.Info)
 					if err != nil {
 						return err
 					}
 					event.Desc = fmt.Sprintf("No DEA can accept app '%v' of runtime '%v'; retrying...",
-						info["name"], info["runtime"])
+						event.Info["name"], event.Info["runtime"])
 					event.Severity = "WARNING"
 					return nil
 				}),
@@ -129,14 +127,12 @@ func NewStackatoParser() Parser {
 				Re:        `Sending start message (.+) to DEA (\w+)$`,
 				Sample:    `DEBUG -- Sending start message {"droplet":6,"name":"sinatra-env","uris":["sinatra-env.stackato-sf4r.local"],"runtime":"ruby18","framework":"sinatra","sha1":"4b89d4df0815603765b9e3c4864ca909c88564c4","executableFile":"/var/vcap/shared/droplets/droplet_6","executableUri":"http://172.16.145.180:9022/staged_droplets/6/4b89d4df0815603765b9e3c4864ca909c88564c4","version":"4b89d4df0815603765b9e3c4864ca909c88564c4-2","services":[],"limits":{"mem":128,"disk":2048,"fds":256,"sudo":false},"env":[],"group":"s@s.com","index":0,"repos":["deb mirror://mirrors.ubuntu.com/mirrors.txt precise main restricted universe multiverse","deb mirror://mirrors.ubuntu.com/mirrors.txt precise-updates main restricted universe multiverse","deb http://security.ubuntu.com/ubuntu precise-security main universe"]} to DEA 2c4b4d96d82f98f7d6d409ec49edbe44`,
 				Handler: CustomEventHandler(func(results []string, event *Event) error {
-					event.Info, _ = results[1], results[2]
-					var info map[string]interface{}
 					// XXX: doing this merely to extract the appname ...maybe we shouldn't?
-					err := json.Unmarshal([]byte(event.Info), &info)
+					err := json.Unmarshal([]byte(results[1]), &event.Info)
 					if err != nil {
 						return err
 					}
-					event.Desc = fmt.Sprintf("Starting application '%v'", info["name"])
+					event.Desc = fmt.Sprintf("Starting application '%v'", event.Info["name"])
 					return nil
 				}),
 			},
@@ -147,17 +143,15 @@ func NewStackatoParser() Parser {
 				Re:        `Decoding task \'(.+)\'$`,
 				Sample:    `DEBUG -- Decoding task '{"app_id":8,"properties":{"services":[{"label":"postgresql-9.1","tags":["postgresql","postgresql-9.1","relational"],"name":"postgresql-gtd","credentials":{"name":"d2ca64ddb68d0433b83d876f105659696","host":"172.16.145.180","hostname":"172.16.145.180","port":5432,"user":"u615ee9e7b64d40038e1d9131b3b7e924","username":"u615ee9e7b64d40038e1d9131b3b7e924","password":"pc871d5fef45f4ec29503caaff615b9fc"},"options":{},"plan":"free","plan_option":null}],"framework":"python","runtime":"python27","resources":{"memory":128,"disk":2048,"fds":256,"sudo":false},"environment":["DJANGO_SETTINGS_MODULE=settings"],"uris":["gtd2.stackato-sf4r.local"],"repos":["deb mirror://mirrors.ubuntu.com/mirrors.txt precise main restricted universe multiverse","deb mirror://mirrors.ubuntu.com/mirrors.txt precise-updates main restricted universe multiverse","deb http://security.ubuntu.com/ubuntu precise-security main universe"],"appname":"gtd2","meta":{"debug":null,"console":null}},"download_uri":"http://172.16.145.180:9022/staging/app/8","upload_uri":"http://172.16.145.180:9022/staging/droplet/8/d2fa46c59f6463842bae0480214541cf","notify_subj":"cc.staging.5542c73f6e2f3fed8abca220f94da9a1"}'`,
 				Handler: CustomEventHandler(func(results []string, event *Event) error {
-					event.Info = results[1]
-					var info map[string]interface{}
-					err := json.Unmarshal([]byte(event.Info), &info)
+					err := json.Unmarshal([]byte(results[1]), &event.Info)
 					if err != nil {
 						return err
 					}
-					if props, ok := info["properties"].(map[string]interface{}); ok {
+					if props, ok := event.Info["properties"].(map[string]interface{}); ok {
 						event.Desc = fmt.Sprintf("Staging application '%v'", props["appname"])
 						return nil
 					}
-					return fmt.Errorf("info['properties'] is not a map")
+					return fmt.Errorf("event.Info['properties'] is not a map")
 				}),
 			},
 			"stager_end": &EventParser{
@@ -176,13 +170,12 @@ func NewStackatoParser() Parser {
 				Re:        `DEA received start message: (.+)$`,
 				Sample:    `DEBUG -- DEA received start message: {"droplet":6,"name":"sinatra-env","uris":["sinatra-env.stackato-sf4r.local"],"runtime":"ruby18","framework":"sinatra","sha1":"e6d971d2863a5174647580b518b48b26dcf683a6","executableFile":"/var/vcap/shared/droplets/droplet_6","executableUri":"http://172.16.145.180:9022/staged_droplets/6/e6d971d2863a5174647580b518b48b26dcf683a6","version":"e6d971d2863a5174647580b518b48b26dcf683a6-7","services":[],"limits":{"mem":128,"disk":2048,"fds":256,"sudo":false},"env":[],"group":"s@s.com","debug":null,"console":null,"repos":["deb mirror://mirrors.ubuntu.com/mirrors.txt precise main restricted universe multiverse","deb mirror://mirrors.ubuntu.com/mirrors.txt precise-updates main restricted universe multiverse","deb http://security.ubuntu.com/ubuntu precise-security main universe"],"index":0}`,
 				Handler: CustomEventHandler(func(results []string, event *Event) error {
-					event.Info = results[1]
-					var info map[string]interface{}
-					err := json.Unmarshal([]byte(event.Info), &info)
+					err := json.Unmarshal([]byte(results[1]), &event.Info)
 					if err != nil {
 						return err
 					}
-					event.Desc = fmt.Sprintf("Starting application '%v' instance #%v", info["name"], info["index"])
+					event.Desc = fmt.Sprintf("Starting application '%v' instance #%v",
+						event.Info["name"], event.Info["index"])
 					return nil
 				}),
 			},
