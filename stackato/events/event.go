@@ -27,6 +27,10 @@ func init() {
 	matchers["supervisord"].MustAdd("process_started", "entered RUNNING state", `entered`)
 	matchers["cloud_controller"] = NewMultiRegexpMatcher()
 	matchers["cloud_controller"].MustAdd("cc_start", "Sending start message", `Sending start message (.+) to DEA (\w+)`)
+
+	for _, matcher := range matchers {
+		matcher.Build()
+	}
 }
 
 func ParseEvent(process string, record string) *Event {
@@ -35,9 +39,9 @@ func ParseEvent(process string, record string) *Event {
 			switch event_type {
 			case "process_started":
 				return &Event{
-					Type: event_type,
+					Type:    event_type,
 					Process: process,
-					Desc: "Something?? was strted"}
+					Desc:    "Something?? was strted"}
 			case "cc_start":
 				infoJson, _ := results[1], results[2]
 				var info map[string]interface{}
@@ -48,10 +52,10 @@ func ParseEvent(process string, record string) *Event {
 					return nil
 				}
 				return &Event{
-					Type: "cc_start",
+					Type:    "cc_start",
 					Process: process,
-					Desc: fmt.Sprintf("Starting application '%v'", info["name"]),
-					Info: infoJson}
+					Desc:    fmt.Sprintf("Starting application '%v'", info["name"]),
+					Info:    infoJson}
 			}
 		}
 	}
