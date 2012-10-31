@@ -7,11 +7,12 @@ import (
 )
 
 type Event struct {
-	Type    string // what type of event?
-	Desc    string // description of this event to be shown as-is to humans
-	Info    string // event-specific information as json
-	Process string // which process generated this event?
-	NodeID  string // from which node did this event appear?
+	Type     string // what type of event?
+	Desc     string // description of this event to be shown as-is to humans
+	Info     string // event-specific information as json
+	Process  string // which process generated this event?
+	UnixTime int64
+	NodeID   string // from which node did this event appear?
 }
 
 type EventDetector func(text string) *Event

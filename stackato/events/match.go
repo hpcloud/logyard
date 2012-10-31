@@ -8,12 +8,11 @@ import (
 )
 
 // MultiRegexpMatch allows matching a string against multiple regular
-// expressions *after* doing a simple O(n) substring match using
-// aho-corasick. 
+// expressions along with substrings for a fast fail-early matching. 
 type MultiRegexpMatcher struct {
-	substrings       map[string]string
-	regexps          map[string]*regexp.Regexp
-	substringsRegexp *regexp.Regexp
+	substrings       map[string]string         // substring to name
+	regexps          map[string]*regexp.Regexp // name to regexp
+	substringsRegexp *regexp.Regexp            // substring regex combined
 }
 
 func NewMultiRegexpMatcher() *MultiRegexpMatcher {
@@ -24,7 +23,7 @@ func NewMultiRegexpMatcher() *MultiRegexpMatcher {
 }
 
 func (m *MultiRegexpMatcher) MustAdd(name string, substring string, re string) {
-	if _, ok := m.substrings[name]; ok {
+	if _, ok := m.substrings[substring]; ok {
 		panic("already in substrings")
 	}
 	if _, ok := m.regexps[name]; ok {
@@ -48,13 +47,15 @@ func (m *MultiRegexpMatcher) Match(text string) (string, []string) {
 	// TODO: use aho-corasick instead of regexp to match the substrings.
 	substring := m.substringsRegexp.FindString(text)
 	if substring == "" {
-		// return early so we don't have to waste time on futile regex
+		// fail return early so we don't have to waste time on futile regex
 		// matching (below)
 		return "", nil
 	}
 
 	if name, ok := m.substrings[substring]; ok {
 		if re, ok := m.regexps[name]; ok {
+			// TODO: if this regex fails, should we try the next
+			// matching substring?
 			return name, re.FindStringSubmatch(text)
 		}
 	}

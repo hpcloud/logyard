@@ -17,13 +17,15 @@ func main() {
 		log.Fatal(err)
 	}
 	for message := range sub.Ch {
-		record := map[string]string{}
+		// TODO: use apptail's struct to unmarshal
+		record := map[string]interface{}{}
 		json.Unmarshal([]byte(message.Value), &record)
-		prefix := ("event." + record["NodeID"])
+		prefix := ("event." + record["NodeID"].(string))
 
-		event := ParseEvent(record["Name"], record["Text"])
+		event := ParseEvent(record["Name"].(string), record["Text"].(string))
 		if event != nil {
-			event.NodeID = record["NodeID"]
+			event.NodeID = record["NodeID"].(string)
+			event.UnixTime = int64(record["UnixTime"].(float64))
 			data, err := json.Marshal(event)
 			if err != nil {
 				log.Fatal(err)
