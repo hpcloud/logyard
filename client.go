@@ -3,7 +3,6 @@ package logyard
 import (
 	zmq "github.com/alecthomas/gozmq"
 	"logyard/zmqch"
-	"strings"
 )
 
 // XXX: rewrite the client api to separate read/write. very confusing otherwise.
@@ -38,8 +37,7 @@ func (c *Client) Recv(filters []string) (*zmqch.SubChannel, error) {
 	if err != nil {
 		return nil, err
 	}
-	addr := strings.Replace(SUBSCRIBER_ADDR, "*", "127.0.0.1", 1)
-	return zmqch.NewSubChannel(addr, filters), nil
+	return zmqch.NewSubChannel(SUBSCRIBER_ADDR, filters), nil
 }
 
 func (c *Client) Close() {
