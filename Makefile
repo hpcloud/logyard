@@ -1,4 +1,4 @@
-VM	    	= sf4r
+VM	    	= b9ys
 
 default:	install
 
@@ -31,7 +31,7 @@ fmt:
 	gofmt -w .
 
 test:
-	go test -v logyard/...
+	go test -v logyard/... github.com/srid/tail
 
 clean: 
 	GOPATH=$(GOPATH) go clean
