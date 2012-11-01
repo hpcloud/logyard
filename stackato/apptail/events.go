@@ -42,12 +42,11 @@ func MonitorCloudEvents() {
 			// TODO: this could fail; handle it gracefully
 			appid := int(event.Info["droplet"].(float64))
 			index := int(event.Info["index"].(float64))
-			typ := "stackato.dea"
-			source := fmt.Sprintf("stackato.dea.%d", index)
-			PublishAppLog(c, appid, index, typ, source, &event)
+			source := "stackato.dea"
+			PublishAppLog(c, appid, index, source, &event)
 		case "event.stager_start":
 			appid := int(event.Info["app_id"].(float64))
-			PublishAppLog(c, appid, -1, "stackato.stager", "stackato.stage", &event)
+			PublishAppLog(c, appid, -1, "stackato.stager", &event)
 		}
 
 	}
@@ -58,14 +57,13 @@ func MonitorCloudEvents() {
 	}
 }
 
-func PublishAppLog(client *logyard.Client, appid int, index int, typ string, source string, event *events.Event) {
+func PublishAppLog(client *logyard.Client, appid int, index int, source string, event *events.Event) {
 	m := AppLogMessage{
 		Text:          event.Desc,
 		LogFilename:   "",
 		UnixTime:      event.UnixTime,
 		HumanTime:     time.Unix(event.UnixTime, 0).Format("2006-01-02T15:04:05-07:00"), // heroku-format
 		InstanceIndex: index,
-		InstanceType:  typ,
 		Source:        source}
 	data, err := json.Marshal(m)
 	if err != nil {
