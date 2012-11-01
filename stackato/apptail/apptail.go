@@ -7,6 +7,7 @@ import (
 	"log"
 	"logyard"
 	"path/filepath"
+	"unicode/utf8"
 )
 
 // AppInstance is the NATS message sent by dea/stager to notify of new
@@ -48,6 +49,10 @@ func AppInstanceStarted(c *logyard.Client, instance *AppInstance) {
 				return
 			}
 			for line := range tail.Lines {
+				// JSON expected valid UTF-8 strings
+				if !utf8.ValidString(line.Text) {
+					line.Text = "Logyard warning -- ignoring line with invalid utf8"
+				}
 				data, err := json.Marshal(AppLogMessage{
 					Text:          line.Text,
 					LogFilename:   filepath.Base(filename),
