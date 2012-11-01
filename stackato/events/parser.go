@@ -51,12 +51,12 @@ func (parser Parser) DeleteSamples() {
 func (parser Parser) Parse(group_name string, text string) (*Event, error) {
 	group, ok := parser.tree[group_name]
 	if !ok {
-		return nil, nil // this group not handled
+		return parser.parseStarGroup(group_name, text)
 	}
 	if matcher, ok := parser.matchers[group_name]; ok {
 		if event_type, results := matcher.Match(text); results != nil {
 			event := Event{Type: event_type, Process: group_name, Severity: "INFO"}
-			if event_parser := group[event_type]; ok {
+			if event_parser, ok := group[event_type]; ok {
 				err := event_parser.Handler.HandleEvent(results, &event)
 				if err != nil {
 					return nil, err
@@ -65,13 +65,34 @@ func (parser Parser) Parse(group_name string, text string) (*Event, error) {
 			}
 			panic("not reachable")
 		}
-		return nil, nil // nothing matched
+		return parser.parseStarGroup(group_name, text)
 	}
 	panic("not reachable")
 }
 
+func (parser Parser) parseStarGroup(orig_group string, text string) (*Event, error) {
+	group, ok := parser.tree["*"]
+	if !ok {
+		return nil, nil // no "*" group defined
+	}
+	matcher := parser.matchers["*"]
+	if event_type, results := matcher.Match(text); results != nil {
+		event := Event{Type: event_type, Process: orig_group, Severity: "INFO"}
+		event_parser := group[event_type]
+		err := event_parser.Handler.HandleEvent(results, &event)
+		if err != nil {
+			return nil, err
+		}
+		return &event, nil
+	}
+	return nil, nil
+}
+
 func NewStackatoParser() Parser {
 	s := NewSimpleEventHandler
+
+	serviceNodeParserGroup := serviceParsers()
+
 	parser := NewParser(map[string]EventParserGroup{
 		"supervisord": map[string]*EventParser{
 			"process_start": &EventParser{
@@ -192,9 +213,43 @@ func NewStackatoParser() Parser {
 				Handler:   s("INFO", "Application '$1' instance '$2' is now running"),
 			},
 		},
+		// XXX: dynamic way to maintain this list?
+		"filesystem_node": serviceNodeParserGroup,
+		"mongodb_node":    serviceNodeParserGroup,
+		"postgresql_node": serviceNodeParserGroup,
+		"redis_node":      serviceNodeParserGroup,
+		"memcached_node":  serviceNodeParserGroup,
+		"mysql_node":      serviceNodeParserGroup,
+		"rabbit_node":     serviceNodeParserGroup,
+		// catch all matching
+		"*": map[string]*EventParser{
+			"vcap_error": &EventParser{
+				Substring: "ERROR",
+				Re:        `ERROR -- (.+)$`,
+				Sample:    `postgresql_gateway - pid=4340 tid=2e99 fid=bad6  ERROR -- Failed fetching handles: Errno::ETIMEDOUT`,
+				Handler:   s("ERROR", "$1"),
+			},
+			"vcap_warning": &EventParser{
+				Substring: "WARN",
+				Re:        `WARN -- (.+)$`,
+				Sample:    `WARN -- Took 18.09s to process ps and du stats`,
+				Handler:   s("WARNING", "$1"),
+			},
+		},
 	})
 
 	parser.Build()
 
 	return parser
+}
+
+func serviceParsers() map[string]*EventParser {
+	return map[string]*EventParser{
+		"service_provision": &EventParser{
+			Substring: "Successfully provisioned service",
+			Re:        `^\[[^\]]+\] (\w+) .+ Successfully provisioned service for request`,
+			Sample:    `[2012-11-01 07:30:51.290253] memcached_node_1 - pid=23282 tid=d0cf fid=5280 DEBUG -- MaaS-Node: Successfully provisioned service for request {"plan":"free"}: {:credentials=>{"hostname"=>"192.168.203.197", "host"=>"192.168.203.197", "port"=>11000, "user"=>"cc06b88a-aa63-45f2-82d8-e9ab06f6a3cf", "password"=>"7ce87b70-1ed8-4c12-86ab-0e1c237f6853", "name"=>"20017185-bfb3-4b5a-b9b1-3add745e6552", "node_id"=>"memcached_node_1"}}`,
+			Handler:   NewSimpleEventHandler("INFO", "Provisioned a new service on $1"),
+		},
+	}
 }
