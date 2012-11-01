@@ -49,9 +49,9 @@ func AppInstanceStarted(c *logyard.Client, instance *AppInstance) {
 				return
 			}
 			for line := range tail.Lines {
-				// JSON expected valid UTF-8 strings
+				// JSON must be a valid UTF-8 string
 				if !utf8.ValidString(line.Text) {
-					line.Text = "Logyard warning -- ignoring line with invalid utf8"
+					line.Text = string([]rune(line.Text))
 				}
 				data, err := json.Marshal(AppLogMessage{
 					Text:          line.Text,

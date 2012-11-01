@@ -50,9 +50,9 @@ func main() {
 
 		go func(process string, tail *tail.Tail) {
 			for line := range tail.Lines {
-				// JSON must be valid UTF-8 strings
+				// JSON must be a valid UTF-8 string
 				if !utf8.ValidString(line.Text) {
-					line.Text = "Logyard warning -- ignoring line with invalid utf8"
+					line.Text = string([]rune(line.Text))
 				}
 				data, err := json.Marshal(map[string]interface{}{
 					"UnixTime": line.Time.Unix(),
