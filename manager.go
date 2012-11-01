@@ -60,7 +60,7 @@ func (manager *DrainManager) StopDrain(drainName string) {
 }
 
 // StartDrain starts the drain and waits for it exit.
-func (manager *DrainManager) StartDrain(name, uri string) {
+func (manager *DrainManager) StartDrain(name, uri string, retry *Retryer) {
 	manager.mux.Lock()
 	defer manager.mux.Unlock()
 
@@ -86,17 +86,17 @@ func (manager *DrainManager) StartDrain(name, uri string) {
 	}
 
 	manager.running[config.Name] = drain
+	dlog.Printf("Starting drain with config: %+v", config)
+	go drain.Start(config)
 
-	// Start and wait for the drain to exit.
 	go func() {
-		dlog.Printf("Starting drain with config: %+v", config)
-		drain.Start(config)
-
-		err := drain.Wait()
-		if err != nil {
-			log.Printf("Drain %s exited with error -- %s", name, err)
-		}
+		err = drain.Wait()
 		delete(manager.running, name)
+		if err != nil {
+			retry.Wait(fmt.Sprintf(
+				"Drain %s exited with error -- %s", name, err))
+			manager.StartDrain(name, uri, retry)
+		}
 	}()
 }
 
@@ -110,7 +110,7 @@ func NewDrainLogger(c *DrainConfig) *log.Logger {
 func (manager *DrainManager) Run() {
 	log.Printf("Found %d drains to start\n", len(Config.Drains))
 	for name, uri := range Config.Drains {
-		go manager.StartDrain(name, uri)
+		manager.StartDrain(name, uri, NewRetryer())
 	}
 
 	// Watch for config changes in doozer
@@ -120,7 +120,8 @@ func (manager *DrainManager) Run() {
 			manager.StopDrain(change.Key)
 		case doozerconfig.SET:
 			manager.StopDrain(change.Key)
-			go manager.StartDrain(change.Key, Config.Drains[change.Key])
+			manager.StartDrain(
+				change.Key, Config.Drains[change.Key], NewRetryer())
 		}
 
 	}
