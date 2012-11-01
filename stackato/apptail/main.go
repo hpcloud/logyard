@@ -25,9 +25,9 @@ func main() {
 	})
 
 	natsclient.Publish("logyard."+uid+".start", []byte("{}"))
-
 	log.Printf("Waiting for instances...")
-	<-make(chan int) // block forever
+
+	MonitorCloudEvents()
 }
 
 func newNatsClient() *nats.EncodedConn {

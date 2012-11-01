@@ -19,11 +19,30 @@ type AppInstance struct {
 	LogFiles []string
 }
 
+// The struct to be sent to logyard
+type AppLogMessage struct {
+	Text          string
+	LogFilename   string
+	UnixTime      int64
+	HumanTime     string
+	InstanceIndex int
+	InstanceType  string // TODO: deprecate
+	Source        string
+}
+
 // AppInstanceStarted is invoked when dea/stager starts an application
 // instance.
 func AppInstanceStarted(c *logyard.Client, instance *AppInstance) {
 	log.Printf("New instance was started: %v\n", instance)
 	key := fmt.Sprintf("apptail.%d", instance.AppID)
+	var source string
+	if instance.Index > -1 {
+		// eg: app.2
+		source = fmt.Sprintf("%s.%d", instance.Type, instance.Index)
+	} else {
+		// eg: staging
+		source = instance.Type
+	}
 	for _, filename := range instance.LogFiles {
 		go func(filename string) {
 			tail, err := tail.TailFile(filename, tail.Config{
@@ -38,13 +57,14 @@ func AppInstanceStarted(c *logyard.Client, instance *AppInstance) {
 				return
 			}
 			for line := range tail.Lines {
-				data, err := json.Marshal(map[string]interface{}{
-					"Text":          line.Text,
-					"LogFilename":   filepath.Base(filename),
-					"UnixTime":      line.Time.Unix(),
-					"HumanTime":     line.Time.Format("2006-01-02T15:04:05-07:00"), // heroku-format
-					"InstanceIndex": instance.Index,
-					"InstanceType":  instance.Type})
+				data, err := json.Marshal(AppLogMessage{
+					Text:          line.Text,
+					LogFilename:   filepath.Base(filename),
+					UnixTime:      line.Time.Unix(),
+					HumanTime:     line.Time.Format("2006-01-02T15:04:05-07:00"), // heroku-format
+					InstanceIndex: instance.Index,
+					InstanceType:  instance.Type,
+					Source:        source})
 				if err != nil {
 					log.Fatal(err)
 				}
