@@ -163,7 +163,7 @@ func NewStackatoParser() Parser {
 			"stager_start": &EventParser{
 				Substring: "START_STAGING",
 				Re:        `EVENT -- START_STAGING (.+)$`,
-				Sample:    `DEBUG -- Decoding task '{"app_id":8,"properties":{"services":[{"label":"postgresql-9.1","tags":["postgresql","postgresql-9.1","relational"],"name":"postgresql-gtd","credentials":{"name":"d2ca64ddb68d0433b83d876f105659696","host":"172.16.145.180","hostname":"172.16.145.180","port":5432,"user":"u615ee9e7b64d40038e1d9131b3b7e924","username":"u615ee9e7b64d40038e1d9131b3b7e924","password":"pc871d5fef45f4ec29503caaff615b9fc"},"options":{},"plan":"free","plan_option":null}],"framework":"python","runtime":"python27","resources":{"memory":128,"disk":2048,"fds":256,"sudo":false},"environment":["DJANGO_SETTINGS_MODULE=settings"],"uris":["gtd2.stackato-sf4r.local"],"repos":["deb mirror://mirrors.ubuntu.com/mirrors.txt precise main restricted universe multiverse","deb mirror://mirrors.ubuntu.com/mirrors.txt precise-updates main restricted universe multiverse","deb http://security.ubuntu.com/ubuntu precise-security main universe"],"appname":"gtd2","meta":{"debug":null,"console":null}},"download_uri":"http://172.16.145.180:9022/staging/app/8","upload_uri":"http://172.16.145.180:9022/staging/droplet/8/d2fa46c59f6463842bae0480214541cf","notify_subj":"cc.staging.5542c73f6e2f3fed8abca220f94da9a1"}'`,
+				Sample:    `EVENT -- START_STAGING {"app_id":7,"app_name":"env"}`,
 				Handler: CustomEventHandler(func(results []string, event *Event) error {
 					err := json.Unmarshal([]byte(results[1]), &event.Info)
 					if err != nil {
@@ -201,7 +201,7 @@ func NewStackatoParser() Parser {
 			"dea_stop": &EventParser{
 				Substring: "STOPPING_INSTANCE",
 				Re:        `EVENT -- STOPPING_INSTANCE (.+)$`,
-				Sample:    `INFO -- Stopping instance (name=gtd app_id=5 instance=db82a00d5aa9ce968616b34e8f99109b index=0)`,
+				Sample:    `EVENT -- STOPPING_INSTANCE {"app_id":6,"app_name":"env","instance":0,"dea_id":"deahas"}`,
 				Handler: CustomEventHandler(func(results []string, event *Event) error {
 					err := json.Unmarshal([]byte(results[1]), &event.Info)
 					if err != nil {
