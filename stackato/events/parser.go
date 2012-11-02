@@ -147,16 +147,7 @@ func NewStackatoParser() Parser {
 				Substring: "START_INSTANCE",
 				Re:        `EVENT -- START_INSTANCE (.+)$`,
 				Sample:    ` EVENT -- START_INSTANCE {"app_name":"env","app_id":6,"instance":0,"dea_id":"hash"}`,
-				Handler: CustomEventHandler(func(results []string, event *Event) error {
-					// XXX: doing this merely to extract the appname ...maybe we shouldn't?
-					err := json.Unmarshal([]byte(results[1]), &event.Info)
-					if err != nil {
-						return err
-					}
-					event.Desc = fmt.Sprintf("Starting application '%v' on DEA %v",
-						event.Info["app_name"], event.Info["dea_id"])
-					return nil
-				}),
+				Handler:   NewKnownEventHandler("Starting application '{{.app_name}}' on DEA '{{.dea_id}}'"),
 			},
 		},
 		"stager": map[string]*EventParser{
@@ -164,14 +155,7 @@ func NewStackatoParser() Parser {
 				Substring: "START_STAGING",
 				Re:        `EVENT -- START_STAGING (.+)$`,
 				Sample:    `EVENT -- START_STAGING {"app_id":7,"app_name":"env"}`,
-				Handler: CustomEventHandler(func(results []string, event *Event) error {
-					err := json.Unmarshal([]byte(results[1]), &event.Info)
-					if err != nil {
-						return err
-					}
-					event.Desc = fmt.Sprintf("Staging application '%v'", event.Info["app_name"])
-					return nil
-				}),
+				Handler:   NewKnownEventHandler("Staging application '{{.app_name}}'"),
 			},
 			"stager_end": &EventParser{
 				Substring: "completed",
@@ -202,32 +186,16 @@ func NewStackatoParser() Parser {
 				Substring: "STOPPING_INSTANCE",
 				Re:        `EVENT -- STOPPING_INSTANCE (.+)$`,
 				Sample:    `EVENT -- STOPPING_INSTANCE {"app_id":6,"app_name":"env","instance":0,"dea_id":"deahas"}`,
-				Handler: CustomEventHandler(func(results []string, event *Event) error {
-					err := json.Unmarshal([]byte(results[1]), &event.Info)
-					if err != nil {
-						return err
-					}
-					event.Desc = fmt.Sprintf("Stopping application '%v' on DEA %v",
-						event.Info["app_name"], event.Info["dea_id"])
-					return nil
-				}),
+				Handler:   NewKnownEventHandler("Stopping application '{{.app_name}}' on DEA {{.dea_id}}"),
 			},
 			"dea_ready": &EventParser{
 				Substring: "INSTANCE_READY",
 				Re:        `EVENT -- INSTANCE_READY (.+)$`,
 				Sample:    `EVENT -- INSTANCE_READY {"app_id":6,"app_name":"env","instance":0}`,
-				Handler: CustomEventHandler(func(results []string, event *Event) error {
-					err := json.Unmarshal([]byte(results[1]), &event.Info)
-					if err != nil {
-						return err
-					}
-					event.Desc = fmt.Sprintf("Application '%v' is now running on DEA %v",
-						event.Info["app_name"], event.Info["dea_id"])
-					return nil
-				}),
+				Handler:   NewKnownEventHandler("Application '{{.app_name}}' is now running on DEA {{.dea_id}}"),
 			},
 		},
-		// XXX: dynamic way to maintain this list?
+		// Xxx: dynamic way to maintain this list?
 		"filesystem_node": serviceNodeParserGroup,
 		"mongodb_node":    serviceNodeParserGroup,
 		"postgresql_node": serviceNodeParserGroup,
