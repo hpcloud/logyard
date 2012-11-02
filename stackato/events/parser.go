@@ -129,12 +129,6 @@ func NewStackatoParser() Parser {
 				Sample:    `WARN -- No resources available to start instance {"droplet":6,"name":"sinatra-env","runtime":"ruby18"}`,
 				Handler:   NewJsonEventHandler("WARNING", "No DEA can accept app '{{.name}}' of runtime '{{.runtime}}'; retrying..."),
 			},
-			"cc_start": &EventParser{
-				Substring: "START_INSTANCE",
-				Re:        `EVENT -- START_INSTANCE (.+)$`,
-				Sample:    ` EVENT -- START_INSTANCE {"app_name":"env","app_id":6,"instance":0,"dea_id":"hash"}`,
-				Handler:   NewJsonEventHandler("INFO", "Starting application '{{.app_name}}' on DEA '{{.dea_id}}'"),
-			},
 		},
 		"stager": map[string]*EventParser{
 			"stager_start": &EventParser{
@@ -155,10 +149,10 @@ func NewStackatoParser() Parser {
 		},
 		"dea": map[string]*EventParser{
 			"dea_start": &EventParser{
-				Substring: "DEA received start message",
-				Re:        `DEA received start message: (.+)$`,
-				Sample:    `DEBUG -- DEA received start message: {"droplet":6,"name":"sinatra-env","index":0}`,
-				Handler:   NewJsonEventHandler("INFO", "Starting application '{{.name}}' instance {{.index}}"),
+				Substring: "START_INSTANCE",
+				Re:        `EVENT -- START_INSTANCE (.+)$`,
+				Sample:    ` EVENT -- START_INSTANCE {"app_name":"env","app_id":6,"instance":0,"dea_id":"hash"}`,
+				Handler:   NewJsonEventHandler("INFO", "Starting application '{{.app_name}}' on DEA '{{.dea_id}}'"),
 			},
 			"dea_stop": &EventParser{
 				Substring: "STOPPING_INSTANCE",

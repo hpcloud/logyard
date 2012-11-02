@@ -49,7 +49,6 @@ func main() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			log.Printf("Got event: %+v", event)
 			logyardclient.Send("event."+event.Type, string(data))
 		}
 

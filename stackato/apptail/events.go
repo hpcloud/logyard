@@ -14,7 +14,7 @@ func MonitorCloudEvents() {
 	// TODO: add more events; will require modifying the log
 	// invokation to include the required app id
 	filters := []string{
-		"event.cc_start",
+		"event.dea_start",
 		"event.dea_ready",
 		"event.dea_stop",
 		"event.stager_start",
@@ -33,19 +33,13 @@ func MonitorCloudEvents() {
 	for msg := range ss.Ch {
 		fmt.Println(msg.Key, msg.Value)
 		var event events.Event
-		// TODO: refactor
 		err := json.Unmarshal([]byte(msg.Value), &event)
 		if err != nil {
 			log.Fatal(err) // not expected at all
 		}
 
 		switch msg.Key {
-		case "event.cc_start":
-			appid := int(event.Info["app_id"].(float64))
-			index := int(event.Info["instance"].(float64))
-			source := "stackato.controller"
-			PublishAppLog(c, appid, index, source, &event)
-		case "event.dea_ready", "event.dea_stop":
+		case "event.dea_start", "event.dea_ready", "event.dea_stop":
 			appid := int(event.Info["app_id"].(float64))
 			index := int(event.Info["instance"].(float64))
 			source := "stackato.dea"
@@ -54,7 +48,6 @@ func MonitorCloudEvents() {
 			appid := int(event.Info["app_id"].(float64))
 			PublishAppLog(c, appid, -1, "stackato.stager", &event)
 		}
-
 	}
 
 	err = ss.Wait()
@@ -81,5 +74,4 @@ func PublishAppLog(client *logyard.Client, appid int, index int, source string, 
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println("sent", key, "to", string(data))
 }
