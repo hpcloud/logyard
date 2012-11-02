@@ -138,13 +138,10 @@ func NewStackatoParser() Parser {
 				Handler:   NewJsonEventHandler("INFO", "Staging application '{{.app_name}}'"),
 			},
 			"stager_end": &EventParser{
-				Substring: "completed",
-				Re:        `Task\, id\=(\w+) completed`,
-				// NOTE: application name is not available in this
-				// record. nor does it mention the result status
-				// (success/failure).
-				Sample:  `INFO -- Task, id=1e117625577284da3dc4f47bb780f0ae completed, result=`,
-				Handler: s("INFO", "Completed staging an application; task $1"),
+				Substring: "STAGING_COMPLETED",
+				Re:        `EVENT -- STAGING_COMPLETED (.+)$`,
+				Sample:    `EVENT -- STAGING_COMPLETED {"app_id":6,"app_name":"env"}`,
+				Handler:   NewJsonEventHandler("INFO", "Application '{{.app_name}}' staging has completed"),
 			},
 		},
 		"dea": map[string]*EventParser{
@@ -152,7 +149,7 @@ func NewStackatoParser() Parser {
 				Substring: "START_INSTANCE",
 				Re:        `EVENT -- START_INSTANCE (.+)$`,
 				Sample:    ` EVENT -- START_INSTANCE {"app_name":"env","app_id":6,"instance":0,"dea_id":"hash"}`,
-				Handler:   NewJsonEventHandler("INFO", "Starting application '{{.app_name}}' on DEA '{{.dea_id}}'"),
+				Handler:   NewJsonEventHandler("INFO", "Starting application '{{.app_name}}' on DEA {{.dea_id}}"),
 			},
 			"dea_stop": &EventParser{
 				Substring: "STOPPING_INSTANCE",

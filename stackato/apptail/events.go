@@ -18,6 +18,7 @@ func MonitorCloudEvents() {
 		"event.dea_ready",
 		"event.dea_stop",
 		"event.stager_start",
+		"event.stager_end",
 	}
 
 	c, err := logyard.NewClientGlobal()
@@ -44,7 +45,7 @@ func MonitorCloudEvents() {
 			index := int(event.Info["instance"].(float64))
 			source := "stackato.dea"
 			PublishAppLog(c, appid, index, source, &event)
-		case "event.stager_start":
+		case "event.stager_start", "event.stager_end":
 			appid := int(event.Info["app_id"].(float64))
 			PublishAppLog(c, appid, -1, "stackato.stager", &event)
 		}
