@@ -31,7 +31,7 @@ fmt:
 	gofmt -w .
 
 test:
-	go test -v logyard/... github.com/srid/tail
+	go test -v logyard/...
 
 clean: 
 	GOPATH=$(GOPATH) go clean

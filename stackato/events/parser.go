@@ -141,7 +141,7 @@ func NewStackatoParser() Parser {
 				Substring: "STAGING_COMPLETED",
 				Re:        `EVENT -- STAGING_COMPLETED (.+)$`,
 				Sample:    `EVENT -- STAGING_COMPLETED {"app_id":6,"app_name":"env"}`,
-				Handler:   NewJsonEventHandler("INFO", "Application '{{.app_name}}' staging has completed"),
+				Handler:   NewJsonEventHandler("INFO", "Staging of application '{{.app_name}}' has completed"),
 			},
 		},
 		"dea": map[string]*EventParser{
