@@ -144,35 +144,33 @@ func NewStackatoParser() Parser {
 				}),
 			},
 			"cc_start": &EventParser{
-				Substring: "Sending start message",
-				Re:        `Sending start message (.+) to DEA (\w+)$`,
-				Sample:    `DEBUG -- Sending start message {"droplet":6,"name":"sinatra-env","uris":["sinatra-env.stackato-sf4r.local"],"runtime":"ruby18","framework":"sinatra","sha1":"4b89d4df0815603765b9e3c4864ca909c88564c4","executableFile":"/var/vcap/shared/droplets/droplet_6","executableUri":"http://172.16.145.180:9022/staged_droplets/6/4b89d4df0815603765b9e3c4864ca909c88564c4","version":"4b89d4df0815603765b9e3c4864ca909c88564c4-2","services":[],"limits":{"mem":128,"disk":2048,"fds":256,"sudo":false},"env":[],"group":"s@s.com","index":0,"repos":["deb mirror://mirrors.ubuntu.com/mirrors.txt precise main restricted universe multiverse","deb mirror://mirrors.ubuntu.com/mirrors.txt precise-updates main restricted universe multiverse","deb http://security.ubuntu.com/ubuntu precise-security main universe"]} to DEA 2c4b4d96d82f98f7d6d409ec49edbe44`,
+				Substring: "START_INSTANCE",
+				Re:        `EVENT -- START_INSTANCE (.+)$`,
+				Sample:    ` EVENT -- START_INSTANCE {"app_name":"env","app_id":6,"instance":0,"dea_id":"hash"}`,
 				Handler: CustomEventHandler(func(results []string, event *Event) error {
 					// XXX: doing this merely to extract the appname ...maybe we shouldn't?
 					err := json.Unmarshal([]byte(results[1]), &event.Info)
 					if err != nil {
 						return err
 					}
-					event.Desc = fmt.Sprintf("Starting application '%v'", event.Info["name"])
+					event.Desc = fmt.Sprintf("Starting application '%v' on DEA %v",
+						event.Info["app_name"], event.Info["dea_id"])
 					return nil
 				}),
 			},
 		},
 		"stager": map[string]*EventParser{
 			"stager_start": &EventParser{
-				Substring: "Decoding task",
-				Re:        `Decoding task \'(.+)\'$`,
+				Substring: "START_STAGING",
+				Re:        `EVENT -- START_STAGING (.+)$`,
 				Sample:    `DEBUG -- Decoding task '{"app_id":8,"properties":{"services":[{"label":"postgresql-9.1","tags":["postgresql","postgresql-9.1","relational"],"name":"postgresql-gtd","credentials":{"name":"d2ca64ddb68d0433b83d876f105659696","host":"172.16.145.180","hostname":"172.16.145.180","port":5432,"user":"u615ee9e7b64d40038e1d9131b3b7e924","username":"u615ee9e7b64d40038e1d9131b3b7e924","password":"pc871d5fef45f4ec29503caaff615b9fc"},"options":{},"plan":"free","plan_option":null}],"framework":"python","runtime":"python27","resources":{"memory":128,"disk":2048,"fds":256,"sudo":false},"environment":["DJANGO_SETTINGS_MODULE=settings"],"uris":["gtd2.stackato-sf4r.local"],"repos":["deb mirror://mirrors.ubuntu.com/mirrors.txt precise main restricted universe multiverse","deb mirror://mirrors.ubuntu.com/mirrors.txt precise-updates main restricted universe multiverse","deb http://security.ubuntu.com/ubuntu precise-security main universe"],"appname":"gtd2","meta":{"debug":null,"console":null}},"download_uri":"http://172.16.145.180:9022/staging/app/8","upload_uri":"http://172.16.145.180:9022/staging/droplet/8/d2fa46c59f6463842bae0480214541cf","notify_subj":"cc.staging.5542c73f6e2f3fed8abca220f94da9a1"}'`,
 				Handler: CustomEventHandler(func(results []string, event *Event) error {
 					err := json.Unmarshal([]byte(results[1]), &event.Info)
 					if err != nil {
 						return err
 					}
-					if props, ok := event.Info["properties"].(map[string]interface{}); ok {
-						event.Desc = fmt.Sprintf("Staging application '%v'", props["appname"])
-						return nil
-					}
-					return fmt.Errorf("event.Info['properties'] is not a map")
+					event.Desc = fmt.Sprintf("Staging application '%v'", event.Info["app_name"])
+					return nil
 				}),
 			},
 			"stager_end": &EventParser{
@@ -201,16 +199,32 @@ func NewStackatoParser() Parser {
 				}),
 			},
 			"dea_stop": &EventParser{
-				Substring: "Stopping instance",
-				Re:        `Stopping instance \(name=(\S+).+instance=(\w+)`,
+				Substring: "STOPPING_INSTANCE",
+				Re:        `EVENT -- STOPPING_INSTANCE (.+)$`,
 				Sample:    `INFO -- Stopping instance (name=gtd app_id=5 instance=db82a00d5aa9ce968616b34e8f99109b index=0)`,
-				Handler:   s("INFO", "Stopping an instance of '$1' ($2)"),
+				Handler: CustomEventHandler(func(results []string, event *Event) error {
+					err := json.Unmarshal([]byte(results[1]), &event.Info)
+					if err != nil {
+						return err
+					}
+					event.Desc = fmt.Sprintf("Stopping application '%v' on DEA %v",
+						event.Info["app_name"], event.Info["dea_id"])
+					return nil
+				}),
 			},
 			"dea_ready": &EventParser{
-				Substring: "ready for connections",
-				Re:        `Instance \(name=(\S+).+instance=(\w+).+is ready for connections`,
-				Sample:    `INFO -- Instance (name=gtd2 app_id=8 instance=be34dd00d7a53801a38a87105dc332e6 index=0) is ready for connections, notifying system of statu`,
-				Handler:   s("INFO", "Application '$1' instance '$2' is now running"),
+				Substring: "INSTANCE_READY",
+				Re:        `EVENT -- INSTANCE_READY (.+)$`,
+				Sample:    `EVENT -- INSTANCE_READY {"app_id":6,"app_name":"env","instance":0}`,
+				Handler: CustomEventHandler(func(results []string, event *Event) error {
+					err := json.Unmarshal([]byte(results[1]), &event.Info)
+					if err != nil {
+						return err
+					}
+					event.Desc = fmt.Sprintf("Application '%v' is now running on DEA %v",
+						event.Info["app_name"], event.Info["dea_id"])
+					return nil
+				}),
 			},
 		},
 		// XXX: dynamic way to maintain this list?

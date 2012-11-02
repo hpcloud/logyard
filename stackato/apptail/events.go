@@ -14,7 +14,9 @@ func MonitorCloudEvents() {
 	// TODO: add more events; will require modifying the log
 	// invokation to include the required app id
 	filters := []string{
-		"event.dea_start",
+		"event.cc_start",
+		"event.dea_ready",
+		"event.dea_stop",
 		"event.stager_start",
 	}
 
@@ -38,10 +40,14 @@ func MonitorCloudEvents() {
 		}
 
 		switch msg.Key {
-		case "event.dea_start":
-			// TODO: this could fail; handle it gracefully
-			appid := int(event.Info["droplet"].(float64))
-			index := int(event.Info["index"].(float64))
+		case "event.cc_start":
+			appid := int(event.Info["app_id"].(float64))
+			index := int(event.Info["instance"].(float64))
+			source := "stackato.controller"
+			PublishAppLog(c, appid, index, source, &event)
+		case "event.dea_ready", "event.dea_stop":
+			appid := int(event.Info["app_id"].(float64))
+			index := int(event.Info["instance"].(float64))
 			source := "stackato.dea"
 			PublishAppLog(c, appid, index, source, &event)
 		case "event.stager_start":
