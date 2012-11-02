@@ -46,7 +46,8 @@ func (manager *DrainManager) StopDrain(drainName string) {
 	defer manager.mux.Unlock()
 	if drain, ok := manager.running[drainName]; ok {
 		log.Printf("Stopping drain %s ...\n", drainName)
-		// FIXME: drain.Stop could hang for various reasons. must handle it.
+		// FIXME: drain.Stop() can wait till 1 second, but in the
+		// event it waits more than that, we must use timeouts.
 		err := drain.Stop()
 		if err != nil {
 			log.Printf("Error stopping drain %s: %s\n", drainName, err)
@@ -75,18 +76,18 @@ func (manager *DrainManager) StartDrain(name, uri string, retry *Retryer) {
 		return
 	}
 
-	dlog := NewDrainLogger(config)
+	drainLog := NewDrainLogger(config)
 	var drain Drain
 
 	if constructor, ok := DRAINS[config.Type]; ok && constructor != nil {
-		drain = constructor(dlog)
+		drain = constructor(drainLog)
 	} else {
 		log.Printf("unsupported drain")
 		return
 	}
 
 	manager.running[config.Name] = drain
-	dlog.Printf("Starting drain with config: %+v", config)
+	drainLog.Printf("Starting drain with config: %+v", config)
 	go drain.Start(config)
 
 	go func() {
@@ -95,7 +96,11 @@ func (manager *DrainManager) StartDrain(name, uri string, retry *Retryer) {
 		if err != nil {
 			retry.Wait(fmt.Sprintf(
 				"Drain %s exited with error -- %s", name, err))
-			manager.StartDrain(name, uri, retry)
+			if _, ok := Config.Drains[name]; ok {
+				manager.StartDrain(name, uri, retry)
+			} else {
+				log.Printf("Not restarting crashed drain %s, becase it was deleted recently", name)
+			}
 		}
 	}()
 }
@@ -123,6 +128,5 @@ func (manager *DrainManager) Run() {
 			manager.StartDrain(
 				change.Key, Config.Drains[change.Key], NewRetryer())
 		}
-
 	}
 }
