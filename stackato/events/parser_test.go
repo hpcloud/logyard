@@ -11,7 +11,7 @@ func TestSampleLogs(t *testing.T) {
 		for event_type, event_parser := range event_types {
 			event, err := parser.Parse(process, event_parser.Sample)
 			if err != nil {
-				t.Fatal(err)
+				t.Fatalf("parse error (%s) for %s", err, event_parser.Sample)
 			}
 			if event == nil {
 				t.Fatalf("no event detected for: %s", event_parser.Sample)

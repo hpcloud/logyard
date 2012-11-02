@@ -12,8 +12,7 @@ type EventHandler interface {
 	HandleEvent(results []string, event *Event) error
 }
 
-// A simple event handler filling in only the description field.
-// Suitable for most events.
+// SimpleEventHandler assigns event description formatted based on regex groups
 type SimpleEventHandler struct {
 	*template.Template
 	Severity string
@@ -23,27 +22,29 @@ func NewSimpleEventHandler(severity string, descTmpl string) SimpleEventHandler 
 	return SimpleEventHandler{simpleTemplate(descTmpl), severity}
 }
 
-func (tmpl SimpleEventHandler) HandleEvent(results []string, event *Event) error {
+func (handler SimpleEventHandler) HandleEvent(results []string, event *Event) error {
 	var output bytes.Buffer
-	err := tmpl.Execute(&output, results)
+	err := handler.Execute(&output, results)
 	if err != nil {
 		return fmt.Errorf("error in custom event handler %s; %s", event.Type, err)
 	}
 	event.Desc = output.String()
-	event.Severity = tmpl.Severity
+	event.Severity = handler.Severity
 	return nil
 }
 
-// Handles EVENT level records from vcap components
-type KnownEventHandler struct {
+// SimpleEventHandler assigns event description formatted based on
+// fields of JSON extracted from the first and only regex match group
+type JsonEventHandler struct {
 	*template.Template
+	Severity string
 }
 
-func NewKnownEventHandler(descTmpl string) KnownEventHandler {
-	return KnownEventHandler{template.Must(template.New("").Parse(descTmpl))}
+func NewJsonEventHandler(severity string, descTmpl string) JsonEventHandler {
+	return JsonEventHandler{template.Must(template.New("").Parse(descTmpl)), severity}
 }
 
-func (tmpl KnownEventHandler) HandleEvent(results []string, event *Event) error {
+func (handler JsonEventHandler) HandleEvent(results []string, event *Event) error {
 	if len(results) != 2 {
 		return fmt.Errorf("did not find a single JSON match; instead found %d", len(results))
 	}
@@ -52,21 +53,13 @@ func (tmpl KnownEventHandler) HandleEvent(results []string, event *Event) error 
 		return err
 	}
 	var output bytes.Buffer
-	err = tmpl.Execute(&output, event.Info)
+	err = handler.Execute(&output, event.Info)
 	if err != nil {
 		return fmt.Errorf("error in known event handler %s; %s", event.Type, err)
 	}
 	event.Desc = output.String()
-	event.Severity = "INFO"
+	event.Severity = handler.Severity
 	return nil
-}
-
-// Custom event handler. Usually necessary for parsing json data out
-// of log records.
-type CustomEventHandler func(results []string, event *Event) error
-
-func (h CustomEventHandler) HandleEvent(results []string, event *Event) error {
-	return h(results, event)
 }
 
 var templateIndexRe *regexp.Regexp

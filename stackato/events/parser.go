@@ -1,10 +1,5 @@
 package events
 
-import (
-	"encoding/json"
-	"fmt"
-)
-
 type EventParser struct {
 	Substring string       // substring unique to this log record for efficient matching
 	Re        string       // regex to use for matching
@@ -131,23 +126,14 @@ func NewStackatoParser() Parser {
 			"cc_waiting_for_dea": &EventParser{
 				Substring: "No resources available to",
 				Re:        `No resources available to start instance (.+)$`,
-				Sample:    `WARN -- No resources available to start instance {"droplet":6,"name":"sinatra-env","uris":["sinatra-env.stackato-sf4r.local"],"runtime":"ruby18","framework":"sinatra","sha1":"4b89d4df0815603765b9e3c4864ca909c88564c4","executableFile":"/var/vcap/shared/droplets/droplet_6","executableUri":"http://172.16.145.180:9022/staged_droplets/6/4b89d4df0815603765b9e3c4864ca909c88564c4","version":"4b89d4df0815603765b9e3c4864ca909c88564c4-2","services":[],"limits":{"mem":128,"disk":2048,"fds":256,"sudo":false},"env":[],"group":"s@s.com","index":0,"repos":["deb mirror://mirrors.ubuntu.com/mirrors.txt precise main restricted universe multiverse","deb mirror://mirrors.ubuntu.com/mirrors.txt precise-updates main restricted universe multiverse","deb http://security.ubuntu.com/ubuntu precise-security main universe"]}`,
-				Handler: CustomEventHandler(func(results []string, event *Event) error {
-					err := json.Unmarshal([]byte(results[1]), &event.Info)
-					if err != nil {
-						return err
-					}
-					event.Desc = fmt.Sprintf("No DEA can accept app '%v' of runtime '%v'; retrying...",
-						event.Info["name"], event.Info["runtime"])
-					event.Severity = "WARNING"
-					return nil
-				}),
+				Sample:    `WARN -- No resources available to start instance {"droplet":6,"name":"sinatra-env","runtime":"ruby18"}`,
+				Handler:   NewJsonEventHandler("WARNING", "No DEA can accept app '{{.name}}' of runtime '{{.runtime}}'; retrying..."),
 			},
 			"cc_start": &EventParser{
 				Substring: "START_INSTANCE",
 				Re:        `EVENT -- START_INSTANCE (.+)$`,
 				Sample:    ` EVENT -- START_INSTANCE {"app_name":"env","app_id":6,"instance":0,"dea_id":"hash"}`,
-				Handler:   NewKnownEventHandler("Starting application '{{.app_name}}' on DEA '{{.dea_id}}'"),
+				Handler:   NewJsonEventHandler("INFO", "Starting application '{{.app_name}}' on DEA '{{.dea_id}}'"),
 			},
 		},
 		"stager": map[string]*EventParser{
@@ -155,7 +141,7 @@ func NewStackatoParser() Parser {
 				Substring: "START_STAGING",
 				Re:        `EVENT -- START_STAGING (.+)$`,
 				Sample:    `EVENT -- START_STAGING {"app_id":7,"app_name":"env"}`,
-				Handler:   NewKnownEventHandler("Staging application '{{.app_name}}'"),
+				Handler:   NewJsonEventHandler("INFO", "Staging application '{{.app_name}}'"),
 			},
 			"stager_end": &EventParser{
 				Substring: "completed",
@@ -171,28 +157,20 @@ func NewStackatoParser() Parser {
 			"dea_start": &EventParser{
 				Substring: "DEA received start message",
 				Re:        `DEA received start message: (.+)$`,
-				Sample:    `DEBUG -- DEA received start message: {"droplet":6,"name":"sinatra-env","uris":["sinatra-env.stackato-sf4r.local"],"runtime":"ruby18","framework":"sinatra","sha1":"e6d971d2863a5174647580b518b48b26dcf683a6","executableFile":"/var/vcap/shared/droplets/droplet_6","executableUri":"http://172.16.145.180:9022/staged_droplets/6/e6d971d2863a5174647580b518b48b26dcf683a6","version":"e6d971d2863a5174647580b518b48b26dcf683a6-7","services":[],"limits":{"mem":128,"disk":2048,"fds":256,"sudo":false},"env":[],"group":"s@s.com","debug":null,"console":null,"repos":["deb mirror://mirrors.ubuntu.com/mirrors.txt precise main restricted universe multiverse","deb mirror://mirrors.ubuntu.com/mirrors.txt precise-updates main restricted universe multiverse","deb http://security.ubuntu.com/ubuntu precise-security main universe"],"index":0}`,
-				Handler: CustomEventHandler(func(results []string, event *Event) error {
-					err := json.Unmarshal([]byte(results[1]), &event.Info)
-					if err != nil {
-						return err
-					}
-					event.Desc = fmt.Sprintf("Starting application '%v' instance #%v",
-						event.Info["name"], event.Info["index"])
-					return nil
-				}),
+				Sample:    `DEBUG -- DEA received start message: {"droplet":6,"name":"sinatra-env","index":0}`,
+				Handler:   NewJsonEventHandler("INFO", "Starting application '{{.name}}' instance {{.index}}"),
 			},
 			"dea_stop": &EventParser{
 				Substring: "STOPPING_INSTANCE",
 				Re:        `EVENT -- STOPPING_INSTANCE (.+)$`,
 				Sample:    `EVENT -- STOPPING_INSTANCE {"app_id":6,"app_name":"env","instance":0,"dea_id":"deahas"}`,
-				Handler:   NewKnownEventHandler("Stopping application '{{.app_name}}' on DEA {{.dea_id}}"),
+				Handler:   NewJsonEventHandler("INFO", "Stopping application '{{.app_name}}' on DEA {{.dea_id}}"),
 			},
 			"dea_ready": &EventParser{
 				Substring: "INSTANCE_READY",
 				Re:        `EVENT -- INSTANCE_READY (.+)$`,
 				Sample:    `EVENT -- INSTANCE_READY {"app_id":6,"app_name":"env","instance":0}`,
-				Handler:   NewKnownEventHandler("Application '{{.app_name}}' is now running on DEA {{.dea_id}}"),
+				Handler:   NewJsonEventHandler("INFO", "Application '{{.app_name}}' is now running on DEA {{.dea_id}}"),
 			},
 		},
 		// Xxx: dynamic way to maintain this list?
