@@ -19,6 +19,7 @@ func MonitorCloudEvents() {
 		"event.dea_stop",
 		"event.stager_start",
 		"event.stager_end",
+		"event.cc_app_update",
 	}
 
 	c, err := logyard.NewClientGlobal()
@@ -48,6 +49,9 @@ func MonitorCloudEvents() {
 		case "event.stager_start", "event.stager_end":
 			appid := int(event.Info["app_id"].(float64))
 			PublishAppLog(c, appid, -1, "stackato.stager", &event)
+		case "event.cc_app_update":
+			appid := int(event.Info["app_id"].(float64))
+			PublishAppLog(c, appid, -1, "stackato.controller", &event)
 		}
 	}
 

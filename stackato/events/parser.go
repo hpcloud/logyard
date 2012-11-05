@@ -129,6 +129,12 @@ func NewStackatoParser() Parser {
 				Sample:    `WARN -- No resources available to start instance {"droplet":6,"name":"sinatra-env","runtime":"ruby18"}`,
 				Handler:   NewJsonEventHandler("WARNING", "No DEA can accept app '{{.name}}' of runtime '{{.runtime}}'; retrying..."),
 			},
+			"cc_app_update": &EventParser{
+				Substring: "UPDATE_APP",
+				Re:        `EVENT -- UPDATE_APP (.+)$`,
+				Sample:    `EVENT -- UPDATE_APP {"app_id":7,"app_name":"env","msg":"Updating something"}`,
+				Handler:   NewJsonEventHandler("INFO", "{{.msg}}"),
+			},
 		},
 		"stager": map[string]*EventParser{
 			"stager_start": &EventParser{

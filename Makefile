@@ -1,4 +1,4 @@
-VM	    	= b9ys
+VM	    	= xr8w
 
 default:	install
 
