@@ -60,12 +60,12 @@ func main() {
 					"Name":     process,
 					"NodeID":   nodeid})
 				if err != nil {
-					tail.Kill(err)
+					tail.Killf("Failed to convert to JSON: %v", err)
 					break
 				}
 				err = c.Send("systail."+process+"."+nodeid, string(data))
 				if err != nil {
-					log.Fatal("Failed to send: ", err)
+					log.Fatal("Failed to send to logyard: ", err)
 				}
 			}
 		}(process, t)

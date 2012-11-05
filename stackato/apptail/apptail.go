@@ -62,11 +62,11 @@ func AppInstanceStarted(c *logyard.Client, instance *AppInstance) {
 					Source:        instance.Type,
 				})
 				if err != nil {
-					log.Fatal(err)
+					log.Fatal("Failed to convert to JSON: ", err)
 				}
 				err = c.Send(key, string(data))
 				if err != nil {
-					log.Fatal("Failed to send: ", err)
+					log.Fatal("Failed to send to logyard: ", err)
 				}
 			}
 			err = tail.Wait()
