@@ -21,9 +21,3 @@ drains:
   kato_history: "redis://core/?filter=systail.kato&limit=256&key=kato_history"
   # Recent cloud events from across the cluster
   cloud_events: "redis://core/?filter=event&limit=256&key=cloud_events"
-  # Recent logs from all nodes (WARNING: use only for dev/debug)
-  systail: "redis://core/?filter=systail&limit=400"
-  # Papertrail drain; note the query encoding.
-  # papertrail: "udp://logs.papertrailapp.com:61282/?format=%7B%7B.Name%7D%7D%40%7B%7B.NodeID%7D%7D%3A+%7B%7B.Text%7D%7D"
-  # Loggly
-  # loggly: "tcp://logs.loggly.com:23452/"
