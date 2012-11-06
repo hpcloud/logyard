@@ -33,7 +33,6 @@ func MonitorCloudEvents() {
 
 	log.Println("Listening for app relevant cloud events...")
 	for msg := range ss.Ch {
-		fmt.Println(msg.Key, msg.Value)
 		var event events.Event
 		err := json.Unmarshal([]byte(msg.Value), &event)
 		if err != nil {
