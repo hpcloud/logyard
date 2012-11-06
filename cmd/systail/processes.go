@@ -17,7 +17,7 @@ var PROCESSES = map[string]string{
 	// for name in ` grep name ~/as/stackato/etc/kato/processes.yml | \
 	//    cut -d " " -f 6`; do echo "\"$name\","; done
 	"doozerd":            "",
-	"events":             "",
+	"cloudevents":        "",
 	"postgresql":         "",
 	"avahi_daemon":       "",
 	"avahi_announcer":    "",
