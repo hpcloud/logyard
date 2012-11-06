@@ -17,7 +17,7 @@ drains:
   # max_records: how many log lines per app to keep?
   # heroku uses 1500; https://devcenter.heroku.com/articles/logging#log
   builtin_apptail: "redis://core/?filter=apptail&limit=1500"
-  # Recent history of kato commands ran across the cluster
-  builtin_katohistory: "redis://core/?filter=systail.kato&limit=256&key=kato_history"
+  # Recent history of kato commands ran across the cluster stored as cloud events JSON
+  builtin_katohistory: "redis://core/?filter=event.kato_action&limit=256&key=kato_history"
   # Recent cloud events from across the cluster
   builtin_cloudevents: "redis://core/?filter=event&limit=256&key=cloud_events"

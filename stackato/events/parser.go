@@ -109,7 +109,7 @@ func NewStackatoParser() Parser {
 				Substring: "INVOKE",
 				Re:        `INVOKE (.+)`,
 				Sample:    `[info] (12339) INVOKE kato start`,
-				Handler:   NewSimpleEventHandler("INFO", "kato action taken on a node: $1"),
+				Handler:   NewSimpleEventHandler("INFO", "$1"),
 			},
 		},
 		"cloud_controller": map[string]*EventParser{
