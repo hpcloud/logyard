@@ -176,6 +176,15 @@ func NewStackatoParser() Parser {
 		"memcached_node":  serviceNodeParserGroup,
 		"mysql_node":      serviceNodeParserGroup,
 		"rabbit_node":     serviceNodeParserGroup,
+		// non-vcap processes
+		"nginx": map[string]*EventParser{
+			"nginx_error": &EventParser{
+				Substring: "error",
+				Re:        `\[error\] (.+)$`,
+				Sample:    `23:29:20 [error] 8474#0: *163529 connect() failed(111: Connection refused)`,
+				Handler:   NewSimpleEventHandler("ERROR", "nginx error: $1"),
+			},
+		},
 		// catch all matching
 		"*": map[string]*EventParser{
 			"vcap_error": &EventParser{
