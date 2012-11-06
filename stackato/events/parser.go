@@ -84,8 +84,6 @@ func (parser Parser) parseStarGroup(orig_group string, text string) (*Event, err
 }
 
 func NewStackatoParser() Parser {
-	s := NewSimpleEventHandler
-
 	serviceNodeParserGroup := serviceParsers()
 
 	parser := NewParser(map[string]EventParserGroup{
@@ -94,24 +92,24 @@ func NewStackatoParser() Parser {
 				Substring: "entered RUNNING state",
 				Re:        `(\w+) entered RUNNING`,
 				Sample:    `INFO success: memcached_node entered RUNNING state, process has ...`,
-				Handler:   s("INFO", "Process '$1' started on a node")},
+				Handler:   NewSimpleEventHandler("INFO", "Process '$1' started on a node")},
 			"process_stop": &EventParser{
 				Substring: "stopped",
 				Re:        `stopped: (\w+) \((.+)\)`,
 				Sample:    `INFO stopped: mysql_node (terminated by SIGKILL)`,
-				Handler:   s("WARNING", "Process '$1' stopped on a node ($2)")},
+				Handler:   NewSimpleEventHandler("WARNING", "Process '$1' stopped on a node ($2)")},
 			"process_exit": &EventParser{
 				Substring: "exited",
 				Re:        `exited: (\w+) \((.+)\)`,
 				Sample:    `INFO exited: dea (exit status 1; not expected)`,
-				Handler:   s("FATAL", "Process '$1' crashed on a node ($2)")},
+				Handler:   NewSimpleEventHandler("FATAL", "Process '$1' crashed on a node ($2)")},
 		},
 		"kato": map[string]*EventParser{
 			"kato_action": &EventParser{
 				Substring: "INVOKE",
 				Re:        `INVOKE (.+)`,
 				Sample:    `[info] (12339) INVOKE kato start`,
-				Handler:   s("INFO", "kato action taken on a node: $1"),
+				Handler:   NewSimpleEventHandler("INFO", "kato action taken on a node: $1"),
 			},
 		},
 		"heath_manager": map[string]*EventParser{
@@ -119,7 +117,7 @@ func NewStackatoParser() Parser {
 				Substring: "Analyzed",
 				Re:        `Analyzed (\d+) running and (\d+) down apps in (\S+)$`,
 				Sample:    `INFO -- Analyzed 3 running and 0 down apps in 95.9ms`,
-				Handler:   s("INFO", "HM analyzed $1 running apps and $2 down apps"),
+				Handler:   NewSimpleEventHandler("INFO", "HM analyzed $1 running apps and $2 down apps"),
 			},
 		},
 		"cloud_controller": map[string]*EventParser{
@@ -184,13 +182,13 @@ func NewStackatoParser() Parser {
 				Substring: "ERROR",
 				Re:        `ERROR -- (.+)$`,
 				Sample:    `postgresql_gateway - pid=4340 tid=2e99 fid=bad6  ERROR -- Failed fetching handles: Errno::ETIMEDOUT`,
-				Handler:   s("ERROR", "$1"),
+				Handler:   NewSimpleEventHandler("ERROR", "$1"),
 			},
 			"vcap_warning": &EventParser{
 				Substring: "WARN",
 				Re:        `WARN -- (.+)$`,
 				Sample:    `WARN -- Took 18.09s to process ps and du stats`,
-				Handler:   s("WARNING", "$1"),
+				Handler:   NewSimpleEventHandler("WARNING", "$1"),
 			},
 		},
 	})
