@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"sync"
+	"time"
 )
 
 // DrainConstructor is a function that returns a new drain instance
@@ -46,9 +47,23 @@ func (manager *DrainManager) StopDrain(drainName string) {
 	defer manager.mux.Unlock()
 	if drain, ok := manager.running[drainName]; ok {
 		log.Printf("Stopping drain %s ...\n", drainName)
-		// FIXME: drain.Stop() can wait till 1 second, but in the
-		// event it waits more than that, we must use timeouts.
-		err := drain.Stop()
+
+		// drain.Stop is expected to stop in 1s, but a known bug
+		// (#96008) causes certain drains to hang. workaround it using
+		// timeouts. 
+		done := make(chan error)
+		go func() {
+			done <- drain.Stop()
+		}()
+		var err error
+		select {
+		case err = <-done:
+			break
+		case <-time.After(5 * time.Second):
+			log.Fatalf("Error: expecting drain %s to stop in 1s, "+
+				"but it takes more than 5s; exiting..", drainName)
+		}
+
 		if err != nil {
 			log.Printf("Error stopping drain %s: %s\n", drainName, err)
 		} else {
