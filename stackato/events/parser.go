@@ -112,14 +112,6 @@ func NewStackatoParser() Parser {
 				Handler:   NewSimpleEventHandler("INFO", "kato action taken on a node: $1"),
 			},
 		},
-		"heath_manager": map[string]*EventParser{
-			"hm_analyze": &EventParser{
-				Substring: "Analyzed",
-				Re:        `Analyzed (\d+) running and (\d+) down apps in (\S+)$`,
-				Sample:    `INFO -- Analyzed 3 running and 0 down apps in 95.9ms`,
-				Handler:   NewSimpleEventHandler("INFO", "HM analyzed $1 running apps and $2 down apps"),
-			},
-		},
 		"cloud_controller": map[string]*EventParser{
 			"cc_waiting_for_dea": &EventParser{
 				Substring: "No resources available to",
