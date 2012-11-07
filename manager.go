@@ -71,7 +71,7 @@ func (manager *DrainManager) StopDrain(drainName string) {
 			log.Printf("Removed drain %s\n", drainName)
 		}
 	} else {
-		log.Printf("Error: drain %s is not running\n", drainName)
+		log.Printf("Drain %s cannot be stopped; it is not running.\n", drainName)
 	}
 }
 
