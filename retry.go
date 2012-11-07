@@ -6,6 +6,7 @@ import (
 )
 
 type Retryer struct {
+	tracker        *Tracker
 	recentAttempts int
 	lastAttempt    time.Time
 }
@@ -17,7 +18,17 @@ func NewRetryer() *Retryer {
 const MAX_WAIT_SECONDS = 60 * 5 // 5 minutes
 
 // Wait appropriately waits until next try (exponential backoff delay)
-func (retry *Retryer) Wait(msg string) {
+func (retry *Retryer) Wait(msg string) bool {
+	if retry.tracker == nil {
+		retry.tracker = NewTracker(10) // keep track of the last 10 error events
+	}
+	retry.tracker.Event()
+
+	// if there were 10 errors in the last minute, give up trying
+	if retry.tracker.In(time.Minute) {
+		log.Printf("%s; giving up retrying (10 errors in last minute)", msg)
+		return false
+	}
 	retry.recentAttempts += 1
 	if retry.recentAttempts > 3 {
 		waitSeconds := retry.recentAttempts
@@ -39,4 +50,6 @@ func (retry *Retryer) Wait(msg string) {
 	}
 
 	retry.lastAttempt = time.Now()
+
+	return true
 }

@@ -109,8 +109,11 @@ func (manager *DrainManager) StartDrain(name, uri string, retry *Retryer) {
 		err = drain.Wait()
 		delete(manager.running, name)
 		if err != nil {
-			retry.Wait(fmt.Sprintf(
+			proceed := retry.Wait(fmt.Sprintf(
 				"Drain %s exited with error -- %s", name, err))
+			if !proceed {
+				return
+			}
 			if _, ok := Config.Drains[name]; ok {
 				manager.StartDrain(name, uri, retry)
 			} else {
