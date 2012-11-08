@@ -1,4 +1,4 @@
----
+[>0;95;c] ---
 # logyard configuration.
 # NOTE: configuration for non-logyard processes (eg: systail, apptail)
 # also live here. thus it is by no means generic.
@@ -16,9 +16,10 @@ apptail:
 # 'kato drain'.
 drains:
   # Bounded storage for application logs, to be accessed from `s logs`.
-  # limit: how many log lines per app to keep?
+  # limit: how many log lines per app to keep? (XXX: must be a low
+  # value until we move away from redis for app log buffer)
   # heroku uses 1500; https://devcenter.heroku.com/articles/logging#log
-  builtin.apptail: "redis://core/?filter=apptail&limit=1500"
+  builtin.apptail: "redis://core/?filter=apptail&limit=200"
   # Recent history of kato commands ran across the cluster stored as cloud events JSON
   builtin.katohistory: "redis://core/?filter=event.kato_action&limit=256&key=kato_history"
   # Recent cloud events from across the cluster
