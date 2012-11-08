@@ -1,4 +1,4 @@
-[>0;95;c] ---
+---
 # logyard configuration.
 # NOTE: configuration for non-logyard processes (eg: systail, apptail)
 # also live here. thus it is by no means generic.
