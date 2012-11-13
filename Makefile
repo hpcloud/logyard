@@ -1,4 +1,4 @@
-VM	    	= xr8w
+VM	    	= dpa2
 
 default:	install
 
@@ -10,8 +10,6 @@ setup:	clean setup-repos
 # branches to ~/as/ and create a symlink to it from GOPATH/src/
 setup-repos:
 	tools/fetch-dependencies.sh
-	# pull rest of the dependencies and build them
-	go get -v logyard/...
 
 install:	fmt installall
 
