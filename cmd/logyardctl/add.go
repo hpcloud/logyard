@@ -93,7 +93,7 @@ func (cmd *add) Run(args []string) error {
 
 	uri += "?" + query.Encode()
 
-	fmt.Println(name, uri)
+	fmt.Printf("Added drain %s: %s\n", name, uri)
 
 	Init()
 	err := logyard.Config.AddDrain(name, uri)

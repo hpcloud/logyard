@@ -27,6 +27,7 @@ func (cmd *delete) Run(args []string) error {
 		if err != nil {
 			log.Fatal(err)
 		}
+		fmt.Printf("Deleted drain %s\n", name)
 	}
 	return nil
 }
