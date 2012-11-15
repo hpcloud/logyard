@@ -102,7 +102,7 @@ func NewStackatoParser() Parser {
 				Substring: "exited",
 				Re:        `exited: (\w+) \((.+)\)`,
 				Sample:    `INFO exited: dea (exit status 1; not expected)`,
-				Handler:   NewSimpleEventHandler("FATAL", "Process '$1' crashed on a node ($2)")},
+				Handler:   NewSimpleEventHandler("WARNING", "Process '$1' crashed on a node ($2)")},
 		},
 		"kato": map[string]*EventParser{
 			"kato_action": &EventParser{
