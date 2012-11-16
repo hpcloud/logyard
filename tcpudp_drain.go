@@ -2,18 +2,18 @@ package logyard
 
 import (
 	"launchpad.net/tomb"
-	"log"
+	"logyard/log2"
 	"net"
 	"time"
 )
 
 // IPConnDrain is a drain based on net.IPConn
 type IPConnDrain struct {
-	log *log.Logger
+	log *log2.Logger
 	tomb.Tomb
 }
 
-func NewIPConnDrain(log *log.Logger) Drain {
+func NewIPConnDrain(log *log2.Logger) Drain {
 	rd := &IPConnDrain{}
 	rd.log = log
 	return rd
@@ -27,14 +27,14 @@ func (d *IPConnDrain) Start(config *DrainConfig) {
 		return
 	}
 
-	d.log.Printf("Connecting to %s addr %s ...", config.Scheme, config.Host)
+	d.log.Infof("Connecting to %s addr %s ...", config.Scheme, config.Host)
 	conn, err := net.DialTimeout(config.Scheme, config.Host, 10*time.Second)
 	if err != nil {
 		d.Kill(err)
 		return
 	}
 	defer conn.Close()
-	d.log.Printf("Connected to %s addr %s\n", config.Scheme, config.Host)
+	d.log.Infof("Connected to %s addr %s\n", config.Scheme, config.Host)
 
 	c, err := NewClientGlobal()
 	if err != nil {
@@ -67,11 +67,11 @@ func (d *IPConnDrain) Start(config *DrainConfig) {
 			return
 		}
 	}
-	d.log.Println("Exiting")
+	d.log.Info("Exiting")
 }
 
 func (d *IPConnDrain) Stop() error {
-	d.log.Println("Stopping...")
+	d.log.Info("Stopping...")
 	d.Kill(nil)
 	return d.Wait()
 }
