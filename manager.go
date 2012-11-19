@@ -101,7 +101,7 @@ func (manager *DrainManager) StartDrain(name, uri string, retry *Retryer) {
 	}
 
 	manager.running[config.Name] = drain
-	drainLog.Infof("Starting drain with config: %+v", config)
+	drainLog.Infof("Starting drain: %+v", config)
 	go drain.Start(config)
 
 	go func() {
@@ -125,7 +125,7 @@ func (manager *DrainManager) StartDrain(name, uri string, retry *Retryer) {
 func NewDrainLogger(c *DrainConfig) *log2.Logger {
 	l := log2.New()
 	prefix := c.Name + "--" + c.Type
-	l.SetPrefix(fmt.Sprintf("[%25s] ", prefix))
+	l.SetPrefix(fmt.Sprintf("[%30s] ", prefix))
 	return l
 }
 
