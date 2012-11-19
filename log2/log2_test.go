@@ -9,5 +9,5 @@ func TestSimple(t *testing.T) {
 	l.Warn("Hello world")
 	l.Warnf("Hello %s", "srid")
 	l.Print("xyz")
-	Fatal("oops")
+	// Fatal("oops")
 }

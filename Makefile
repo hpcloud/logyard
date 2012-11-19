@@ -1,4 +1,4 @@
-VM	    	= dpa2
+VM	    	= qse4
 
 default:	install
 

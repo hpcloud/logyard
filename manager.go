@@ -109,7 +109,7 @@ func (manager *DrainManager) StartDrain(name, uri string, retry *Retryer) {
 		delete(manager.running, name)
 		if err != nil {
 			proceed := retry.Wait(fmt.Sprintf(
-				"Drain %s exited with error -- %s", name, err))
+				"Drain '%s' exited abruptly -- %s", name, err))
 			if !proceed {
 				return
 			}
