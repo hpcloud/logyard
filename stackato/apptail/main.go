@@ -4,8 +4,8 @@ import (
 	"github.com/apcera/nats"
 	"github.com/nu7hatch/gouuid"
 	"io/ioutil"
-	"log"
 	"logyard"
+	"logyard/log2"
 	"os"
 )
 
@@ -16,7 +16,7 @@ func main() {
 
 	logyardclient, err := logyard.NewClientGlobal()
 	if err != nil {
-		log.Fatal(err)
+		log2.Fatal(err)
 	}
 	natsclient := newNatsClient()
 
@@ -25,21 +25,21 @@ func main() {
 	})
 
 	natsclient.Publish("logyard."+uid+".start", []byte("{}"))
-	log.Printf("Waiting for instances...")
+	log2.Infof("Waiting for instances...")
 
 	MonitorCloudEvents()
 }
 
 func newNatsClient() *nats.EncodedConn {
-	log.Printf("Connecting to NATS %s\n", Config.NatsUri)
+	log2.Infof("Connecting to NATS %s\n", Config.NatsUri)
 	nc, err := nats.Connect(Config.NatsUri)
 	if err != nil {
-		log.Fatal(err)
+		log2.Fatal(err)
 	}
-	log.Printf("Connected to NATS %s\n", Config.NatsUri)
+	log2.Infof("Connected to NATS %s\n", Config.NatsUri)
 	client, err := nats.NewEncodedConn(nc, "json")
 	if err != nil {
-		log.Fatal(err)
+		log2.Fatal(err)
 	}
 	return client
 }
@@ -53,19 +53,19 @@ func getUID() string {
 	if _, err := os.Stat(uidFile); os.IsNotExist(err) {
 		uid, err := uuid.NewV4()
 		if err != nil {
-			panic(err)
+			log2.Fatal(err)
 		}
 		UID = uid.String()
 		if err = ioutil.WriteFile(uidFile, []byte(UID), 0644); err != nil {
-			panic(err)
+			log2.Fatal(err)
 		}
 	} else {
 		data, err := ioutil.ReadFile(uidFile)
 		if err != nil {
-			panic(err)
+			log2.Fatal(err)
 		}
 		UID = string(data)
 	}
-	log.Printf("detected logyard UID: %s\n", UID)
+	log2.Infof("detected logyard UID: %s\n", UID)
 	return UID
 }

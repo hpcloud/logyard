@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/srid/tail"
-	"log"
 	"logyard"
+	"logyard/log2"
 	"path/filepath"
 	"unicode/utf8"
 )
@@ -33,7 +33,7 @@ type AppLogMessage struct {
 // AppInstanceStarted is invoked when dea/stager starts an application
 // instance.
 func AppInstanceStarted(c *logyard.Client, instance *AppInstance) {
-	log.Printf("New instance was started: %v\n", instance)
+	log2.Infof("New instance was started: %v\n", instance)
 	key := fmt.Sprintf("apptail.%d", instance.AppID)
 	for _, filename := range instance.LogFiles {
 		go func(filename string) {
@@ -45,7 +45,7 @@ func AppInstanceStarted(c *logyard.Client, instance *AppInstance) {
 				ReOpen:      false,
 				Poll:        true})
 			if err != nil {
-				log.Printf("Error: cannot tail file (%s); %s\n", filename, err)
+				log2.Errorf("cannot tail file (%s); %s\n", filename, err)
 				return
 			}
 			for line := range tail.Lines {
@@ -62,16 +62,16 @@ func AppInstanceStarted(c *logyard.Client, instance *AppInstance) {
 					Source:        instance.Type,
 				})
 				if err != nil {
-					log.Fatal("Failed to convert to JSON: ", err)
+					log2.Fatal("Failed to convert to JSON: ", err)
 				}
 				err = c.Send(key, string(data))
 				if err != nil {
-					log.Fatal("Failed to send to logyard: ", err)
+					log2.Fatal("Failed to send to logyard: ", err)
 				}
 			}
 			err = tail.Wait()
 			if err != nil {
-				log.Println(err)
+				log2.Error(err)
 			}
 		}(filename)
 	}

@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"logyard"
+	"logyard/log2"
 )
 
 type recv struct {
@@ -24,11 +24,11 @@ func (cmd *recv) DefineFlags(fs *flag.FlagSet) {
 func (cmd *recv) Run(args []string) error {
 	c, err := logyard.NewClientGlobal()
 	if err != nil {
-		log.Fatal(err)
+		log2.Fatal(err)
 	}
 	ss, err := c.Recv([]string{*cmd.filter})
 	if err != nil {
-		log.Fatal(err)
+		log2.Fatal(err)
 	}
 	for msg := range ss.Ch {
 		if *cmd.hideprefix {
@@ -39,7 +39,7 @@ func (cmd *recv) Run(args []string) error {
 	}
 	err = ss.Wait()
 	if err != nil {
-		log.Fatal(err)
+		log2.Fatal(err)
 	}
 	return nil
 }

@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"logyard"
+	"logyard/log2"
 )
 
 type delete struct {
@@ -25,7 +25,7 @@ func (cmd *delete) Run(args []string) error {
 	for _, name := range args {
 		err := logyard.Config.DeleteDrain(name)
 		if err != nil {
-			log.Fatal(err)
+			log2.Fatal(err)
 		}
 		fmt.Printf("Deleted drain %s\n", name)
 	}

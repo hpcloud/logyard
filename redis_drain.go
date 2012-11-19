@@ -3,17 +3,17 @@ package logyard
 import (
 	"github.com/fzzbt/radix/redis"
 	"launchpad.net/tomb"
-	"log"
+	"logyard/log2"
 	"logyard/stackato"
 )
 
 type RedisDrain struct {
 	client *redis.Client
-	log    *log.Logger
+	log    *log2.Logger
 	tomb.Tomb
 }
 
-func NewRedisDrain(log *log.Logger) Drain {
+func NewRedisDrain(log *log2.Logger) Drain {
 	rd := &RedisDrain{}
 	rd.log = log
 	return rd
@@ -86,11 +86,11 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 		}
 	}
 
-	d.log.Println("Exiting")
+	d.log.Info("Exiting")
 }
 
 func (d *RedisDrain) Stop() error {
-	d.log.Println("Stopping...")
+	d.log.Info("Stopping...")
 	d.Kill(nil)
 	return d.Wait()
 }
@@ -99,9 +99,9 @@ func (d *RedisDrain) connect(addr string, database int) {
 	conf := redis.DefaultConfig()
 	conf.Database = database
 	conf.Address = addr
-	d.log.Printf("Connecting to redis %s[%d] ...", conf.Address, conf.Database)
+	d.log.Infof("Connecting to redis %s[%d] ...", conf.Address, conf.Database)
 	d.client = redis.NewClient(conf)
-	d.log.Printf("Connected to redis %s", conf.Address)
+	d.log.Infof("Connected to redis %s", conf.Address)
 }
 
 func (d *RedisDrain) disconnect() {
