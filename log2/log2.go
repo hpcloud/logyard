@@ -14,7 +14,7 @@ type Logger struct {
 var std = &Logger{log.New(os.Stderr, "", log.LstdFlags)}
 
 func Info(v ...interface{}) {
-	std.Output(2, fmt.Sprintf("[INFO] %s", v...))
+	std.Output(2, "[INFO] "+fmt.Sprint(v...))
 }
 
 func Infof(format string, v ...interface{}) {
@@ -22,7 +22,7 @@ func Infof(format string, v ...interface{}) {
 }
 
 func Warn(v ...interface{}) {
-	std.Output(2, fmt.Sprintf("[WARN] %s", v...))
+	std.Output(2, "[WARN] "+fmt.Sprint(v...))
 }
 
 func Warnf(format string, v ...interface{}) {
@@ -30,7 +30,7 @@ func Warnf(format string, v ...interface{}) {
 }
 
 func Error(v ...interface{}) {
-	std.Output(2, fmt.Sprintf("[ERROR] %s", v...))
+	std.Output(2, "[ERROR] "+fmt.Sprint(v...))
 }
 
 func Errorf(format string, v ...interface{}) {
@@ -38,7 +38,7 @@ func Errorf(format string, v ...interface{}) {
 }
 
 func Fatal(v ...interface{}) {
-	std.Output(2, fmt.Sprintf("[FATAL] %s", v...)+"\n"+string(debug.Stack()))
+	std.Output(2, "[FATAL] "+fmt.Sprint(v...)+"\n"+string(debug.Stack()))
 	os.Exit(1)
 }
 
@@ -48,7 +48,7 @@ func Fatalf(format string, v ...interface{}) {
 }
 
 func (l *Logger) Info(v ...interface{}) {
-	l.Output(2, fmt.Sprintf("[INFO] %s", v...))
+	l.Output(2, "[INFO] "+fmt.Sprint(v...))
 }
 
 func (l *Logger) Infof(format string, v ...interface{}) {
@@ -56,7 +56,7 @@ func (l *Logger) Infof(format string, v ...interface{}) {
 }
 
 func (l *Logger) Warn(v ...interface{}) {
-	l.Output(2, fmt.Sprintf("[WARN] %s", v...))
+	l.Output(2, "[WARN] "+fmt.Sprint(v...))
 }
 
 func (l *Logger) Warnf(format string, v ...interface{}) {
@@ -64,7 +64,7 @@ func (l *Logger) Warnf(format string, v ...interface{}) {
 }
 
 func (l *Logger) Error(v ...interface{}) {
-	l.Output(2, fmt.Sprintf("[ERROR] %s", v...))
+	l.Output(2, "[ERROR] "+fmt.Sprint(v...))
 }
 
 func (l *Logger) Errorf(format string, v ...interface{}) {
@@ -74,7 +74,7 @@ func (l *Logger) Errorf(format string, v ...interface{}) {
 // Fatal behaves mostly like log.Fatal but it also prints the current
 // goroutine's stacktrace.
 func (l *Logger) Fatal(v ...interface{}) {
-	l.Output(2, fmt.Sprintf("[FATAL] %s", v...)+"\n"+string(debug.Stack()))
+	l.Output(2, "[FATAL] "+fmt.Sprint(v...)+"\n"+string(debug.Stack()))
 	os.Exit(1)
 }
 

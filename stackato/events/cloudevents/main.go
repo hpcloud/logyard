@@ -28,6 +28,7 @@ func main() {
 	if err != nil {
 		log2.Fatal(err)
 	}
+	log2.Info("Watching the systail stream on this node")
 	for message := range sub.Ch {
 		var record SystailRecord
 		err := json.Unmarshal([]byte(message.Value), &record)
