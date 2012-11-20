@@ -46,6 +46,8 @@ for line in "${LIST[@]}" ; do
   fi
 
   if [ "$VCS" == "bzr" ]; then
+      # bzr doesn't create parent directories
+      mkdir -p $(dirname $TARGET)
       bzr branch -q $URL $TARGET
       if [[ $REF ]]; then
           echo "bzr ref clone not yet implemented"
@@ -55,4 +57,5 @@ for line in "${LIST[@]}" ; do
     
 done
 
+echo
 echo "All done!"

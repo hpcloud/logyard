@@ -1,6 +1,8 @@
 #!/bin/bash
 # a script to fetch Go dependencies.
 # when necessary, we use backup repos with specific tag/branches.
+# TODO: remove this script once deb packaging work is complete and
+# used in nightly.
 
 set -xe
 
