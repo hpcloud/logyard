@@ -1,0 +1,14 @@
+# IMPORT_PATH     VCS_TYPE    REPO_URL     [HEAD]
+
+github.com/ActiveState/doozer git https://github.com/ActiveState/doozer 7d71ee7
+github.com/kr/pretty git https://github.com/kr/pretty 821b30f5
+github.com/nu7hatch/gouuid git https://github.com/nu7hatch/gouuid 0345199
+github.com/howeyc/fsnotify git https://github.com/howeyc/fsnotify  d6220df
+github.com/apcera/nats  git https://github.com/apcera/nats dd857f76
+github.com/srid/doozerconfig git https://github.com/srid/doozerconfig 49819652
+github.com/fzzbt/radix git https://github.com/fzzbt/radix 7687e823
+github.com/alecthomas/gozmq git https://github.com/alecthomas/gozmq 965ec0982
+github.com/srid/tail git gitolite@gitolite.activestate.com:tail
+code.google.com/p/goprotobuf hg http://mercurial.activestate.com/stackato-mirrors/goprotobuf/
+# XXX: must run `mkdir -p $GOPATH/src/launchpad.net` before running bzr
+launchpad.net/tomb bzr lp:tomb

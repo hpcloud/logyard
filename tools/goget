@@ -1,0 +1,21 @@
+#!/bin/bash
+# A `go get` alternative for using custom repos and/or custom commit
+# refs/ branches. Needs a goget.manifest file in the current
+# directory.
+
+set -e
+
+MANIFEST=goget.manifest
+
+# XXX: not using envsubst because it is not available on mac,
+# preventing me from doing local testing. goget.manifest has no use
+# for env variables yet.
+IFS=$'\n' LIST=(`cat ${MANIFEST} | sed '/^ *#/d;s/#.*//' $file`)
+
+for line in "${LIST[@]}" ; do
+  IMPORT=$(echo $line | awk '{print $1}')
+  VCS=$(echo $line | awk '{print $2}')
+  URL=$(echo $line | awk '{print $3}')
+  REF=$(echo $line | awk '{print $4}')
+  echo $IMPORT $VCS $URL $REF
+done
