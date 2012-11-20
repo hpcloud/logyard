@@ -12,10 +12,47 @@ MANIFEST=goget.manifest
 # for env variables yet.
 IFS=$'\n' LIST=(`cat ${MANIFEST} | sed '/^ *#/d;s/#.*//' $file`)
 
+echo "Assuming GOPATH = $GOPATH"
+
 for line in "${LIST[@]}" ; do
   IMPORT=$(echo $line | awk '{print $1}')
   VCS=$(echo $line | awk '{print $2}')
   URL=$(echo $line | awk '{print $3}')
   REF=$(echo $line | awk '{print $4}')
-  echo $IMPORT $VCS $URL $REF
+  # echo $IMPORT $VCS $URL $REF
+
+  # clone into $GOPATH
+  TARGET=$GOPATH/src/$IMPORT
+  mkdir -p $(dirname $TARGET)
+
+  echo
+  echo
+  echo "-----> Fetching $URL [$IMPORT] ${REF}..."
+  echo
+
+  if [ "$VCS" == "git" ]; then
+      git clone -q $URL $TARGET
+      if [[ $REF ]]; then
+          (cd $TARGET; git checkout $REF)
+      fi
+  fi
+
+  if [ "$VCS" == "hg" ]; then
+      hg clone -q $URL $TARGET
+      if [[ $REF ]]; then
+          echo "hg ref clone not yet implemented"
+          exit 1
+      fi
+  fi
+
+  if [ "$VCS" == "bzr" ]; then
+      bzr branch -q $URL $TARGET
+      if [[ $REF ]]; then
+          echo "bzr ref clone not yet implemented"
+          exit 1
+      fi
+  fi
+    
 done
+
+echo "All done!"
