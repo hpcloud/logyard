@@ -5,7 +5,7 @@
 
 set -e
 
-MANIFEST=goget.manifest
+MANIFEST=${1:-goget.manifest}
 
 # XXX: not using envsubst because it is not available on mac,
 # preventing me from doing local testing. goget.manifest has no use

@@ -8,7 +8,7 @@ github.com/apcera/nats  git https://github.com/apcera/nats dd857f76
 github.com/srid/doozerconfig git https://github.com/srid/doozerconfig 49819652
 github.com/fzzbt/radix git https://github.com/fzzbt/radix 7687e823
 github.com/alecthomas/gozmq git https://github.com/alecthomas/gozmq 965ec0982
-github.com/srid/tail git gitolite@gitolite.activestate.com:tail
+github.com/srid/tail git git://gitolite.activestate.com/tail
 code.google.com/p/goprotobuf hg http://mercurial.activestate.com/stackato-mirrors/goprotobuf/
 # XXX: must run `mkdir -p $GOPATH/src/launchpad.net` before running bzr
 launchpad.net/tomb bzr lp:tomb
