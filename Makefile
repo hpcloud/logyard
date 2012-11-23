@@ -17,7 +17,7 @@ doozer:
 	GOPATH=$(GOPATH) go install -v github.com/ActiveState/doozer/cmd/doozer
 
 installall:
-	GOPATH=$(GOPATH) go install -v logyard/...
+	GOPATH=$(GOPATH) go install -v logyard/... github.com/srid/tail/cmd/gotail
 
 push:	fmt
 	rsync -4 -rtv . stackato@stackato-$(VM).local:/s/go/src/logyard/ --exclude .git
