@@ -3,8 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/srid/log2"
 	"logyard"
-	"logyard/log2"
 	"logyard/stackato/events"
 	"time"
 )

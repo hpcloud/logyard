@@ -3,9 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/srid/log2"
 	"github.com/srid/tail"
 	"logyard"
-	"logyard/log2"
 	"path/filepath"
 	"unicode/utf8"
 )

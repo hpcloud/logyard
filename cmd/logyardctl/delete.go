@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/srid/log2"
 	"logyard"
-	"logyard/log2"
 )
 
 type delete struct {

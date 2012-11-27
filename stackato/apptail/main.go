@@ -3,9 +3,9 @@ package main
 import (
 	"github.com/apcera/nats"
 	"github.com/nu7hatch/gouuid"
+	"github.com/srid/log2"
 	"io/ioutil"
 	"logyard"
-	"logyard/log2"
 	"os"
 )
 

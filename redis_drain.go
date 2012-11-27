@@ -2,8 +2,8 @@ package logyard
 
 import (
 	"github.com/fzzbt/radix/redis"
+	"github.com/srid/log2"
 	"launchpad.net/tomb"
-	"logyard/log2"
 	"logyard/stackato"
 )
 

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/ActiveState/doozer"
 	"github.com/srid/doozerconfig"
-	"logyard/log2"
+	"github.com/srid/log2"
 )
 
 type logyardConfig struct {

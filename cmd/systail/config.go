@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/srid/doozerconfig"
-	"logyard/log2"
+	"github.com/srid/log2"
 	"logyard/stackato"
 )
 

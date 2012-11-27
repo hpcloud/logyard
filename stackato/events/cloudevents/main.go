@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/srid/log2"
 	"logyard"
-	"logyard/log2"
 	"logyard/stackato/events"
 )
 

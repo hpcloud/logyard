@@ -1,7 +1,7 @@
 package logyard
 
 import (
-	"logyard/log2"
+	"github.com/srid/log2"
 	"time"
 )
 
