@@ -22,6 +22,8 @@ var PROCESSES = map[string]string{
 	"avahi_daemon":       "",
 	"avahi_announcer":    "",
 	"nginx":              "",
+	"cc_nginx":           "",
+	"cc_nginx_error":     "",
 	"nats_server":        "",
 	"redis_server":       "",
 	"logyard":            "",
