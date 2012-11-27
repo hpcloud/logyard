@@ -29,7 +29,7 @@ fmt:
 	gofmt -w .
 
 test:
-	go test -v logyard/...
+	go test -v logyard/... github.com/srid/log2
 
 clean: 
 	GOPATH=$(GOPATH) go clean
