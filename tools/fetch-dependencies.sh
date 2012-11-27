@@ -24,6 +24,7 @@ git_get https://github.com/nu7hatch/gouuid $GOPATH/src/github.com/nu7hatch/gouui
 git_get https://github.com/howeyc/fsnotify $GOPATH/src/github.com/howeyc/fsnotify d6220df
 git_get https://github.com/apcera/nats $GOPATH/src/github.com/apcera/nats dd857f76
 git_get https://github.com/srid/doozerconfig $GOPATH/src/github.com/srid/doozerconfig 49819652
+git_get https://github.com/srid/log2 $GOPATH/src/github.com/srid/log2 03c27b9
 git_get https://github.com/fzzbt/radix $GOPATH/src/github.com/fzzbt/radix 7687e823
 git_get https://github.com/alecthomas/gozmq $GOPATH/src/github.com/alecthomas/gozmq 965ec0982
 
