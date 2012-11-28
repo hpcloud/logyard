@@ -42,15 +42,18 @@ func MonitorCloudEvents() {
 		switch msg.Key {
 		case "event.dea_start", "event.dea_ready", "event.dea_stop":
 			appid := int(event.Info["app_id"].(float64))
+			name := event.Info["app_name"].(string)
 			index := int(event.Info["instance"].(float64))
 			source := "stackato.dea"
-			PublishAppLog(c, appid, index, source, &event)
+			PublishAppLog(c, appid, name, index, source, &event)
 		case "event.stager_start", "event.stager_end":
 			appid := int(event.Info["app_id"].(float64))
-			PublishAppLog(c, appid, -1, "stackato.stager", &event)
+			name := event.Info["app_name"].(string)
+			PublishAppLog(c, appid, name, -1, "stackato.stager", &event)
 		case "event.cc_app_update":
 			appid := int(event.Info["app_id"].(float64))
-			PublishAppLog(c, appid, -1, "stackato.controller", &event)
+			name := event.Info["app_name"].(string)
+			PublishAppLog(c, appid, name, -1, "stackato.controller", &event)
 		}
 	}
 
@@ -60,20 +63,26 @@ func MonitorCloudEvents() {
 	}
 }
 
-func PublishAppLog(client *logyard.Client, appid int, index int, source string, event *events.Event) {
+func PublishAppLog(
+	client *logyard.Client, app_id int, app_name string,
+	index int, source string, event *events.Event) {
+
 	m := AppLogMessage{
 		Text:          event.Desc,
 		LogFilename:   "",
 		UnixTime:      event.UnixTime,
 		HumanTime:     time.Unix(event.UnixTime, 0).Format("2006-01-02T15:04:05-07:00"), // heroku-format
+		Source:        source,
 		InstanceIndex: index,
-		Source:        source}
+		AppID:         app_id,
+		AppName:       app_name,
+	}
 	data, err := json.Marshal(m)
 	if err != nil {
 		log2.Errorf("cannot encode %+v into JSON; %s. Skipping this message", m, err)
 		return
 	}
-	key := fmt.Sprintf("apptail.%d", appid)
+	key := fmt.Sprintf("apptail.%d", app_id)
 	err = client.Send(key, string(data))
 	if err != nil {
 		log2.Fatal(err)

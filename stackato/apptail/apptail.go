@@ -26,8 +26,10 @@ type AppLogMessage struct {
 	LogFilename   string
 	UnixTime      int64
 	HumanTime     string
+	Source        string // example: app, staging, stackato.dea, stackato.stager
 	InstanceIndex int
-	Source        string // possible values: app, staging, stackato.dea, stackato.stager
+	AppID         int
+	AppName       string
 }
 
 // AppInstanceStarted is invoked when dea/stager starts an application
@@ -58,8 +60,10 @@ func AppInstanceStarted(c *logyard.Client, instance *AppInstance) {
 					LogFilename:   filepath.Base(filename),
 					UnixTime:      line.Time.Unix(),
 					HumanTime:     line.Time.Format("2006-01-02T15:04:05-07:00"), // heroku-format
-					InstanceIndex: instance.Index,
 					Source:        instance.Type,
+					InstanceIndex: instance.Index,
+					AppID:         instance.AppID,
+					AppName:       instance.AppName,
 				})
 				if err != nil {
 					log2.Fatal("Failed to convert to JSON: ", err)
