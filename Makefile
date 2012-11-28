@@ -1,4 +1,4 @@
-VM	    	= qse4
+VM	    	= xph5
 
 default:	install
 
@@ -18,6 +18,9 @@ doozer:
 
 installall:
 	GOPATH=$(GOPATH) go install -v logyard/... github.com/srid/tail/cmd/gotail
+
+install_doozerd:
+	GOPATH=$(GOPATH) go get -v github.com/ActiveState/doozerd
 
 push:	fmt
 	rsync -4 -rtv . stackato@stackato-$(VM).local:/s/go/src/logyard/ --exclude .git
