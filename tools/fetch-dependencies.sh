@@ -18,7 +18,7 @@ function git_get {
 echo "WARNING: tail.git is expected to be cloned manually"
 
 
-git_get https://github.com/ActiveState/doozer $GOPATH/src/github.com/ActiveState/doozer 4c6b387e
+git_get https://github.com/ActiveState/doozer $GOPATH/src/github.com/ActiveState/doozer d3af058c2
 git_get https://github.com/kr/pretty $GOPATH/src/github.com/kr/pretty 821b30f5
 git_get https://github.com/nu7hatch/gouuid $GOPATH/src/github.com/nu7hatch/gouuid 0345199
 git_get https://github.com/howeyc/fsnotify $GOPATH/src/github.com/howeyc/fsnotify d6220df

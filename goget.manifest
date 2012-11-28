@@ -1,6 +1,6 @@
 # IMPORT_PATH     VCS_TYPE    REPO_URL     [HEAD]
 
-github.com/ActiveState/doozer git https://github.com/ActiveState/doozer 7d71ee7
+github.com/ActiveState/doozer git https://github.com/ActiveState/doozer d3af058c2
 github.com/kr/pretty git https://github.com/kr/pretty 821b30f5
 github.com/nu7hatch/gouuid git https://github.com/nu7hatch/gouuid 0345199
 github.com/howeyc/fsnotify git https://github.com/howeyc/fsnotify  d6220df
