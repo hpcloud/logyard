@@ -41,7 +41,6 @@ for line in "${LIST[@]}" ; do
       hg clone -q $URL $TARGET
       if [[ $REF ]]; then
           (cd $TARGET; hg update -r $REF)
-          exit 1
       fi
   fi
 
