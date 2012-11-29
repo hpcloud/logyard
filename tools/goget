@@ -40,7 +40,7 @@ for line in "${LIST[@]}" ; do
   if [ "$VCS" == "hg" ]; then
       hg clone -q $URL $TARGET
       if [[ $REF ]]; then
-          echo "hg ref clone not yet implemented"
+          (cd $TARGET; hg update -r $REF)
           exit 1
       fi
   fi
