@@ -4,12 +4,8 @@ default:	install
 
 setup:	clean setup-repos
 
-# temporary workaround until we have a generic replacement for `go get -u`
-# with support for alternate repo paths.
-# TODO: write a version of setup-repos that clones dev (git-rw)
-# branches to ~/as/ and create a symlink to it from GOPATH/src/
 setup-repos:
-	tools/fetch-dependencies.sh
+	GOPATH=$(GOPATH) goget
 
 install:	fmt installall
 
