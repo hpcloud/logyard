@@ -38,11 +38,11 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 		return
 	}
 
-	// HACK (stackato-specific): "core" translates to the cc redis
+	// HACK (stackato-specific): "core" translates to the applog redis on core node
 	if config.Host == "core" {
-		ccredishost, err := stackato.GetCCRedisUri(Config.Doozer)
+		ccredishost, err := stackato.GetAppLogStoreRedisUri(Config.Doozer)
 		if err != nil {
-			d.Killf("cannot determine cc redis uri: %s", err)
+			d.Killf("cannot determine applog_store redis uri: %s", err)
 			return
 		}
 		config.Host = ccredishost
