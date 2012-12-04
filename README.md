@@ -3,9 +3,13 @@
 ```
 # prepare your gopath
 export GOPATH=$HOME/go
+
+# retrieve goget
+sudo wget "http://gitolite.activestate.com/?p=goget.git;a=blob_plain;f=goget;hb=refs/heads/master" -O /usr/local/bin/goget 
+sudo chmod +x /usr/local/bin/goget
+
 git clone <this-repo> $GOPATH/src/logyard
 cd $GOPATH/src/logyard
-git clone -q gitolite@gitolite.activestate.com:tail $GOPATH/src/github.com/srid/tail  # XXX: until tail.git moves to github
 make setup 
 make
 make test  # optional
