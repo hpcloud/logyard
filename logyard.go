@@ -33,7 +33,6 @@ func Init(conn *doozer.Conn, rev int64, monitor bool) {
 	err := doozerCfg.Load()
 	if err != nil {
 		log2.Fatal(err)
-		return
 	}
 
 	if !monitor {

@@ -1,10 +1,12 @@
 package logyard
 
 import (
+	"fmt"
 	"github.com/fzzbt/radix/redis"
 	"github.com/srid/log2"
 	"launchpad.net/tomb"
-	"logyard/stackato"
+	"logyard/stackato/server"
+	"strings"
 )
 
 type RedisDrain struct {
@@ -39,13 +41,10 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 	}
 
 	// HACK (stackato-specific): "core" translates to the applog redis on core node
-	if config.Host == "core" {
-		ccredishost, err := stackato.GetAppLogStoreRedisUri(Config.Doozer)
-		if err != nil {
-			d.Killf("cannot determine applog_store redis uri: %s", err)
-			return
-		}
-		config.Host = ccredishost
+	if config.Host == "stackato-core" {
+		config.Host = server.Config.Endpoint
+	} else if strings.HasPrefix(config.Host, "stackato-core:") {
+		config.Host = fmt.Sprintf("%s:%s", server.Config.Endpoint, config.Host[len("stackato-core:"):])
 	}
 
 	d.connect(config.Host, database)

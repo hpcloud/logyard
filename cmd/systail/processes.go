@@ -26,6 +26,7 @@ var PROCESSES = map[string]string{
 	"cc_nginx_error":     "",
 	"nats_server":        "",
 	"redis_server":       "",
+	"applog_store":       "",
 	"logyard":            "",
 	"apptail":            "",
 	"systail":            "",

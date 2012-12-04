@@ -4,6 +4,7 @@ import (
 	"github.com/srid/log2"
 	"logyard"
 	"logyard/stackato"
+	"logyard/stackato/server"
 )
 
 func main() {
@@ -13,6 +14,7 @@ func main() {
 	}
 
 	logyard.Init(doozer, headRev, true)
+	server.Init(doozer, headRev)
 
 	f, err := logyard.NewForwarder()
 	if err != nil {
