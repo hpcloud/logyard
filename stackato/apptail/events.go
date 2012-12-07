@@ -56,6 +56,7 @@ func MonitorCloudEvents() {
 			PublishAppLog(c, appid, name, -1, "stackato.controller", &event)
 		}
 	}
+	log.Warn("Finished listening for app relevant cloud events.")
 
 	err = ss.Wait()
 	if err != nil {
