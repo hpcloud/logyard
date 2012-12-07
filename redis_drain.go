@@ -3,7 +3,7 @@ package logyard
 import (
 	"fmt"
 	"github.com/fzzbt/radix/redis"
-	"github.com/srid/log2"
+	"github.com/srid/log"
 	"launchpad.net/tomb"
 	"logyard/stackato/server"
 	"strings"
@@ -11,11 +11,11 @@ import (
 
 type RedisDrain struct {
 	client *redis.Client
-	log    *log2.Logger
+	log    *log.Logger
 	tomb.Tomb
 }
 
-func NewRedisDrain(log *log2.Logger) Drain {
+func NewRedisDrain(log *log.Logger) Drain {
 	rd := &RedisDrain{}
 	rd.log = log
 	return rd

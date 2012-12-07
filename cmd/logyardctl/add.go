@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/srid/log2"
+	"github.com/srid/log"
 	"logyard"
 	"net/url"
 	"strings"
@@ -98,7 +98,7 @@ func (cmd *add) Run(args []string) error {
 	Init()
 	err := logyard.Config.AddDrain(name, uri)
 	if err != nil {
-		log2.Fatal(err)
+		log.Fatal(err)
 	}
 	return nil
 }

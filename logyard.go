@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/ActiveState/doozer"
 	"github.com/srid/doozerconfig"
-	"github.com/srid/log2"
+	"github.com/srid/log"
 )
 
 type logyardConfig struct {
@@ -32,7 +32,7 @@ func Init(conn *doozer.Conn, rev int64, monitor bool) {
 	doozerCfg = doozerconfig.New(conn, rev, Config, DOOZER_PREFIX)
 	err := doozerCfg.Load()
 	if err != nil {
-		log2.Fatal(err)
+		log.Fatal(err)
 	}
 
 	if !monitor {
@@ -45,10 +45,10 @@ func Init(conn *doozer.Conn, rev int64, monitor bool) {
 			// don't bring down the entire logyard, because we want
 			// the existing drains to continue to function despite an
 			// error in monitoring config changes.
-			log2.Errorf("Unable to process drain config change in doozer: %s", err)
+			log.Errorf("Unable to process drain config change in doozer: %s", err)
 			return
 		}
-		log2.Infof("Detected change in doozer drains config: %s", change.Key)
+		log.Infof("Detected change in doozer drains config: %s", change.Key)
 		// Config.Rev = TODO
 		if change.FieldName == "Drains" {
 			switch change.Type {

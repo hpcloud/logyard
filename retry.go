@@ -1,7 +1,7 @@
 package logyard
 
 import (
-	"github.com/srid/log2"
+	"github.com/srid/log"
 	"time"
 )
 
@@ -26,7 +26,7 @@ func (retry *Retryer) Wait(msg string) bool {
 
 	// give up retrying if there were >= 10 errors in the last minute
 	if retry.tracker.In(time.Minute) {
-		log2.Errorf("%s; giving up retrying (10 errors in last minute)", msg)
+		log.Errorf("%s; giving up retrying (10 errors in last minute)", msg)
 		return false
 	}
 	retry.recentAttempts += 1
@@ -35,16 +35,16 @@ func (retry *Retryer) Wait(msg string) bool {
 		if waitSeconds > MAX_WAIT_SECONDS {
 			waitSeconds = MAX_WAIT_SECONDS
 		}
-		log2.Warnf("%s; retrying after %d seconds...", msg, waitSeconds)
+		log.Warnf("%s; retrying after %d seconds...", msg, waitSeconds)
 		time.Sleep(time.Duration(waitSeconds) * time.Second)
 	} else {
-		log2.Warnf("%s; retrying...", msg)
+		log.Warnf("%s; retrying...", msg)
 	}
 
 	// reset our stats if there weren't any retry attempts in the last
 	// minute.
 	if time.Now().Sub(retry.lastAttempt).Seconds() > 60 {
-		log2.Info("Resetting retry attempts; ", time.Now().Sub(retry.lastAttempt).Seconds())
+		log.Info("Resetting retry attempts; ", time.Now().Sub(retry.lastAttempt).Seconds())
 		retry.recentAttempts = 0
 	}
 

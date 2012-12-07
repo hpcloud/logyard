@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/srid/log2"
+	"github.com/srid/log"
 	"logyard"
 )
 
@@ -25,7 +25,7 @@ func (cmd *delete) Run(args []string) error {
 	for _, name := range args {
 		err := logyard.Config.DeleteDrain(name)
 		if err != nil {
-			log2.Fatal(err)
+			log.Fatal(err)
 		}
 		fmt.Printf("Deleted drain %s\n", name)
 	}

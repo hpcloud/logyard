@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/srid/doozerconfig"
-	"github.com/srid/log2"
+	"github.com/srid/log"
 	"logyard/stackato"
 )
 
@@ -13,7 +13,7 @@ var Config struct {
 func LoadConfig() {
 	conn, headRev, err := stackato.NewDoozerClient("systail")
 	if err != nil {
-		log2.Fatal(err)
+		log.Fatal(err)
 	}
 
 	key := "/proc/logyard/config/systail/"
@@ -21,15 +21,15 @@ func LoadConfig() {
 	doozerCfg := doozerconfig.New(conn, headRev, &Config, key)
 	err = doozerCfg.Load()
 	if err != nil {
-		log2.Fatal(err)
+		log.Fatal(err)
 	}
 
 	// Watch for config changes in doozer
 	go doozerCfg.Monitor(key+"*", func(change *doozerconfig.Change, err error) {
 		if err != nil {
-			log2.Fatalf("Error processing config change in doozer: %s", err)
+			log.Fatalf("Error processing config change in doozer: %s", err)
 			return
 		}
-		log2.Infof("Config changed in doozer; %+v\n", change)
+		log.Infof("Config changed in doozer; %+v\n", change)
 	})
 }

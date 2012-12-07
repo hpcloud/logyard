@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/srid/log2"
+	"github.com/srid/log"
 	"logyard"
 )
 
@@ -24,11 +24,11 @@ func (cmd *recv) DefineFlags(fs *flag.FlagSet) {
 func (cmd *recv) Run(args []string) error {
 	c, err := logyard.NewClientGlobal()
 	if err != nil {
-		log2.Fatal(err)
+		log.Fatal(err)
 	}
 	ss, err := c.Recv([]string{*cmd.filter})
 	if err != nil {
-		log2.Fatal(err)
+		log.Fatal(err)
 	}
 	for msg := range ss.Ch {
 		if *cmd.hideprefix {
@@ -39,7 +39,7 @@ func (cmd *recv) Run(args []string) error {
 	}
 	err = ss.Wait()
 	if err != nil {
-		log2.Fatal(err)
+		log.Fatal(err)
 	}
 	return nil
 }

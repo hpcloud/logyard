@@ -1,7 +1,7 @@
 package logyard
 
 import (
-	"github.com/srid/log2"
+	"github.com/srid/log"
 	"launchpad.net/tomb"
 	"net"
 	"time"
@@ -9,11 +9,11 @@ import (
 
 // IPConnDrain is a drain based on net.IPConn
 type IPConnDrain struct {
-	log *log2.Logger
+	log *log.Logger
 	tomb.Tomb
 }
 
-func NewIPConnDrain(log *log2.Logger) Drain {
+func NewIPConnDrain(log *log.Logger) Drain {
 	rd := &IPConnDrain{}
 	rd.log = log
 	return rd

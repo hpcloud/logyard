@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/srid/log2"
+	"github.com/srid/log"
 	"github.com/srid/tail"
 	"logyard"
 	"net"
@@ -17,13 +17,13 @@ func main() {
 
 	ipaddr, err := localIP()
 	if err != nil {
-		log2.Fatalf("Failed to determine IP addr: %v", err)
+		log.Fatalf("Failed to determine IP addr: %v", err)
 	}
-	log2.Info("Host IP: ", ipaddr)
+	log.Info("Host IP: ", ipaddr)
 
 	c, err := logyard.NewClientGlobal()
 	if err != nil {
-		log2.Fatal(err)
+		log.Fatal(err)
 	}
 	tailers := []*tail.Tail{}
 
@@ -33,7 +33,7 @@ func main() {
 		}
 		nodeid := ipaddr.String()
 
-		log2.Info("Tailing... ", logfile)
+		log.Info("Tailing... ", logfile)
 		t, err := tail.TailFile(logfile, tail.Config{
 			MaxLineSize: Config.MaxRecordSize,
 			MustExist:   false,
@@ -65,7 +65,7 @@ func main() {
 				}
 				err = c.Send("systail."+process+"."+nodeid, string(data))
 				if err != nil {
-					log2.Fatal("Failed to send to logyard: ", err)
+					log.Fatal("Failed to send to logyard: ", err)
 				}
 			}
 		}(process, t)
@@ -74,7 +74,7 @@ func main() {
 	for _, tail := range tailers {
 		err := tail.Wait()
 		if err != nil {
-			log2.Infof("error from tail [on %s]: %s", tail.Filename, err)
+			log.Infof("error from tail [on %s]: %s", tail.Filename, err)
 		}
 	}
 

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/srid/log2"
+	"github.com/srid/log"
 	"logyard"
 	"logyard/cmd/logyardctl/subcommand"
 	"logyard/stackato"
@@ -10,7 +10,7 @@ import (
 func Init() {
 	conn, headRev, err := stackato.NewDoozerClient("logyardctl")
 	if err != nil {
-		log2.Fatal(err)
+		log.Fatal(err)
 	}
 
 	logyard.Init(conn, headRev, false)

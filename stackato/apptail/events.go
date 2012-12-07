@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/srid/log2"
+	"github.com/srid/log"
 	"logyard"
 	"logyard/stackato/events"
 	"time"
@@ -24,19 +24,19 @@ func MonitorCloudEvents() {
 
 	c, err := logyard.NewClientGlobal()
 	if err != nil {
-		log2.Fatal(err)
+		log.Fatal(err)
 	}
 	ss, err := c.Recv(filters)
 	if err != nil {
-		log2.Fatal(err)
+		log.Fatal(err)
 	}
 
-	log2.Info("Listening for app relevant cloud events...")
+	log.Info("Listening for app relevant cloud events...")
 	for msg := range ss.Ch {
 		var event events.Event
 		err := json.Unmarshal([]byte(msg.Value), &event)
 		if err != nil {
-			log2.Fatal(err) // not expected at all
+			log.Fatal(err) // not expected at all
 		}
 
 		switch msg.Key {
@@ -59,7 +59,7 @@ func MonitorCloudEvents() {
 
 	err = ss.Wait()
 	if err != nil {
-		log2.Fatal(err)
+		log.Fatal(err)
 	}
 }
 
@@ -79,12 +79,12 @@ func PublishAppLog(
 	}
 	data, err := json.Marshal(m)
 	if err != nil {
-		log2.Errorf("cannot encode %+v into JSON; %s. Skipping this message", m, err)
+		log.Errorf("cannot encode %+v into JSON; %s. Skipping this message", m, err)
 		return
 	}
 	key := fmt.Sprintf("apptail.%d", app_id)
 	err = client.Send(key, string(data))
 	if err != nil {
-		log2.Fatal(err)
+		log.Fatal(err)
 	}
 }
