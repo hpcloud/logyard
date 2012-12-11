@@ -20,7 +20,7 @@ type AppInstance struct {
 	LogFiles []string
 }
 
-// The struct to be sent to logyard
+// AppLogMessage is a struct corresponding to an entry in the app log stream.
 type AppLogMessage struct {
 	Text          string
 	LogFilename   string
@@ -55,10 +55,10 @@ func (line *AppLogMessage) Publish(c *logyard.Client, allowInvalidJson bool) err
 	return nil
 }
 
-// AppInstanceStarted is invoked when dea/stager starts an application
-// instance.
+// AppInstanceStarted is a function to be invoked when dea/stager
+// starts an application instance.
 func AppInstanceStarted(c *logyard.Client, instance *AppInstance) {
-	log.Infof("New instance was started: %v\n", instance)
+	log.Infof("New app instance was started: %+v\n", instance)
 	for _, filename := range instance.LogFiles {
 		go func(filename string) {
 			tail, err := tail.TailFile(filename, tail.Config{
@@ -69,7 +69,7 @@ func AppInstanceStarted(c *logyard.Client, instance *AppInstance) {
 				ReOpen:      false,
 				Poll:        true})
 			if err != nil {
-				log.Errorf("cannot tail file (%s); %s\n", filename, err)
+				log.Errorf("Cannot tail file (%s); %s\n", filename, err)
 				return
 			}
 			for line := range tail.Lines {
