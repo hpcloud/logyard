@@ -1,4 +1,4 @@
-package main
+package apptail
 
 import (
 	"encoding/json"

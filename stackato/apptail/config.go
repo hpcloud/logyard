@@ -1,4 +1,4 @@
-package main
+package apptail
 
 import (
 	"github.com/srid/doozerconfig"

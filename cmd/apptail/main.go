@@ -6,11 +6,12 @@ import (
 	"github.com/srid/log"
 	"io/ioutil"
 	"logyard"
+	"logyard/stackato/apptail"
 	"os"
 )
 
 func main() {
-	LoadConfig()
+	apptail.LoadConfig()
 
 	uid := getUID()
 
@@ -20,23 +21,23 @@ func main() {
 	}
 	natsclient := newNatsClient()
 
-	natsclient.Subscribe("logyard."+uid+".newinstance", func(instance *AppInstance) {
-		AppInstanceStarted(logyardclient, instance)
+	natsclient.Subscribe("logyard."+uid+".newinstance", func(instance *apptail.AppInstance) {
+		apptail.AppInstanceStarted(logyardclient, instance)
 	})
 
 	natsclient.Publish("logyard."+uid+".start", []byte("{}"))
 	log.Infof("Waiting for instances...")
 
-	MonitorCloudEvents()
+	apptail.MonitorCloudEvents()
 }
 
 func newNatsClient() *nats.EncodedConn {
-	log.Infof("Connecting to NATS %s\n", Config.NatsUri)
-	nc, err := nats.Connect(Config.NatsUri)
+	log.Infof("Connecting to NATS %s\n", apptail.Config.NatsUri)
+	nc, err := nats.Connect(apptail.Config.NatsUri)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Infof("Connected to NATS %s\n", Config.NatsUri)
+	log.Infof("Connected to NATS %s\n", apptail.Config.NatsUri)
 	client, err := nats.NewEncodedConn(nc, "json")
 	if err != nil {
 		log.Fatal(err)
