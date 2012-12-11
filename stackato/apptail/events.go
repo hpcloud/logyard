@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/srid/log"
 	"logyard"
 	"logyard/stackato/events"
@@ -68,7 +67,7 @@ func PublishAppLog(
 	client *logyard.Client, app_id int, app_name string,
 	index int, source string, event *events.Event) {
 
-	m := AppLogMessage{
+	err := (&AppLogMessage{
 		Text:          event.Desc,
 		LogFilename:   "",
 		UnixTime:      event.UnixTime,
@@ -77,14 +76,8 @@ func PublishAppLog(
 		InstanceIndex: index,
 		AppID:         app_id,
 		AppName:       app_name,
-	}
-	data, err := json.Marshal(m)
-	if err != nil {
-		log.Errorf("cannot encode %+v into JSON; %s. Skipping this message", m, err)
-		return
-	}
-	key := fmt.Sprintf("apptail.%d", app_id)
-	err = client.Send(key, string(data))
+	}).Publish(client, true)
+
 	if err != nil {
 		log.Fatal(err)
 	}

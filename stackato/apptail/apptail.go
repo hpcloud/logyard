@@ -32,11 +32,33 @@ type AppLogMessage struct {
 	AppName       string
 }
 
+// Publish publishes the receiver to logyard. Must be called once.
+func (line *AppLogMessage) Publish(c *logyard.Client, allowInvalidJson bool) error {
+	// JSON must be a UTF-8 encoded string.
+	if !utf8.ValidString(line.Text) {
+		line.Text = string([]rune(line.Text))
+	}
+
+	data, err := json.Marshal(line)
+	if err != nil {
+		if allowInvalidJson {
+			log.Errorf("cannot encode %+v into JSON; %s. Skipping this message", line, err)
+		} else {
+			return fmt.Errorf("Failed to convert applogmsg to JSON: ", err)
+		}
+	}
+	key := fmt.Sprintf("apptail.%d", line.AppID)
+	err = c.Send(key, string(data))
+	if err != nil {
+		return fmt.Errorf("Failed to send applogmsg to logyard: ", err)
+	}
+	return nil
+}
+
 // AppInstanceStarted is invoked when dea/stager starts an application
 // instance.
 func AppInstanceStarted(c *logyard.Client, instance *AppInstance) {
 	log.Infof("New instance was started: %v\n", instance)
-	key := fmt.Sprintf("apptail.%d", instance.AppID)
 	for _, filename := range instance.LogFiles {
 		go func(filename string) {
 			tail, err := tail.TailFile(filename, tail.Config{
@@ -55,7 +77,7 @@ func AppInstanceStarted(c *logyard.Client, instance *AppInstance) {
 				if !utf8.ValidString(line.Text) {
 					line.Text = string([]rune(line.Text))
 				}
-				data, err := json.Marshal(AppLogMessage{
+				err := (&AppLogMessage{
 					Text:          line.Text,
 					LogFilename:   filepath.Base(filename),
 					UnixTime:      line.Time.Unix(),
@@ -64,13 +86,9 @@ func AppInstanceStarted(c *logyard.Client, instance *AppInstance) {
 					InstanceIndex: instance.Index,
 					AppID:         instance.AppID,
 					AppName:       instance.AppName,
-				})
+				}).Publish(c, false)
 				if err != nil {
-					log.Fatal("Failed to convert to JSON: ", err)
-				}
-				err = c.Send(key, string(data))
-				if err != nil {
-					log.Fatal("Failed to send to logyard: ", err)
+					log.Fatal(err)
 				}
 			}
 			err = tail.Wait()
