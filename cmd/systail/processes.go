@@ -30,6 +30,7 @@ var PROCESSES = map[string]string{
 	"logyard":            "",
 	"apptail":            "",
 	"systail":            "",
+	"app_store":          "",
 	"cloud_controller":   "",
 	"health_manager":     "",
 	"prealloc":           "",
