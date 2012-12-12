@@ -5,7 +5,7 @@ import (
 	"github.com/fzzbt/radix/redis"
 	"github.com/srid/log"
 	"launchpad.net/tomb"
-	"logyard/stackato/server"
+	"stackato-go/server"
 	"strings"
 )
 
