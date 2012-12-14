@@ -1,8 +1,8 @@
 package apptail
 
 import (
-	"github.com/srid/doozerconfig"
-	"github.com/srid/log"
+	"github.com/ActiveState/doozerconfig"
+	"github.com/ActiveState/log"
 	"stackato-go/server"
 )
 

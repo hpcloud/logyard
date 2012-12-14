@@ -2,8 +2,8 @@ package logyard
 
 import (
 	"fmt"
+	"github.com/ActiveState/log"
 	"github.com/fzzbt/radix/redis"
-	"github.com/srid/log"
 	"launchpad.net/tomb"
 	"stackato-go/server"
 	"strings"

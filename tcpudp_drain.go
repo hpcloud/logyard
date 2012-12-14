@@ -1,7 +1,7 @@
 package logyard
 
 import (
-	"github.com/srid/log"
+	"github.com/ActiveState/log"
 	"launchpad.net/tomb"
 	"net"
 	"time"

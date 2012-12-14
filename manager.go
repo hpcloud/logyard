@@ -2,8 +2,8 @@ package logyard
 
 import (
 	"fmt"
-	"github.com/srid/doozerconfig"
-	"github.com/srid/log"
+	"github.com/ActiveState/doozerconfig"
+	"github.com/ActiveState/log"
 	"sync"
 	"time"
 )

@@ -2,7 +2,7 @@ package apptail
 
 import (
 	"encoding/json"
-	"github.com/srid/log"
+	"github.com/ActiveState/log"
 	"logyard"
 	"logyard/stackato/events"
 	"time"

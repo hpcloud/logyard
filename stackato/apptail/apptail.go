@@ -3,8 +3,8 @@ package apptail
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/srid/log"
-	"github.com/srid/tail"
+	"github.com/ActiveState/log"
+	"github.com/ActiveState/tail"
 	"logyard"
 	"path/filepath"
 	"unicode/utf8"
