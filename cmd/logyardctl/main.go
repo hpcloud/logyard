@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/srid/log"
+	"github.com/ActiveState/log"
 	"logyard"
 	"logyard/cmd/logyardctl/subcommand"
 	"logyard/stackato"

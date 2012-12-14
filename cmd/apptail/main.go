@@ -1,9 +1,9 @@
 package main
 
 import (
+	"github.com/ActiveState/log"
 	"github.com/apcera/nats"
 	"github.com/nu7hatch/gouuid"
-	"github.com/srid/log"
 	"io/ioutil"
 	"logyard"
 	"logyard/stackato/apptail"

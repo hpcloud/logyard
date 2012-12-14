@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/srid/log"
+	"github.com/ActiveState/log"
 	"logyard"
 	"logyard/stackato"
 	"logyard/stackato/server"

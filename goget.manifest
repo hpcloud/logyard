@@ -5,10 +5,10 @@ github.com/kr/pretty git https://github.com/kr/pretty 821b30f5
 github.com/nu7hatch/gouuid git https://github.com/nu7hatch/gouuid 0345199
 github.com/howeyc/fsnotify git https://github.com/howeyc/fsnotify  d6220df
 github.com/apcera/nats  git https://github.com/apcera/nats dd857f76
-github.com/srid/doozerconfig git https://github.com/srid/doozerconfig 49819652
+github.com/ActiveState/doozerconfig git https://github.com/ActiveState/doozerconfig 49819652
 github.com/fzzbt/radix git https://github.com/fzzbt/radix 7687e823
 github.com/alecthomas/gozmq git https://github.com/alecthomas/gozmq 965ec0982
-github.com/srid/tail git git://gitolite.activestate.com/tail 2384ff63
-github.com/srid/log git https://github.com/srid/log df68b97
+github.com/ActiveState/tail git git://gitolite.activestate.com/tail 2384ff63
+github.com/ActiveState/log git https://github.com/ActiveState/log df68b97
 code.google.com/p/goprotobuf hg https://code.google.com/p/goprotobuf/ 29db96746e5d
 launchpad.net/tomb bzr lp:tomb

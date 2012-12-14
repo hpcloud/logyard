@@ -2,8 +2,8 @@ package server
 
 import (
 	"github.com/ActiveState/doozer"
-	"github.com/srid/doozerconfig"
-	"github.com/srid/log"
+	"github.com/ActiveState/doozerconfig"
+	"github.com/ActiveState/log"
 )
 
 type clusterConfig struct {
