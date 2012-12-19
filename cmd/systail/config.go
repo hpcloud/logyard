@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/ActiveState/doozerconfig"
 	"github.com/ActiveState/log"
-	"logyard/stackato"
+	"stackato-go/server"
 )
 
 var Config struct {
@@ -11,7 +11,7 @@ var Config struct {
 }
 
 func LoadConfig() {
-	conn, headRev, err := stackato.NewDoozerClient("systail")
+	conn, headRev, err := server.NewDoozerClient("systail")
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/url"
 	"strconv"
+	"strings"
 	"text/template"
 )
 
@@ -37,6 +38,19 @@ func (c *DrainConfig) GetParamInt(key string, def int) (int, error) {
 	var err error
 	if val, err = strconv.Atoi(data); err != nil {
 		return 0, err
+	}
+	return val, nil
+}
+
+func (c *DrainConfig) GetParamBool(key string, def bool) (bool, error) {
+	data := c.GetParam(key, "")
+	if data == "" {
+		return def, nil
+	}
+	var val bool
+	var err error
+	if val, err = strconv.ParseBool(data); err != nil {
+		return false, err
 	}
 	return val, nil
 }
@@ -76,6 +90,14 @@ func DrainConfigFromUri(name string, uri string) (*DrainConfig, error) {
 	config.Scheme = url.Scheme
 	config.Host = url.Host
 	config.Path = url.Path
+
+	// Go doesn't correctly parse file:// uris with empty <host>.
+	// http://tools.ietf.org/html/rfc1738
+	if url.Scheme == "file" {
+		if strings.HasPrefix(url.Path, "//") {
+			config.Path = url.Path[2:]
+		}
+	}
 
 	params := url.Query()
 

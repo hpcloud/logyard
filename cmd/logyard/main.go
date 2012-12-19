@@ -3,12 +3,11 @@ package main
 import (
 	"github.com/ActiveState/log"
 	"logyard"
-	"logyard/stackato"
-	"logyard/stackato/server"
+	"stackato-go/server"
 )
 
 func main() {
-	doozer, headRev, err := stackato.NewDoozerClient("logyard")
+	doozer, headRev, err := server.NewDoozerClient("logyard")
 	if err != nil {
 		log.Fatal(err)
 	}

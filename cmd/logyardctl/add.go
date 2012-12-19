@@ -73,9 +73,6 @@ func (cmd *add) Run(args []string) error {
 	if uri == "" {
 		return fmt.Errorf("need -uri")
 	}
-	if uri[len(uri)-1] != '/' {
-		uri += "/"
-	}
 
 	if !strings.Contains(uri, "://") {
 		return fmt.Errorf("not an URI: %s", uri)

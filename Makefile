@@ -1,4 +1,4 @@
-VM	    	= 3qhh
+VM	    	= kny7
 
 default:	install
 

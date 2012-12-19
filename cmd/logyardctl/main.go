@@ -4,11 +4,11 @@ import (
 	"github.com/ActiveState/log"
 	"logyard"
 	"logyard/cmd/logyardctl/subcommand"
-	"logyard/stackato"
+	"stackato-go/server"
 )
 
 func Init() {
-	conn, headRev, err := stackato.NewDoozerClient("logyardctl")
+	conn, headRev, err := server.NewDoozerClient("logyardctl")
 	if err != nil {
 		log.Fatal(err)
 	}
