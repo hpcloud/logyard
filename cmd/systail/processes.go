@@ -31,6 +31,7 @@ var PROCESSES = map[string]string{
 	"apptail":            "",
 	"systail":            "",
 	"app_store":          "",
+	"app_mdns":           "",
 	"cloud_controller":   "",
 	"health_manager":     "",
 	"prealloc":           "",
