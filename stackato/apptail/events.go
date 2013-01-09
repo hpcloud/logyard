@@ -9,7 +9,7 @@ import (
 )
 
 // Make relevant cloud events available in application logs. Heroku style.
-func MonitorCloudEvents() {
+func MonitorCloudEvents(nodeid string) {
 	// TODO: add more events; will require modifying the log
 	// invokation to include the required app id
 	filters := []string{
@@ -44,15 +44,15 @@ func MonitorCloudEvents() {
 			name := event.Info["app_name"].(string)
 			index := int(event.Info["instance"].(float64))
 			source := "stackato.dea"
-			PublishAppLog(c, appid, name, index, source, &event)
+			PublishAppLog(c, appid, name, index, source, nodeid, &event)
 		case "event.stager_start", "event.stager_end":
 			appid := int(event.Info["app_id"].(float64))
 			name := event.Info["app_name"].(string)
-			PublishAppLog(c, appid, name, -1, "stackato.stager", &event)
+			PublishAppLog(c, appid, name, -1, "stackato.stager", nodeid, &event)
 		case "event.cc_app_update":
 			appid := int(event.Info["app_id"].(float64))
 			name := event.Info["app_name"].(string)
-			PublishAppLog(c, appid, name, -1, "stackato.controller", &event)
+			PublishAppLog(c, appid, name, -1, "stackato.controller", nodeid, &event)
 		}
 	}
 	log.Warn("Finished listening for app relevant cloud events.")
@@ -65,7 +65,7 @@ func MonitorCloudEvents() {
 
 func PublishAppLog(
 	client *logyard.Client, app_id int, app_name string,
-	index int, source string, event *events.Event) {
+	index int, source string, nodeid string, event *events.Event) {
 
 	err := (&AppLogMessage{
 		Text:          event.Desc,
@@ -76,6 +76,7 @@ func PublishAppLog(
 		InstanceIndex: index,
 		AppID:         app_id,
 		AppName:       app_name,
+		NodeID:        nodeid,
 	}).Publish(client, true)
 
 	if err != nil {

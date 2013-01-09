@@ -30,6 +30,7 @@ type AppLogMessage struct {
 	InstanceIndex int
 	AppID         int
 	AppName       string
+	NodeID        string // Host (DEA) IP of this app instance
 }
 
 // Publish publishes the receiver to logyard. Must be called once.
@@ -57,7 +58,7 @@ func (line *AppLogMessage) Publish(c *logyard.Client, allowInvalidJson bool) err
 
 // AppInstanceStarted is a function to be invoked when dea/stager
 // starts an application instance.
-func AppInstanceStarted(c *logyard.Client, instance *AppInstance) {
+func AppInstanceStarted(c *logyard.Client, instance *AppInstance, nodeid string) {
 	log.Infof("New app instance was started: %+v\n", instance)
 	for _, filename := range instance.LogFiles {
 		go func(filename string) {
@@ -86,6 +87,7 @@ func AppInstanceStarted(c *logyard.Client, instance *AppInstance) {
 					InstanceIndex: instance.Index,
 					AppID:         instance.AppID,
 					AppName:       instance.AppName,
+					NodeID:        nodeid,
 				}).Publish(c, false)
 				if err != nil {
 					log.Fatal(err)

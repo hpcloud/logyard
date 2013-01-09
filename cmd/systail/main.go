@@ -9,17 +9,18 @@ import (
 	"logyard"
 	"net"
 	"os"
+	"stackato-go/server"
 	"unicode/utf8"
 )
 
 func main() {
 	LoadConfig()
 
-	ipaddr, err := localIP()
+	nodeid, err := server.LocalIP()
 	if err != nil {
 		log.Fatalf("Failed to determine IP addr: %v", err)
 	}
-	log.Info("Host IP: ", ipaddr)
+	log.Info("Host IP: ", nodeid)
 
 	c, err := logyard.NewClientGlobal()
 	if err != nil {
@@ -31,7 +32,6 @@ func main() {
 		if logfile == "" {
 			logfile = fmt.Sprintf("/s/logs/%s.log", process)
 		}
-		nodeid := ipaddr.String()
 
 		log.Info("Tailing... ", logfile)
 		t, err := tail.TailFile(logfile, tail.Config{

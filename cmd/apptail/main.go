@@ -8,10 +8,17 @@ import (
 	"logyard"
 	"logyard/stackato/apptail"
 	"os"
+	"stackato-go/server"
 )
 
 func main() {
 	apptail.LoadConfig()
+
+	nodeid, err := server.LocalIP()
+	if err != nil {
+		log.Fatalf("Failed to determine IP addr: %v", err)
+	}
+	log.Info("Host IP: ", nodeid)
 
 	uid := getUID()
 
@@ -22,13 +29,13 @@ func main() {
 	natsclient := newNatsClient()
 
 	natsclient.Subscribe("logyard."+uid+".newinstance", func(instance *apptail.AppInstance) {
-		apptail.AppInstanceStarted(logyardclient, instance)
+		apptail.AppInstanceStarted(logyardclient, instance, nodeid)
 	})
 
 	natsclient.Publish("logyard."+uid+".start", []byte("{}"))
 	log.Infof("Waiting for instances...")
 
-	apptail.MonitorCloudEvents()
+	apptail.MonitorCloudEvents(nodeid)
 }
 
 func newNatsClient() *nats.EncodedConn {
