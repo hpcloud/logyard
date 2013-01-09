@@ -3,7 +3,7 @@ package apptail
 import (
 	"github.com/ActiveState/doozerconfig"
 	"github.com/ActiveState/log"
-	"stackato-go/server"
+	"stackato/server"
 )
 
 var Config struct {

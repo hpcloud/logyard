@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/ActiveState/log"
 	"logyard"
-	"stackato-go/server"
+	"stackato/server"
 )
 
 func main() {

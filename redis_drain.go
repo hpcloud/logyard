@@ -5,7 +5,7 @@ import (
 	"github.com/ActiveState/log"
 	"github.com/fzzbt/radix/redis"
 	"launchpad.net/tomb"
-	"stackato-go/server"
+	"stackato/server"
 	"strings"
 )
 

@@ -4,7 +4,7 @@ import (
 	"github.com/ActiveState/log"
 	"logyard"
 	"logyard/cmd/logyardctl/subcommand"
-	"stackato-go/server"
+	"stackato/server"
 )
 
 func Init() {

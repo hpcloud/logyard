@@ -9,7 +9,7 @@ import (
 	"logyard"
 	"net"
 	"os"
-	"stackato-go/server"
+	"stackato/server"
 	"unicode/utf8"
 )
 

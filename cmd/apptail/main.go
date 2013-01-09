@@ -8,7 +8,7 @@ import (
 	"logyard"
 	"logyard/stackato/apptail"
 	"os"
-	"stackato-go/server"
+	"stackato/server"
 )
 
 func main() {
