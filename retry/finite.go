@@ -1,24 +1,23 @@
-package logyard
+package retry
 
 import (
 	"github.com/ActiveState/log"
 	"time"
 )
 
-type Retryer struct {
+type FiniteRetryer struct {
 	tracker        *Tracker
 	recentAttempts int
 	lastAttempt    time.Time
 }
 
-func NewRetryer() *Retryer {
-	return new(Retryer)
+func NewFiniteRetryer() Retryer {
+	return new(FiniteRetryer)
 }
 
 const MAX_WAIT_SECONDS = 60 * 5 // 5 minutes
 
-// Wait appropriately waits until next try (exponential backoff delay)
-func (retry *Retryer) Wait(msg string) bool {
+func (retry *FiniteRetryer) Wait(msg string) bool {
 	if retry.tracker == nil {
 		retry.tracker = NewTracker(10) // keep track of the last 10 error events
 	}

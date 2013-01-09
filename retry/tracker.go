@@ -1,4 +1,4 @@
-package logyard
+package retry
 
 import (
 	"time"

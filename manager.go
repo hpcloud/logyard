@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/ActiveState/doozerconfig"
 	"github.com/ActiveState/log"
+	"logyard/retry"
 	"sync"
 	"time"
 )
@@ -77,7 +78,7 @@ func (manager *DrainManager) StopDrain(drainName string) {
 }
 
 // StartDrain starts the drain and waits for it exit.
-func (manager *DrainManager) StartDrain(name, uri string, retry *Retryer) {
+func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 	manager.mux.Lock()
 	defer manager.mux.Unlock()
 
@@ -134,7 +135,7 @@ func NewDrainLogger(c *DrainConfig) *log.Logger {
 func (manager *DrainManager) Run() {
 	log.Infof("Found %d drains to start\n", len(Config.Drains))
 	for name, uri := range Config.Drains {
-		manager.StartDrain(name, uri, NewRetryer())
+		manager.StartDrain(name, uri, retry.NewFiniteRetryer())
 	}
 
 	// Watch for config changes in doozer
@@ -145,7 +146,7 @@ func (manager *DrainManager) Run() {
 		case doozerconfig.SET:
 			manager.StopDrain(change.Key)
 			manager.StartDrain(
-				change.Key, Config.Drains[change.Key], NewRetryer())
+				change.Key, Config.Drains[change.Key], retry.NewFiniteRetryer())
 		}
 	}
 }
