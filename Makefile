@@ -1,4 +1,4 @@
-VM	    	= kny7
+VM	    	= jq7h
 
 default:	install
 

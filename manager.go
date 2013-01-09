@@ -135,7 +135,7 @@ func NewDrainLogger(c *DrainConfig) *log.Logger {
 func (manager *DrainManager) Run() {
 	log.Infof("Found %d drains to start\n", len(Config.Drains))
 	for name, uri := range Config.Drains {
-		manager.StartDrain(name, uri, retry.NewFiniteRetryer())
+		manager.StartDrain(name, uri, retry.NewInfiniteRetryer())
 	}
 
 	// Watch for config changes in doozer
@@ -146,7 +146,7 @@ func (manager *DrainManager) Run() {
 		case doozerconfig.SET:
 			manager.StopDrain(change.Key)
 			manager.StartDrain(
-				change.Key, Config.Drains[change.Key], retry.NewFiniteRetryer())
+				change.Key, Config.Drains[change.Key], retry.NewInfiniteRetryer())
 		}
 	}
 }
