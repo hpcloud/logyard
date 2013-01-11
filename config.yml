@@ -39,6 +39,7 @@ systail:
     # log files for most kato-managed processes.
     # $ grep name processes.yml | awk '{print "    "$2": \"\""}' | sort | \
     #  grep -v avahi_daemon
+    app_cache: ""
     app_mdns: ""
     app_store: ""
     applog_redis: ""
