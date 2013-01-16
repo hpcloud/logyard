@@ -7,7 +7,8 @@ import (
 )
 
 var Config struct {
-	MaxRecordSize int `doozer:"max_record_size"`
+	MaxRecordSize int               `doozer:"max_record_size"`
+	LogFiles      map[string]string `doozer:"log_files"`
 }
 
 func LoadConfig() {
@@ -19,6 +20,7 @@ func LoadConfig() {
 	key := "/proc/logyard/config/systail/"
 
 	doozerCfg := doozerconfig.New(conn, headRev, &Config, key)
+	Config.LogFiles = make(map[string]string)
 	err = doozerCfg.Load()
 	if err != nil {
 		log.Fatal(err)

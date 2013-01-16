@@ -1,26 +1,82 @@
 ---
 # logyard configuration.
-# NOTE: configuration for non-logyard processes (eg: systail, apptail)
-# also live here. thus it is by no means generic.
 
-systail:
-  # this value should be large enough to _not_ make cloudevents trip
-  # up on json unmarshall errors too often. 2048 should be good
-  # enough.
-  max_record_size: 2048
+# Builtin list of drains. More can be added in doozer via 'kato drain'
+# (or logyardctl).
+drains:
+  # Bounded storage for application logs, to be accessed from `s
+  # logs`.  limit: how many log lines per app to keep? (XXX: must be a
+  # low value until we move away from redis for app log buffer) heroku
+  # uses 1500; https://devcenter.heroku.com/articles/logging#log
+  builtin.apptail: "redis://stackato-core:6464/?filter=apptail&limit=200"
+  # Recent history of kato commands ran across the cluster stored as
+  # cloud events JSON
+  builtin.katohistory: "redis://stackato-core:6464/?filter=event.kato_action&limit=256&key=kato_history"
+  # Recent cloud events from across the cluster
+  builtin.cloudevents: "redis://stackato-core:6464/?filter=event&limit=256&key=cloud_events"
 
 apptail:
   max_record_size: 950
 
-# pre-configured drains. more can be added in doozer via logyardctl or
-# 'kato drain'.
-drains:
-  # Bounded storage for application logs, to be accessed from `s logs`.
-  # limit: how many log lines per app to keep? (XXX: must be a low
-  # value until we move away from redis for app log buffer)
-  # heroku uses 1500; https://devcenter.heroku.com/articles/logging#log
-  builtin.apptail: "redis://stackato-core:6464/?filter=apptail&limit=200"
-  # Recent history of kato commands ran across the cluster stored as cloud events JSON
-  builtin.katohistory: "redis://stackato-core:6464/?filter=event.kato_action&limit=256&key=kato_history"
-  # Recent cloud events from across the cluster
-  builtin.cloudevents: "redis://stackato-core:6464/?filter=event&limit=256&key=cloud_events"
+systail:
+  # This value should be large enough to _not_ make cloudevents trip
+  # up on json unmarshall errors too often. 2048 should be good
+  # enough.
+  max_record_size: 2048
+  # Log files to be streamed by systail. If the path value is empty,
+  # systail will automatically use /s/log/${name}.log; for example,
+  # "kato: " translates to "kato: /s/logs/kato.log"
+  log_files:
+    auth: /var/log/auth.log
+    dmesg: /var/log/dmesg
+    dpkg: /var/log/dpkg.log
+    kato: ""
+    kernel: /var/log/kern.log
+    nginx_error: /var/log/nginx/error.log
+    stackato-lxc: ""
+    supervisord: ""
+    cc_nginx_error: ""
+    # log files for most kato-managed processes.
+    # $ grep name processes.yml | awk '{print "    "$2": \"\""}' | sort | \
+    #  grep -v avahi_daemon
+    app_mdns: ""
+    app_store: ""
+    applog_redis: ""
+    apptail: ""
+    avahi_publisher: ""
+    cc_nginx: ""
+    cloud_controller: ""
+    cloud_events: ""
+    dea: ""
+    doozerd: ""
+    ehok: ""
+    filesystem_gateway: ""
+    filesystem_node: ""
+    harbor_gateway: ""
+    harbor_node: ""
+    harbor_proxy_connector: ""
+    harbor_redis: ""
+    health_manager: ""
+    logyard: ""
+    memcached_gateway: ""
+    memcached_node: ""
+    mongodb_gateway: ""
+    mongodb_node: ""
+    mysql: ""
+    mysql_gateway: ""
+    mysql_node: ""
+    nats_server: ""
+    nginx: ""
+    postgresql: ""
+    postgresql_gateway: ""
+    postgresql_node: ""
+    prealloc: ""
+    rabbit_gateway: ""
+    rabbit_node: ""
+    redis_gateway: ""
+    redis_node: ""
+    redis_server: ""
+    router: ""
+    router2g: ""
+    stager: ""
+    systail: ""

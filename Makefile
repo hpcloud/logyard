@@ -1,4 +1,4 @@
-VM	    	= jq7h
+VM	    	= zhe6
 
 default:	install
 
