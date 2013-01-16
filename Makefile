@@ -1,4 +1,4 @@
-VM	    	= tk8j
+VM	    	= zhe6
 
 default:	install
 

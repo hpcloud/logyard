@@ -23,6 +23,60 @@ systail:
   # up on json unmarshall errors too often. 2048 should be good
   # enough.
   max_record_size: 2048
+  # Log files to be streamed by systail. If the path value is empty,
+  # systail will automatically use /s/log/${name}.log; for example,
+  # "kato: " translates to "kato: /s/logs/kato.log"
   log_files:
+    auth: /var/log/auth.log
+    dmesg: /var/log/dmesg
+    dpkg: /var/log/dpkg.log
+    kato: ""
+    kernel: /var/log/kern.log
     nginx_error: /var/log/nginx/error.log
-    cloud_controller:
+    stackato-lxc: ""
+    supervisord: ""
+    cc_nginx_error: ""
+    # log files for most kato-managed processes.
+    # $ grep name processes.yml | awk '{print "    "$2": \"\""}' | sort | \
+    #  grep -v avahi_daemon
+    app_mdns: ""
+    app_store: ""
+    applog_redis: ""
+    apptail: ""
+    avahi_publisher: ""
+    cc_nginx: ""
+    cloud_controller: ""
+    cloud_events: ""
+    dea: ""
+    doozerd: ""
+    ehok: ""
+    filesystem_gateway: ""
+    filesystem_node: ""
+    harbor_gateway: ""
+    harbor_node: ""
+    harbor_proxy_connector: ""
+    harbor_redis: ""
+    health_manager: ""
+    logyard: ""
+    memcached_gateway: ""
+    memcached_node: ""
+    mongodb_gateway: ""
+    mongodb_node: ""
+    mysql: ""
+    mysql_gateway: ""
+    mysql_node: ""
+    nats_server: ""
+    nginx: ""
+    postgresql: ""
+    postgresql_gateway: ""
+    postgresql_node: ""
+    prealloc: ""
+    rabbit_gateway: ""
+    rabbit_node: ""
+    redis_gateway: ""
+    redis_node: ""
+    redis_server: ""
+    router: ""
+    router2g: ""
+    stager: ""
+    systail: ""
