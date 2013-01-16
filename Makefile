@@ -1,4 +1,4 @@
-VM	    	= jq7h
+VM	    	= tk8j
 
 default:	install
 

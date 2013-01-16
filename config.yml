@@ -23,4 +23,6 @@ systail:
   # up on json unmarshall errors too often. 2048 should be good
   # enough.
   max_record_size: 2048
-
+  log_files:
+    nginx_error: /var/log/nginx/error.log
+    cloud_controller:

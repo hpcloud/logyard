@@ -73,7 +73,12 @@ func main() {
 	}
 	tailers := []*tail.Tail{}
 
-	for name, logfile := range PROCESSES {
+	fmt.Printf("%+v\n", Config.LogFiles)
+	if len(Config.LogFiles) == 0 {
+		log.Fatal("No log files configured in doozer")
+	}
+
+	for name, logfile := range Config.LogFiles {
 		t, err := tailLogFile(name, logfile, nodeid, c)
 		if err != nil {
 			log.Fatal(err)
@@ -84,12 +89,12 @@ func main() {
 	for _, tail := range tailers {
 		err := tail.Wait()
 		if err != nil {
-			log.Infof("error from tail [on %s]: %s", tail.Filename, err)
+			log.Errorf("Cannot tail [%s]: %s", tail.Filename, err)
 		}
 	}
 
 	// we don't expect any of the tailers to exit with or without
 	// error.
-
+	log.Error("No file left to tail; exiting.")
 	os.Exit(1)
 }
