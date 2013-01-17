@@ -50,6 +50,7 @@ systail:
     dea: ""
     doozerd: ""
     ehok: ""
+    fence: ""
     filesystem_gateway: ""
     filesystem_node: ""
     harbor_gateway: ""
