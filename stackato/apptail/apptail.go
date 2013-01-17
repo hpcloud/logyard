@@ -7,7 +7,6 @@ import (
 	"github.com/ActiveState/tail"
 	"logyard"
 	"logyard/util/pubsub"
-	"path/filepath"
 	"unicode/utf8"
 )
 
@@ -19,7 +18,7 @@ type AppInstance struct {
 	AppGroup string `json:"group"`
 	Type     string
 	Index    int
-	LogFiles []string
+	LogFiles map[string]string
 }
 
 // AppLogMessage is a struct corresponding to an entry in the app log stream.
@@ -61,7 +60,7 @@ func (line *AppLogMessage) Publish(pub *pubsub.Publisher, allowInvalidJson bool)
 func AppInstanceStarted(instance *AppInstance, nodeid string) {
 	log.Infof("New app instance was started: %+v", instance)
 
-	for _, filename := range instance.LogFiles {
+	for name, filename := range instance.LogFiles {
 		go func(filename string) {
 			pub := logyard.Broker.NewPublisherMust()
 			defer pub.Stop()
@@ -84,7 +83,7 @@ func AppInstanceStarted(instance *AppInstance, nodeid string) {
 				}
 				err := (&AppLogMessage{
 					Text:          line.Text,
-					LogFilename:   filepath.Base(filename),
+					LogFilename:   name,
 					UnixTime:      line.Time.Unix(),
 					HumanTime:     ToHerokuTime(line.Time),
 					Source:        instance.Type,
