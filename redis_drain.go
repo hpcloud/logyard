@@ -42,9 +42,10 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 
 	// HACK (stackato-specific): "core" translates to the applog redis on core node
 	if config.Host == "stackato-core" {
-		config.Host = server.Config.Endpoint
+		config.Host = server.Config.CoreIP
 	} else if strings.HasPrefix(config.Host, "stackato-core:") {
-		config.Host = fmt.Sprintf("%s:%s", server.Config.Endpoint, config.Host[len("stackato-core:"):])
+		config.Host = fmt.Sprintf("%s:%s",
+			server.Config.CoreIP, config.Host[len("stackato-core:"):])
 	}
 
 	d.connect(config.Host, database)
