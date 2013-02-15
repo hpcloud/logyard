@@ -8,7 +8,7 @@ drains:
   # logs`.  limit: how many log lines per app to keep? (XXX: must be a
   # low value until we move away from redis for app log buffer) heroku
   # uses 1500; https://devcenter.heroku.com/articles/logging#log
-  builtin.apptail: "redis://stackato-core:6464/?filter=apptail&limit=200"
+  builtin.apptail: "redis://stackato-core:6464/?filter=apptail&limit=400"
   # Recent history of kato commands ran across the cluster stored as
   # cloud events JSON
   builtin.katohistory: "redis://stackato-core:6464/?filter=event.kato_action&limit=256&key=kato_history"
