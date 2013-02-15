@@ -32,7 +32,7 @@ systail:
     dpkg: /var/log/dpkg.log
     kato: ""
     kernel: /var/log/kern.log
-    nginx_error: /var/log/nginx/error.log
+    nginx_error: /s/logs/nginx_error.log
     stackato-lxc: ""
     supervisord: ""
     cc_nginx_error: ""
