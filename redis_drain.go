@@ -3,7 +3,7 @@ package logyard
 import (
 	"fmt"
 	"github.com/ActiveState/log"
-	"github.com/fzzbt/radix/redis"
+	"github.com/vmihailenco/redis"
 	"launchpad.net/tomb"
 	"stackato/server"
 	"strings"
@@ -48,7 +48,7 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 			server.Config.CoreIP, config.Host[len("stackato-core:"):])
 	}
 
-	d.connect(config.Host, database)
+	d.connect(config.Host, int64(database))
 	defer d.disconnect()
 	c, err := NewClientGlobal()
 	if err != nil {
@@ -76,7 +76,7 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 				d.Kill(err)
 				return
 			}
-			_, err = d.Lpushcircular(key, string(data), limit)
+			_, err = d.Lpushcircular(key, string(data), int64(limit))
 			if err != nil {
 				d.Kill(err)
 				return
@@ -95,13 +95,10 @@ func (d *RedisDrain) Stop() error {
 	return d.Wait()
 }
 
-func (d *RedisDrain) connect(addr string, database int) {
-	conf := redis.DefaultConfig()
-	conf.Database = database
-	conf.Address = addr
-	d.log.Infof("Connecting to redis %s[%d] ...", conf.Address, conf.Database)
-	d.client = redis.NewClient(conf)
-	d.log.Infof("Connected to redis %s", conf.Address)
+func (d *RedisDrain) connect(addr string, database int64) {
+	d.log.Infof("Connecting to redis %s[%d] ...", addr, database)
+	d.client = redis.NewTCPClient(addr, "", database)
+	d.log.Infof("Connected to redis %s[%d]", addr, database)
 }
 
 func (d *RedisDrain) disconnect() {
@@ -110,22 +107,20 @@ func (d *RedisDrain) disconnect() {
 
 // Lpushcircular works like LPUSH, but trims the right most element if length
 // exceeds maxlen. Returns the list length before trim.  
-func (d *RedisDrain) Lpushcircular(key string, item string, maxlen int) (int, error) {
-	reply := d.client.Lpush(key, item)
-	if reply.Err != nil {
-		return -1, reply.Err
-	}
-
-	n, err := reply.Int()
-	if err != nil {
+func (d *RedisDrain) Lpushcircular(
+	key string, item string, maxlen int64) (int64, error) {
+	reply := d.client.LPush(key, item)
+	if err := reply.Err(); err != nil {
 		return -1, err
 	}
 
+	n := reply.Val()
+
 	// Keep the length of the bounded list under check
 	if n > maxlen {
-		reply = d.client.Ltrim(key, 0, maxlen-1)
-		if reply.Err != nil {
-			return -1, reply.Err
+		reply := d.client.LTrim(key, 0, maxlen-1)
+		if err := reply.Err(); err != nil {
+			return -1, err
 		}
 	}
 
