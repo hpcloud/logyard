@@ -50,7 +50,7 @@ systail:
     cloud_events: ""
     dea: ""
     doozerd: ""
-    ehok: ""
+    aok: ""
     fence: ""
     filesystem_gateway: ""
     filesystem_node: ""
