@@ -27,7 +27,9 @@ systail:
   # systail will automatically use /s/log/${name}.log; for example,
   # "kato: " translates to "kato: /s/logs/kato.log"
   log_files:
+    aok_nginx_error: ""
     auth: /var/log/auth.log
+    cc_nginx_error: ""
     dmesg: /var/log/dmesg
     dpkg: /var/log/dpkg.log
     kato: ""
@@ -35,7 +37,6 @@ systail:
     nginx_error: /s/logs/nginx_error.log
     stackato-lxc: ""
     supervisord: ""
-    cc_nginx_error: ""
     # log files for most kato-managed processes.
     # $ grep name processes.yml | awk '{print "    "$2": \"\""}' | sort | \
     #  grep -v avahi_daemon
