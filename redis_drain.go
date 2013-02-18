@@ -5,6 +5,7 @@ import (
 	"github.com/ActiveState/log"
 	"github.com/vmihailenco/redis"
 	"launchpad.net/tomb"
+	"net"
 	"stackato/server"
 	"strings"
 )
@@ -48,7 +49,10 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 			server.Config.CoreIP, config.Host[len("stackato-core:"):])
 	}
 
-	d.connect(config.Host, int64(database))
+	if err = d.connect(config.Host, int64(database)); err != nil {
+		d.Kill(err)
+		return
+	}
 	defer d.disconnect()
 	c, err := NewClientGlobal()
 	if err != nil {
@@ -95,10 +99,20 @@ func (d *RedisDrain) Stop() error {
 	return d.Wait()
 }
 
-func (d *RedisDrain) connect(addr string, database int64) {
+func (d *RedisDrain) connect(addr string, database int64) error {
 	d.log.Infof("Connecting to redis %s[%d] ...", addr, database)
+
+	// Bug #97459 -- is the redis client library faking connection for
+	// the down server?
+	conn, err := net.Dial("tcp", addr)
+	if err != nil {
+		return err
+	}
+	conn.Close()
+
 	d.client = redis.NewTCPClient(addr, "", database)
 	d.log.Infof("Connected to redis %s[%d]", addr, database)
+	return nil
 }
 
 func (d *RedisDrain) disconnect() {
