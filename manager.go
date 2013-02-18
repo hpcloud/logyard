@@ -5,6 +5,7 @@ import (
 	"github.com/ActiveState/doozerconfig"
 	"github.com/ActiveState/log"
 	"logyard/retry"
+	"strings"
 	"sync"
 	"time"
 )
@@ -132,10 +133,21 @@ func NewDrainLogger(c *DrainConfig) *log.Logger {
 	return l
 }
 
+// chooseRetryer chooses an appropriate retryer for the given drain
+// name.
+func chooseRetryer(name string) retry.Retryer {
+	if strings.HasPrefix(name, "tmp.") {
+		// "tmp" drains -- such as 'kato tail' -- need not be retried
+		// infinitely.
+		return retry.NewFiniteRetryer()
+	}
+	return retry.NewInfiniteRetryer()
+}
+
 func (manager *DrainManager) Run() {
 	log.Infof("Found %d drains to start\n", len(Config.Drains))
 	for name, uri := range Config.Drains {
-		manager.StartDrain(name, uri, retry.NewInfiniteRetryer())
+		manager.StartDrain(name, uri, chooseRetryer(name))
 	}
 
 	// Watch for config changes in doozer
