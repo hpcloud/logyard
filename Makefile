@@ -1,37 +1,65 @@
-VM	    	= zhe6
+#
+# Makefile for stackato-logyard
+#
+# Used solely by packaging systems.
+# Must support targets "all", "install", "uninstall".
+#
+# During the packaging install phase, the native packager will
+# set either DESTDIR or prefix to the directory which serves as
+# a root for collecting the package files.
+#
+# Additionally, stackato-pkg sets STACKATO_PKG_BRANCH to the
+# current git branch of this package, so that we may use it to
+# fetch other git repos with the corresponding branch.
+#
+# The resulting package installs in /home/stackato,
+# is not intended to be relocatable.
+#
+# This package depends on external data.  Run "make update" to update the
+# local copy of that data.  Push any resulting changes to the git repo
+# in order to trigger generation of a new package.
+#
 
-default:	install
+NAME=logyard
 
-setup:	clean setup-repos
+SRCDIR=src/$(NAME)
 
-setup-repos:
-	GOPATH=$(GOPATH) goget
+COMMON=git://gitolite.activestate.com/stackato-common.git
+UPDATE=.stackato-pkg/update/stackato-common
+TMPDIR=$(UPDATE)/go
 
-install:	fmt installall
+INSTALLHOME=/home/stackato
+INSTALLROOT=$(INSTALLHOME)/stackato
+GOBINDIR=$(INSTALLROOT)/go/bin
 
-doozer:
-	GOPATH=$(GOPATH) go install -v github.com/ActiveState/doozer/cmd/doozer
+INSTDIR=$(DESTDIR)$(prefix)
 
-installall:
-	GOPATH=$(GOPATH) go install -v logyard/... github.com/ActiveState/tail/cmd/gotail
+INSTGOPATH=$(INSTDIR)/$(INSTALLROOT)/go
+INSTBINDIR=$(INSTDIR)/$(INSTALLHOME)/bin
 
-install_doozerd:
-	GOPATH=$(GOPATH) go get -v github.com/ActiveState/doozerd
+all:	repos compile
 
-push:	fmt
-	rsync -4 -rtv . stackato@stackato-$(VM).local:/s/go/src/logyard/ --exclude .git
+repos:	$(UPDATE)
+	GOPATH=$$PWD $(TMPDIR)/goget $(TMPDIR)/goget.manifest
 
-pushdeps:
-	rsync -4 -rtv $(GOPATH)/src/github.com stackato@stackato-$(VM).local:/s/go/src/ --exclude .git
+$(UPDATE):	update
 
-# compile and push; best used from within emacs (M-x compile)
-cpush:	install push
+compile:	
+	GOPATH=$$PWD go install -v $(NAME)/...
+	GOPATH=$$PWD go install -v github.com/ActiveState/tail/cmd/gotail
 
-fmt:
-	gofmt -w .
-
-test:
-	go test -v logyard/... github.com/ActiveState/log
+install:	
+	mkdir -p $(INSTGOPATH)/$(SRCDIR)
+	rsync -a $(SRCDIR)/config.yml $(INSTGOPATH)/$(SRCDIR)
+	rsync -a bin $(INSTGOPATH)
+	mkdir -p $(INSTBINDIR)
+	ln -s $(GOBINDIR)/logyardctl $(INSTBINDIR)
 
 clean: 
-	GOPATH=$(GOPATH) go clean
+	GOPATH=$$PWD go clean
+
+# For manual use only.
+
+update:
+	rm -rf $(UPDATE)
+	git clone $(COMMON) $(UPDATE) 

@@ -1,0 +1,13 @@
+# Package configuration for stackato-logyard
+
+# Values here will override environment variables and will be overridden
+# by command options.  This is a shell file so you can use it to perform
+# arbitrary actions.  The main intent is to set up various PKG_*
+# variables used to configure and generate the package.
+
+PKG_NAME="stackato-logyard"
+PKG_VERSION="auto"
+PKG_DESCR_SHORT="stackato-logyard"
+PKG_DESCR_LONG="Stackato log aggregator implemented in go."
+PKG_BUILD_DEPENDS="golang, mercurial, bzr, zeromq-dev"
+PKG_DEPENDS="zeromq-dev"
