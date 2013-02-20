@@ -23,6 +23,7 @@
 NAME=logyard
 
 SRCDIR=src/$(NAME)
+GOPATH=/tmp/gopath
 
 COMMON=git://gitolite.activestate.com/stackato-common.git
 UPDATE=.stackato-pkg/update/stackato-common
@@ -40,13 +41,15 @@ INSTBINDIR=$(INSTDIR)/$(INSTALLHOME)/bin
 all:	repos compile
 
 repos:	$(UPDATE)
-	GOPATH=$$PWD $(TMPDIR)/goget $(TMPDIR)/goget.manifest
+	mkdir -p $(GOPATH)/src/$(NAME)
+	git archive HEAD | tar -x -C $(GOPATH)/src/$(NAME)
+	GOPATH=$(GOPATH) $(TMPDIR)/goget $(TMPDIR)/goget.manifest
 
 $(UPDATE):	update
 
 compile:	
-	GOPATH=$$PWD go install -v $(NAME)/...
-	GOPATH=$$PWD go install -v github.com/ActiveState/tail/cmd/gotail
+	GOPATH=$(GOPATH) go install -v $(NAME)/...
+	GOPATH=$(GOPATH) go install -v github.com/ActiveState/tail/cmd/gotail
 
 install:	
 	mkdir -p $(INSTGOPATH)/$(SRCDIR)
