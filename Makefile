@@ -59,7 +59,7 @@ install:
 	ln -sf $(GOBINDIR)/logyardctl $(INSTBINDIR)
 
 clean: 
-	GOPATH=$$PWD go clean
+	GOPATH=$(GOPATH) go clean
 
 # For manual use only.
 
