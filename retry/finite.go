@@ -17,7 +17,10 @@ func NewFiniteRetryer() Retryer {
 
 const MAX_WAIT_SECONDS = 60 * 5 // 5 minutes
 
-func (retry *FiniteRetryer) Wait(msg string) bool {
+func (retry *FiniteRetryer) Wait(msg string, shouldWarn bool) bool {
+	if !shouldWarn {
+		panic("FiniteRetryer does not support shouldWarn=false")
+	}
 	if retry.tracker == nil {
 		retry.tracker = NewTracker(10) // keep track of the last 10 error events
 	}

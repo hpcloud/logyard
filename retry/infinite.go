@@ -17,7 +17,7 @@ func NewInfiniteRetryer() Retryer {
 // Wait appropriately waits until next try. Wait delay is increased
 // based on the length of failures, but Wait always returns true
 // (hence InfiniteRetryer).
-func (retry *InfiniteRetryer) Wait(msg string) bool {
+func (retry *InfiniteRetryer) Wait(msg string, shouldWarn bool) bool {
 	period := time.Now().Sub(retry.started)
 	var delay time.Duration
 	switch {
@@ -34,7 +34,11 @@ func (retry *InfiniteRetryer) Wait(msg string) bool {
 		// once every 5 minutes therein
 		delay = 5 * time.Minute
 	}
-	log.Warnf("%s; retrying after %v.", msg, delay)
+	if shouldWarn {
+		log.Warnf("%s; retrying after %v.", msg, delay)
+	} else {
+		log.Infof("%s; retrying after %v.", msg, delay)
+	}
 	retry.lastDelay = delay
 	time.Sleep(delay)
 	return true
