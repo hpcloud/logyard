@@ -53,10 +53,10 @@ compile:
 
 install:	
 	mkdir -p $(INSTGOPATH)/$(SRCDIR)
-	rsync -a $(SRCDIR)/config.yml $(INSTGOPATH)/$(SRCDIR)
-	rsync -a bin $(INSTGOPATH)
+	rsync -a $(GOPATH)/$(SRCDIR)/config.yml $(INSTGOPATH)/$(SRCDIR)
+	rsync -a $(GOPATH)/bin $(INSTGOPATH)
 	mkdir -p $(INSTBINDIR)
-	ln -s $(GOBINDIR)/logyardctl $(INSTBINDIR)
+	ln -sf $(GOBINDIR)/logyardctl $(INSTBINDIR)
 
 clean: 
 	GOPATH=$$PWD go clean
