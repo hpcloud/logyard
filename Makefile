@@ -23,7 +23,7 @@
 NAME=logyard
 
 SRCDIR=src/$(NAME)
-GOPATH=/tmp/gopath
+GOPATH=`pwd`/.gopath
 
 COMMON=git://gitolite.activestate.com/stackato-common.git
 UPDATE=.stackato-pkg/update/stackato-common
