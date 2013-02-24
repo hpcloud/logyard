@@ -166,7 +166,7 @@ func (manager *DrainManager) Run() {
 		case doozerconfig.SET:
 			manager.StopDrain(change.Key)
 			manager.StartDrain(
-				change.Key, Config.Drains[change.Key], retry.NewInfiniteRetryer())
+				change.Key, Config.Drains[change.Key], chooseRetryer(change.Key))
 		}
 	}
 }
