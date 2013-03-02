@@ -7,6 +7,7 @@
 
 PKG_NAME="stackato-logyard"
 PKG_VERSION="auto"
+PKG_VERSION_COUNTER="auto"
 PKG_DESCR_SHORT="stackato-logyard"
 PKG_DESCR_LONG="Stackato log aggregator implemented in go."
 PKG_BUILD_DEPENDS="golang, mercurial, bzr, zeromq-dev"
