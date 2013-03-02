@@ -37,16 +37,18 @@ INSTDIR=$(DESTDIR)$(prefix)
 INSTGOPATH=$(INSTDIR)/$(INSTALLROOT)/go
 INSTBINDIR=$(INSTDIR)/$(INSTALLHOME)/bin
 
+GOPATH=$$PWD
+
 all:	repos compile
 
 repos:	$(UPDATE)
-	GOPATH=$$PWD $(TMPDIR)/goget $(TMPDIR)/goget.manifest
+	GOPATH=$(GOPATH) $(TMPDIR)/goget $(TMPDIR)/goget.manifest
 
 $(UPDATE):	update
 
 compile:	
-	GOPATH=$$PWD go install -v $(NAME)/...
-	GOPATH=$$PWD go install -v github.com/ActiveState/tail/cmd/gotail
+	GOPATH=$(GOPATH) go install -v $(NAME)/...
+	GOPATH=$(GOPATH) go install -v github.com/ActiveState/tail/cmd/gotail
 
 install:	
 	mkdir -p $(INSTGOPATH)/$(SRCDIR)
@@ -56,7 +58,7 @@ install:
 	ln -s $(GOBINDIR)/logyardctl $(INSTBINDIR)
 
 clean: 
-	GOPATH=$$PWD go clean
+	GOPATH=$(GOPATH) go clean
 
 # For manual use only.
 
