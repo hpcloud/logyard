@@ -24,9 +24,11 @@ NAME=logyard
 
 SRCDIR=src/$(NAME)
 
-COMMON=git://gitolite.activestate.com/stackato-common.git
-UPDATE=.stackato-pkg/update/stackato-common
-TMPDIR=$(UPDATE)/go
+COMMON_REPO=git://gitolite.activestate.com/stackato-common.git
+
+UPDATE=.stackato-pkg/update
+COMMON_DIR=$(UPDATE)/stackato-common
+TMPDIR=$(COMMON_DIR)/go
 
 INSTALLHOME=/home/stackato
 INSTALLROOT=$(INSTALLHOME)/stackato
@@ -39,12 +41,16 @@ INSTBINDIR=$(INSTDIR)/$(INSTALLHOME)/bin
 
 GOPATH=$$PWD
 
+ifdef STACKATO_PKG_BRANCH
+    BRANCH_OPT=-b $(STACKATO_PKG_BRANCH)
+endif
+
 all:	repos compile
 
-repos:	$(UPDATE)
+repos:	$(COMMON_DIR)
 	GOPATH=$(GOPATH) $(TMPDIR)/goget $(TMPDIR)/goget.manifest
 
-$(UPDATE):	update
+$(COMMON_DIR):	update
 
 compile:	
 	GOPATH=$(GOPATH) go install -v $(NAME)/...
@@ -60,8 +66,8 @@ install:
 clean: 
 	GOPATH=$(GOPATH) go clean
 
-# For manual use only.
+# For manual use.
 
 update:
 	rm -rf $(UPDATE)
-	git clone $(COMMON) $(UPDATE) 
+	git clone $(BRANCH_OPT) $(COMMON_REPO) $(COMMON_DIR)
