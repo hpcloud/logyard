@@ -6,3 +6,7 @@ bin
 .DS_Store
 
 *.md.html
+
+# packaging artifacts
+.gopath
+.stackato-pkg/update/stackato-common/

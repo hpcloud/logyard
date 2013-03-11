@@ -39,7 +39,7 @@ INSTDIR=$(DESTDIR)$(prefix)
 INSTGOPATH=$(INSTDIR)/$(INSTALLROOT)/go
 INSTBINDIR=$(INSTDIR)/$(INSTALLHOME)/bin
 
-GOPATH=$$PWD
+GOPATH=$$PWD/.gopath
 
 ifdef STACKATO_PKG_BRANCH
     BRANCH_OPT=-b $(STACKATO_PKG_BRANCH)
@@ -48,6 +48,8 @@ endif
 all:	repos compile
 
 repos:	$(COMMON_DIR)
+	mkdir -p $(GOPATH)/src/$(NAME)
+	git archive HEAD | tar -x -C $(GOPATH)/src/$(NAME)
 	GOPATH=$(GOPATH) $(TMPDIR)/goget $(TMPDIR)/goget.manifest
 
 $(COMMON_DIR):	update
@@ -58,10 +60,10 @@ compile:
 
 install:	
 	mkdir -p $(INSTGOPATH)/$(SRCDIR)
-	rsync -a $(SRCDIR)/config.yml $(INSTGOPATH)/$(SRCDIR)
-	rsync -a bin $(INSTGOPATH)
+	rsync -a $(GOPATH)/$(SRCDIR)/config.yml $(INSTGOPATH)/$(SRCDIR)
+	rsync -a $(GOPATH)/bin $(INSTGOPATH)
 	mkdir -p $(INSTBINDIR)
-	ln -s $(GOBINDIR)/logyardctl $(INSTBINDIR)
+	ln -sf $(GOBINDIR)/logyardctl $(INSTBINDIR)
 
 clean: 
 	GOPATH=$(GOPATH) go clean
