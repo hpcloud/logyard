@@ -9,6 +9,7 @@ import (
 	"logyard/stackato/apptail"
 	"os"
 	"stackato/server"
+	"time"
 )
 
 func main() {
@@ -49,6 +50,17 @@ func newNatsClient() *nats.EncodedConn {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// Diagnosing Bug #97856 by periodically checking if we are still
+	// connected to NATS.
+	go func() {
+		for _ = range time.Tick(1 * time.Minute) {
+			if nc.IsClosed() {
+				log.Fatal("Connection to NATS has been closed (in the last minute)")
+			}
+		}
+	}()
+
 	return client
 }
 

@@ -18,8 +18,9 @@ installall:
 install_doozerd:
 	GOPATH=$(GOPATH) go get -v github.com/ActiveState/doozerd
 
+# Push the entire GOPATH/src
 push:	fmt
-	rsync -4 -rtv . stackato@stackato-$(VM).local:/s/go/src/logyard/ --exclude .git
+	cd $(GOPATH) && rsync -4 -rtv src stackato@stackato-$(VM).local:/s/go/ --exclude .git --exclude .gopath
 
 pushdeps:
 	rsync -4 -rtv $(GOPATH)/src/github.com stackato@stackato-$(VM).local:/s/go/src/ --exclude .git
