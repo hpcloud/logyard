@@ -5,7 +5,7 @@ default:	install
 setup:	clean setup-repos
 
 setup-repos:
-	GOPATH=$(GOPATH) goget
+	cd .stackato-pkg/update/stackato-common/go && ./goget
 
 install:	fmt installall
 

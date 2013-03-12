@@ -2,14 +2,12 @@ package main
 
 import (
 	"github.com/ActiveState/log"
-	"github.com/apcera/nats"
 	"github.com/nu7hatch/gouuid"
 	"io/ioutil"
 	"logyard"
 	"logyard/stackato/apptail"
 	"os"
 	"stackato/server"
-	"time"
 )
 
 func main() {
@@ -27,7 +25,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	natsclient := newNatsClient()
+	natsclient := server.NewNatsClient()
 
 	natsclient.Subscribe("logyard."+uid+".newinstance", func(instance *apptail.AppInstance) {
 		apptail.AppInstanceStarted(logyardclient, instance, nodeid)
@@ -37,31 +35,6 @@ func main() {
 	log.Infof("Waiting for instances...")
 
 	apptail.MonitorCloudEvents(nodeid)
-}
-
-func newNatsClient() *nats.EncodedConn {
-	log.Infof("Connecting to NATS %s\n", apptail.Config.NatsUri)
-	nc, err := nats.Connect(apptail.Config.NatsUri)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Infof("Connected to NATS %s\n", apptail.Config.NatsUri)
-	client, err := nats.NewEncodedConn(nc, "json")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Diagnosing Bug #97856 by periodically checking if we are still
-	// connected to NATS.
-	go func() {
-		for _ = range time.Tick(1 * time.Minute) {
-			if nc.IsClosed() {
-				log.Fatal("Connection to NATS has been closed (in the last minute)")
-			}
-		}
-	}()
-
-	return client
 }
 
 // getUID returns the UID of the aggregator running on this node. the UID is
