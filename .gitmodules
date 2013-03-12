@@ -1,0 +1,3 @@
+[submodule ".stackato-pkg/update/stackato-common"]
+	path = .stackato-pkg/update/stackato-common
+	url = git://gitolite.activestate.com/stackato-common.git
