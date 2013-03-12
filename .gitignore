@@ -9,4 +9,4 @@ bin
 
 # packaging artifacts
 .gopath
-.stackato-pkg/update/stackato-common/
+
