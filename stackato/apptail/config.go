@@ -7,8 +7,7 @@ import (
 )
 
 var Config struct {
-	MaxRecordSize int    `doozer:"logyard/config/apptail/max_record_size"`
-	NatsUri       string `doozer:"cloud_controller/config/mbus"`
+	MaxRecordSize int `doozer:"logyard/config/apptail/max_record_size"`
 }
 
 func LoadConfig() {
@@ -16,6 +15,8 @@ func LoadConfig() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	server.Init(conn, headRev)
 
 	key := "/proc/"
 
