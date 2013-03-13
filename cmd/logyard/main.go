@@ -2,11 +2,15 @@ package main
 
 import (
 	"github.com/ActiveState/log"
+	"github.com/alecthomas/gozmq"
 	"logyard"
 	"stackato/server"
 )
 
 func main() {
+	major, minor, patch := gozmq.Version()
+	log.Infof("Using zeromq: %d.%d.%d", major, minor, patch)
+
 	doozer, headRev, err := server.NewDoozerClient("logyard")
 	if err != nil {
 		log.Fatal(err)
