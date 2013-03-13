@@ -55,7 +55,7 @@ repos:	$(COMMON_DIR)
 $(COMMON_DIR):	update
 
 compile:	
-	GOPATH=$(GOPATH) go install -v $(NAME)/...
+	GOPATH=$(GOPATH) go install -tags zmq_3_x -v $(NAME)/...
 	GOPATH=$(GOPATH) go install -v github.com/ActiveState/tail/cmd/gotail
 
 install:	

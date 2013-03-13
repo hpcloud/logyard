@@ -13,7 +13,7 @@ doozer:
 	GOPATH=$(GOPATH) go install -v github.com/ActiveState/doozer/cmd/doozer
 
 installall:
-	GOPATH=$(GOPATH) go install -v logyard/... github.com/ActiveState/tail/cmd/gotail
+	GOPATH=$(GOPATH) go install -tags zmq_3_x -v logyard/... github.com/ActiveState/tail/cmd/gotail
 
 install_doozerd:
 	GOPATH=$(GOPATH) go get -v github.com/ActiveState/doozerd

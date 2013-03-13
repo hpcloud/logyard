@@ -63,10 +63,12 @@ func NewPubSocket(ctx zmq.Context) (zmq.Socket, error) {
 		return nil, err
 	}
 	// prevent 0mq from infinitely buffering messages
-	err = sock.SetSockOptUInt64(zmq.HWM, MEMORY_BUFFER_SIZE)
-	if err != nil {
-		sock.Close()
-		return nil, err
+	for _, hwm := range []zmq.IntSocketOption{zmq.SNDHWM, zmq.RCVHWM} {
+		err = sock.SetSockOptInt(hwm, MEMORY_BUFFER_SIZE)
+		if err != nil {
+			sock.Close()
+			return nil, err
+		}
 	}
 	return sock, nil
 }
