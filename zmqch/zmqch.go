@@ -6,6 +6,7 @@ import (
 	"launchpad.net/tomb"
 	"strings"
 	"sync"
+	"time"
 )
 
 var globalContext zmq.Context
@@ -87,8 +88,7 @@ func (sub *SubChannel) loop() {
 	pollItems := []zmq.PollItem{zmq.PollItem{socket, 0, zmq.POLLIN, 0}}
 
 	for {
-		// timeout in microseconds
-		n, err := zmq.Poll(pollItems, 1000*1000)
+		n, err := zmq.Poll(pollItems, time.Duration(1)*time.Second)
 		if err != nil {
 			sub.Kill(err)
 			return
