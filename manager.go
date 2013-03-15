@@ -64,7 +64,8 @@ func (manager *DrainManager) StopDrain(drainName string) {
 			break
 		case <-time.After(5 * time.Second):
 			log.Fatalf("Error: expecting drain %s to stop in 1s, "+
-				"but it takes more than 5s; exiting..", drainName)
+				"but it is taking more than 5s; exiting now and "+
+				"awaiting supervisord restart.", drainName)
 		}
 
 		if err != nil {
