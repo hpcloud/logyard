@@ -67,7 +67,6 @@ func (d *IPConnDrain) Start(config *DrainConfig) {
 			return
 		}
 	}
-	d.log.Info("Exiting")
 }
 
 func (d *IPConnDrain) Stop() error {

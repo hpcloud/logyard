@@ -73,7 +73,6 @@ func (d *FileDrain) Start(config *DrainConfig) {
 			return
 		}
 	}
-	d.log.Info("Exiting")
 }
 
 func (d *FileDrain) Stop() error {

@@ -89,8 +89,6 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 			return
 		}
 	}
-
-	d.log.Info("Exiting")
 }
 
 func (d *RedisDrain) Stop() error {
