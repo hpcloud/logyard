@@ -101,7 +101,7 @@ func (sub *SubChannel) loop() {
 		}
 
 		if n > 0 {
-			data, err := socket.Recv(0)
+			data, err := socket.Recv(zmq.DONTWAIT)
 			if err != nil {
 				sub.Kill(err)
 				return
