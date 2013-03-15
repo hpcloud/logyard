@@ -106,7 +106,12 @@ func (sub *SubChannel) loop() {
 				sub.Kill(err)
 				return
 			}
-			sub.Ch <- NewMessage(data)
+
+			select {
+			case sub.Ch <- NewMessage(data):
+			case <-sub.Dying():
+				return
+			}
 		}
 	}
 }
