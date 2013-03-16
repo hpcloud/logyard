@@ -5,15 +5,14 @@ import (
 	"fmt"
 	"github.com/ActiveState/log"
 	"github.com/ActiveState/tail"
+	"github.com/alecthomas/gozmq"
 	"logyard"
 	"os"
 	"stackato/server"
 	"unicode/utf8"
 )
 
-func tailLogFile(
-	name string, filepath string,
-	nodeid string, c *logyard.Client) (*tail.Tail, error) {
+func tailLogFile(name string, filepath string, nodeid string) (*tail.Tail, error) {
 	if filepath == "" {
 		filepath = fmt.Sprintf("/s/logs/%s.log", name)
 	}
@@ -34,6 +33,12 @@ func tailLogFile(
 	}
 
 	go func(name string, tail *tail.Tail) {
+		c, err := logyard.NewClientGlobal()
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer c.Close()
+
 		for line := range tail.Lines {
 			// JSON must be a valid UTF-8 string
 			if !utf8.ValidString(line.Text) {
@@ -59,6 +64,9 @@ func tailLogFile(
 }
 
 func main() {
+	major, minor, patch := gozmq.Version()
+	log.Infof("Starting systail (zeromq %d.%d.%d)", major, minor, patch)
+
 	LoadConfig()
 
 	nodeid, err := server.LocalIP()
@@ -67,10 +75,6 @@ func main() {
 	}
 	log.Info("Host IP: ", nodeid)
 
-	c, err := logyard.NewClientGlobal()
-	if err != nil {
-		log.Fatal(err)
-	}
 	tailers := []*tail.Tail{}
 
 	fmt.Printf("%+v\n", Config.LogFiles)
@@ -79,7 +83,7 @@ func main() {
 	}
 
 	for name, logfile := range Config.LogFiles {
-		t, err := tailLogFile(name, logfile, nodeid, c)
+		t, err := tailLogFile(name, logfile, nodeid)
 		if err != nil {
 			log.Fatal(err)
 		}
