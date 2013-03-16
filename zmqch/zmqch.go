@@ -17,7 +17,10 @@ func initializeGlobalContext() {
 	globalContext, globalContextErr = zmq.NewContext()
 }
 
-// GetGlobalContext returns a singleton zmq Context for the current Go process.
+// GetGlobalContext returns a singleton zmq Context for the current Go
+// process. "Each process has its own ZeroMQ context, that is the only
+// object that should be shared among threads. Nothing else, ZeroMQ
+// socket included, should be shared."
 func GetGlobalContext() (zmq.Context, error) {
 	once.Do(initializeGlobalContext)
 	return globalContext, globalContextErr

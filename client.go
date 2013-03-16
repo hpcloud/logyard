@@ -5,6 +5,8 @@ import (
 	"logyard/zmqch"
 )
 
+// A logyard client must not be shared between threads (and thus
+// goroutines).
 // XXX: rewrite the client api to separate read/write. very confusing otherwise.
 type Client struct {
 	ctx     zmq.Context

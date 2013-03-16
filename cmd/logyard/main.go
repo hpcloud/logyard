@@ -9,7 +9,7 @@ import (
 
 func main() {
 	major, minor, patch := gozmq.Version()
-	log.Infof("Using zeromq: %d.%d.%d", major, minor, patch)
+	log.Infof("Starting logyard (zeromq %d.%d.%d)", major, minor, patch)
 
 	doozer, headRev, err := server.NewDoozerClient("logyard")
 	if err != nil {

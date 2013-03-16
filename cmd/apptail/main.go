@@ -2,15 +2,18 @@ package main
 
 import (
 	"github.com/ActiveState/log"
+	"github.com/alecthomas/gozmq"
 	"github.com/nu7hatch/gouuid"
 	"io/ioutil"
-	"logyard"
 	"logyard/stackato/apptail"
 	"os"
 	"stackato/server"
 )
 
 func main() {
+	major, minor, patch := gozmq.Version()
+	log.Infof("Starting apptail (zeromq %d.%d.%d)", major, minor, patch)
+
 	apptail.LoadConfig()
 
 	nodeid, err := server.LocalIP()
@@ -21,14 +24,10 @@ func main() {
 
 	uid := getUID()
 
-	logyardclient, err := logyard.NewClientGlobal()
-	if err != nil {
-		log.Fatal(err)
-	}
 	natsclient := server.NewNatsClient()
 
 	natsclient.Subscribe("logyard."+uid+".newinstance", func(instance *apptail.AppInstance) {
-		apptail.AppInstanceStarted(logyardclient, instance, nodeid)
+		apptail.AppInstanceStarted(instance, nodeid)
 	})
 
 	natsclient.Publish("logyard."+uid+".start", []byte("{}"))

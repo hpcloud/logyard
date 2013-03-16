@@ -58,8 +58,14 @@ func (line *AppLogMessage) Publish(c *logyard.Client, allowInvalidJson bool) err
 
 // AppInstanceStarted is a function to be invoked when dea/stager
 // starts an application instance.
-func AppInstanceStarted(c *logyard.Client, instance *AppInstance, nodeid string) {
+func AppInstanceStarted(instance *AppInstance, nodeid string) {
 	log.Infof("New app instance was started: %+v\n", instance)
+
+	c, err := logyard.NewClientGlobal()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	for _, filename := range instance.LogFiles {
 		go func(filename string) {
 			tail, err := tail.TailFile(filename, tail.Config{
