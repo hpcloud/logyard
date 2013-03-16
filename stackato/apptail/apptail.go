@@ -65,6 +65,7 @@ func AppInstanceStarted(instance *AppInstance, nodeid string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer c.Close()
 
 	for _, filename := range instance.LogFiles {
 		go func(filename string) {
