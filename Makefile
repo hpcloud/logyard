@@ -56,7 +56,7 @@ $(COMMON_DIR):	update
 
 compile:	
 	GOPATH=$(BUILDGOPATH) go install -tags zmq_3_x -v $(NAME)/...
-	GOPATH=$(BULIDGOPATH) go install -v github.com/ActiveState/tail/cmd/gotail
+	GOPATH=$(BUILDGOPATH) go install -v github.com/ActiveState/tail/cmd/gotail
 
 install:	
 	mkdir -p $(INSTGOPATH)/$(SRCDIR)
