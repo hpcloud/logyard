@@ -61,14 +61,14 @@ func (line *AppLogMessage) Publish(c *logyard.Client, allowInvalidJson bool) err
 func AppInstanceStarted(instance *AppInstance, nodeid string) {
 	log.Infof("New app instance was started: %+v\n", instance)
 
-	c, err := logyard.NewClientGlobal()
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer c.Close()
-
 	for _, filename := range instance.LogFiles {
 		go func(filename string) {
+			c, err := logyard.NewClientGlobal(true)
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer c.Close()
+
 			tail, err := tail.TailFile(filename, tail.Config{
 				MaxLineSize: Config.MaxRecordSize,
 				MustExist:   true,

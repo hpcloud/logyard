@@ -42,7 +42,7 @@ func (d *FileDrain) Start(config *DrainConfig) {
 	d.log.Infof("Opened %s", config.Path)
 	defer f.Close()
 
-	c, err := NewClientGlobal()
+	c, err := NewClientGlobal(false)
 	if err != nil {
 		d.Kill(err)
 		return

@@ -36,7 +36,7 @@ func (d *IPConnDrain) Start(config *DrainConfig) {
 	defer conn.Close()
 	d.log.Infof("Connected to %s addr %s\n", config.Scheme, config.Host)
 
-	c, err := NewClientGlobal()
+	c, err := NewClientGlobal(false)
 	if err != nil {
 		d.Kill(err)
 		return

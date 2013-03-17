@@ -1,44 +1,53 @@
 package logyard
 
 import (
+	"github.com/ActiveState/log"
 	zmq "github.com/alecthomas/gozmq"
 	"logyard/zmqch"
 )
 
 // A logyard client must not be shared between threads (and thus
 // goroutines).
-// XXX: rewrite the client api to separate read/write. very confusing otherwise.
 type Client struct {
 	ctx     zmq.Context
 	pubSock zmq.Socket
 }
 
-func NewClient(ctx zmq.Context) *Client {
-	return &Client{ctx, nil}
+// NewClient creates a new logyard Client. If `rw' is set, `Send' will
+// be supported. FIXME: decouple recv and send.
+func NewClient(ctx zmq.Context, rw bool) (*Client, error) {
+	c := &Client{ctx, nil}
+	if rw {
+		var err error
+		c.pubSock, err = NewPubSocket(c.ctx)
+		if err != nil {
+			return nil, err
+		}
+		err = c.pubSock.Connect(PUBLISHER_ADDR)
+		if err != nil {
+			return nil, err
+		}
+
+	}
+	return c, nil
 }
 
-func NewClientGlobal() (*Client, error) {
+func NewClientGlobal(rw bool) (*Client, error) {
 	ctx, err := zmqch.GetGlobalContext()
 	if err != nil {
 		return nil, err
 	}
-	return NewClient(ctx), nil
+	return NewClient(ctx, rw)
 }
 
 func (c *Client) Send(key string, value string) error {
-	err := c.init(true)
-	if err != nil {
-		return err
+	if c.pubSock == nil {
+		log.Fatal("Client was created with rw=false")
 	}
-
 	return c.pubSock.Send([]byte(key+" "+value), 0)
 }
 
 func (c *Client) Recv(filters []string) (*zmqch.SubChannel, error) {
-	err := c.init(false)
-	if err != nil {
-		return nil, err
-	}
 	return zmqch.NewSubChannel(SUBSCRIBER_ADDR, filters), nil
 }
 
@@ -46,19 +55,4 @@ func (c *Client) Close() {
 	if c.pubSock != nil {
 		c.pubSock.Close()
 	}
-}
-
-func (c *Client) init(send bool) error {
-	if send && c.pubSock == nil {
-		var err error
-		c.pubSock, err = NewPubSocket(c.ctx)
-		if err != nil {
-			return err
-		}
-		err = c.pubSock.Connect(PUBLISHER_ADDR)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }

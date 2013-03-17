@@ -22,7 +22,7 @@ func (cmd *recv) DefineFlags(fs *flag.FlagSet) {
 }
 
 func (cmd *recv) Run(args []string) error {
-	c, err := logyard.NewClientGlobal()
+	c, err := logyard.NewClientGlobal(false)
 	if err != nil {
 		log.Fatal(err)
 	}

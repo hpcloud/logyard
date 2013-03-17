@@ -19,7 +19,7 @@ func main() {
 	parser := events.NewStackatoParser()
 	parser.DeleteSamples()
 
-	logyardclient, err := logyard.NewClientGlobal()
+	logyardclient, err := logyard.NewClientGlobal(true)
 	if err != nil {
 		log.Fatal(err)
 	}

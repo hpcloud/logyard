@@ -33,7 +33,7 @@ func tailLogFile(name string, filepath string, nodeid string) (*tail.Tail, error
 	}
 
 	go func(name string, tail *tail.Tail) {
-		c, err := logyard.NewClientGlobal()
+		c, err := logyard.NewClientGlobal(true)
 		if err != nil {
 			log.Fatal(err)
 		}

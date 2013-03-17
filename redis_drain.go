@@ -54,7 +54,7 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 		return
 	}
 	defer d.disconnect()
-	c, err := NewClientGlobal()
+	c, err := NewClientGlobal(false)
 	if err != nil {
 		d.Kill(err)
 		return

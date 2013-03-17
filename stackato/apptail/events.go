@@ -21,7 +21,7 @@ func MonitorCloudEvents(nodeid string) {
 		"event.cc_app_update",
 	}
 
-	c, err := logyard.NewClientGlobal()
+	c, err := logyard.NewClientGlobal(true)
 	if err != nil {
 		log.Fatal(err)
 	}
