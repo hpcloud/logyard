@@ -39,7 +39,7 @@ INSTDIR=$(DESTDIR)$(prefix)
 INSTGOPATH=$(INSTDIR)/$(INSTALLROOT)/go
 INSTBINDIR=$(INSTDIR)/$(INSTALLHOME)/bin
 
-GOPATH=$$PWD/.gopath
+BUILDGOPATH=$$PWD/.gopath
 
 ifdef STACKATO_PKG_BRANCH
     BRANCH_OPT=-b $(STACKATO_PKG_BRANCH)
@@ -48,25 +48,25 @@ endif
 all:	repos compile
 
 repos:	$(COMMON_DIR)
-	mkdir -p $(GOPATH)/src/$(NAME)
-	git archive HEAD | tar -x -C $(GOPATH)/src/$(NAME)
-	GOPATH=$(GOPATH) $(TMPDIR)/goget $(TMPDIR)/goget.manifest
+	mkdir -p $(BUILDGOPATH)/src/$(NAME)
+	git archive HEAD | tar -x -C $(BUILDGOPATH)/src/$(NAME)
+	GOPATH=$(BUILDGOPATH) $(TMPDIR)/goget $(TMPDIR)/goget.manifest
 
 $(COMMON_DIR):	update
 
 compile:	
-	GOPATH=$(GOPATH) go install -tags zmq_3_x -v $(NAME)/...
-	GOPATH=$(GOPATH) go install -v github.com/ActiveState/tail/cmd/gotail
+	GOPATH=$(BUILDGOPATH) go install -tags zmq_3_x -v $(NAME)/...
+	GOPATH=$(BULIDGOPATH) go install -v github.com/ActiveState/tail/cmd/gotail
 
 install:	
 	mkdir -p $(INSTGOPATH)/$(SRCDIR)
-	rsync -a $(GOPATH)/$(SRCDIR)/config.yml $(INSTGOPATH)/$(SRCDIR)
-	rsync -a $(GOPATH)/bin $(INSTGOPATH)
+	rsync -a $(BUILDGOPATH)/$(SRCDIR)/config.yml $(INSTGOPATH)/$(SRCDIR)
+	rsync -a $(BUILDGOPATH)/bin $(INSTGOPATH)
 	mkdir -p $(INSTBINDIR)
 	ln -sf $(GOBINDIR)/logyardctl $(INSTBINDIR)
 
 clean: 
-	GOPATH=$(GOPATH) go clean
+	GOPATH=$(BUILDGOPATH) go clean
 
 # For manual use.
 
@@ -74,3 +74,18 @@ update:
 	rm -rf $(UPDATE)
 	git clone $(BRANCH_OPT) $(COMMON_REPO) $(COMMON_DIR)
 
+# For developer use.
+
+dev-setup:
+	cd .stackato-pkg/update/stackato-common/go && ./goget
+
+dev-install:	fmt dev-installall
+
+dev-installall:
+	go install -tags zmq_3_x -v logyard/... github.com/ActiveState/tail/cmd/gotail
+
+fmt:
+	gofmt -w .
+
+dev-test:
+	go test -v logyard/... github.com/ActiveState/log
