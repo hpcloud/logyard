@@ -45,9 +45,9 @@ func (retry *InfiniteRetryer) Wait(msg string, shouldWarn bool) bool {
 	}
 
 	if shouldWarn {
-		log.Warnf("%s; retrying after %v.", msg, delay)
+		log.Warnf("%s -- retrying after %v.", msg, delay)
 	} else {
-		log.Infof("%s; retrying after %v.", msg, delay)
+		log.Infof("%s -- retrying after %v.", msg, delay)
 	}
 	time.Sleep(delay)
 	retry.lastRetry = time.Now()

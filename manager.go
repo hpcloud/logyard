@@ -120,7 +120,7 @@ func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 			shouldWarn := !strings.HasPrefix(name, "appdrain.")
 
 			proceed := retry.Wait(
-				fmt.Sprintf("[%s] Drain exited abruptly: %s", name, err),
+				fmt.Sprintf("[%s] Drain exited abruptly -- %s", name, err),
 				shouldWarn)
 			if !proceed {
 				return
