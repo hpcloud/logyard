@@ -6,12 +6,11 @@ import (
 )
 
 type InfiniteRetryer struct {
-	started   time.Time
-	lastDelay time.Duration
+	started time.Time
 }
 
 func NewInfiniteRetryer() Retryer {
-	return &InfiniteRetryer{time.Now(), 0}
+	return &InfiniteRetryer{time.Now()}
 }
 
 // Wait appropriately waits until next try. Wait delay is increased
@@ -39,7 +38,6 @@ func (retry *InfiniteRetryer) Wait(msg string, shouldWarn bool) bool {
 	} else {
 		log.Infof("%s; retrying after %v.", msg, delay)
 	}
-	retry.lastDelay = delay
 	time.Sleep(delay)
 	return true
 }
