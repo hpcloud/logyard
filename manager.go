@@ -105,7 +105,7 @@ func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 	}
 
 	manager.running[config.Name] = drain
-	log.Infof("[%s] Starting drain: %+v", name, config)
+	log.Infof("[%s] Starting drain: %s", name, uri)
 	go drain.Start(config)
 
 	go func() {
