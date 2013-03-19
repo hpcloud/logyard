@@ -13,7 +13,7 @@ import (
 // receive incoming lines from all clients.
 type LineServer struct {
 	listener net.Listener
-	Ch       chan string
+	Ch       chan []byte
 }
 
 func NewLineServer(proto, laddr string) (*LineServer, error) {
@@ -21,7 +21,7 @@ func NewLineServer(proto, laddr string) (*LineServer, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &LineServer{l, make(chan string)}, nil
+	return &LineServer{l, make(chan []byte)}, nil
 }
 
 // Start starts the server. Call as a goroutine.
@@ -44,7 +44,7 @@ func (srv *LineServer) Start() {
 				if err != nil {
 					log.Fatal(err)
 				}
-				srv.Ch <- string(line)
+				srv.Ch <- line
 			}
 		}(conn)
 	}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/ActiveState/log"
@@ -65,8 +66,50 @@ func (cmd *stream) Run(args []string) error {
 
 	// Print incoming records
 	for line := range srv.Ch {
-		fmt.Print(line)
+		handleLine(line)
+
 	}
 
 	return nil
+}
+
+func handleLine(line []byte) {
+	var record map[string]interface{}
+
+	if err := json.Unmarshal(line, &record); err != nil {
+		log.Fatal(err)
+	}
+
+	// REFACTOR: use Go interfaces to moves these to the respective
+	// packages (apptail, cloudevents, systail).
+	if _, ok := record["Name"]; ok {
+		// systail
+		name := record["Name"].(string)
+		nodeid := record["NodeID"].(string)
+		text := record["Text"].(string)
+
+		fmt.Println(FgYellow + name + Reset + "@" + FgCyan + nodeid + Reset +
+			" : " + string(text))
+	} else if _, ok = record["Type"]; ok {
+		// cloud event
+		kind := record["Type"].(string)
+		nodeid := record["NodeID"].(string)
+		severity := record["Severity"].(string)
+		process := record["Process"].(string)
+		desc := record["Desc"].(string)
+
+		fmt.Println(FgGreen + kind + "[" + severity + "]" + Reset + " :: " +
+			FgYellow + process + Reset + "@" + FgCyan + nodeid + Reset +
+			" : " + string(desc))
+	} else if _, ok = record["Source"]; ok {
+		// app logs
+		appname := record["AppName"].(string)
+		nodeid := record["NodeID"].(string)
+		source := record["Source"].(string)
+		text := record["Text"].(string)
+		fmt.Println(
+			FgBlue + appname + "[" + source + "]" + Reset + "@" + FgCyan + nodeid + Reset +
+				" : " + string(text))
+
+	}
 }
