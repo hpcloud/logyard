@@ -36,6 +36,7 @@ GOBINDIR=$(INSTALLROOT)/go/bin
 
 INSTDIR=$(DESTDIR)$(prefix)
 
+BASEDIR=$(DESTDIR)$(prefix)$(INSTALLROOT)
 INSTGOPATH=$(INSTDIR)/$(INSTALLROOT)/go
 INSTBINDIR=$(INSTDIR)/$(INSTALLHOME)/bin
 
@@ -62,6 +63,7 @@ install:
 	mkdir -p $(INSTGOPATH)/$(SRCDIR)
 	rsync -a $(BUILDGOPATH)/$(SRCDIR)/config.yml $(INSTGOPATH)/$(SRCDIR)
 	rsync -a $(BUILDGOPATH)/bin $(INSTGOPATH)
+	rsync -a etc $(BASEDIR)
 	mkdir -p $(INSTBINDIR)
 	ln -sf $(GOBINDIR)/logyardctl $(INSTBINDIR)
 

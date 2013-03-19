@@ -1,0 +1,9 @@
+[program:apptail]
+command=/s/go/bin/apptail
+priority=5
+redirect_stderr=true
+stdout_logfile=/s/logs/apptail.log
+stdout_logfile_maxbytes=1MB
+stdout_logfile_backups=3
+autostart=false
+exitcodes=0
