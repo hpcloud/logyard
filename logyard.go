@@ -8,10 +8,11 @@ import (
 )
 
 type logyardConfig struct {
-	Drains map[string]string `doozer:"drains"`
-	Doozer *doozer.Conn
-	Rev    int64                     // Doozer revision this config struct corresponds to
-	Ch     chan *doozerconfig.Change // Doozer changes to the Drains map
+	Drains      map[string]string `doozer:"drains"`
+	RetryLimits map[string]string `doozer:"retrylimits"`
+	Doozer      *doozer.Conn
+	Rev         int64                     // Doozer revision this config struct corresponds to
+	Ch          chan *doozerconfig.Change // Doozer changes to the Drains map
 }
 
 // Logyard configuration object tied to doozer config
@@ -26,6 +27,7 @@ var doozerCfg *doozerconfig.DoozerConfig
 func Init(conn *doozer.Conn, rev int64, monitor bool) {
 	Config = new(logyardConfig)
 	Config.Drains = make(map[string]string)
+	Config.RetryLimits = make(map[string]string)
 	Config.Ch = make(chan *doozerconfig.Change)
 	Config.Rev = rev
 	Config.Doozer = conn

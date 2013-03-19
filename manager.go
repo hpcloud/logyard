@@ -134,21 +134,35 @@ func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 	}()
 }
 
-// chooseRetryer chooses an appropriate retryer for the given drain
-// name.
-func chooseRetryer(name string) retry.Retryer {
-	if strings.HasPrefix(name, "tmp.") {
-		// "tmp" drains -- such as 'kato tail' -- need not be retried
-		// infinitely.
-		return retry.NewFiniteRetryer()
+// NewRetryerForDrain chooses 
+func NewRetryerForDrain(name string) retry.Retryer {
+	var retryLimit time.Duration
+	var err error
+	for prefix, duration := range Config.RetryLimits {
+		if strings.HasPrefix(name, prefix) {
+			if retryLimit, err = time.ParseDuration(duration); err != nil {
+				log.Error("[%s] Invalid duration (%s) for drain prefix %s "+
+					"-- %s -- using default value (infinite)",
+					name, duration, prefix, err)
+				retryLimit = time.Duration(0)
+			}
+			if retryLimit <= retry.RESET_AFTER {
+				log.Error("[%s] Invalid retry limit (%v); must be >%v. "+
+					"Using default value (infinite)",
+					name, retryLimit, retry.RESET_AFTER)
+				retryLimit = time.Duration(0)
+			}
+			break
+		}
 	}
-	return retry.NewInfiniteRetryer()
+	log.Infof("[%s] Choosing retry limit %v", name, retryLimit)
+	return retry.NewProgressiveRetryer(retryLimit)
 }
 
 func (manager *DrainManager) Run() {
 	log.Infof("Found %d drains to start\n", len(Config.Drains))
 	for name, uri := range Config.Drains {
-		manager.StartDrain(name, uri, chooseRetryer(name))
+		manager.StartDrain(name, uri, NewRetryerForDrain(name))
 	}
 
 	// Watch for config changes in doozer
@@ -159,7 +173,7 @@ func (manager *DrainManager) Run() {
 		case doozerconfig.SET:
 			manager.StopDrain(change.Key)
 			manager.StartDrain(
-				change.Key, Config.Drains[change.Key], chooseRetryer(change.Key))
+				change.Key, Config.Drains[change.Key], NewRetryerForDrain(change.Key))
 		}
 	}
 }

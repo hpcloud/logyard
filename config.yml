@@ -15,6 +15,22 @@ drains:
   # Recent cloud events from across the cluster
   builtin.cloudevents: "redis://stackato-core:6464/?filter=event&limit=256&key=cloud_events"
 
+# retrylimit prevents infinite retrying of certain drains (identified
+# by name prefix) by putting a upper bound on the how long a drain
+# will be retried during successive failures.
+# Values must be greater than 21m (21 minutes). See
+# http://golang.org/pkg/time/#ParseDuration for full format
+# specification.
+retrylimits:
+  # retry continually failing temporary drains (eg: kato tail) for max
+  # 25 minutes.
+  tmp.: 25m
+  # retry continually failing app drains (added via `stackato drain
+  # add`) for max 1 day.
+  appdrain.: 24h
+  # All other drains (added via `kato drain add`) will be retried
+  # indefinitely.
+
 apptail:
   max_record_size: 950
 

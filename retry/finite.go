@@ -1,5 +1,7 @@
 package retry
 
+// TODO: delete this file.
+
 import (
 	"github.com/ActiveState/log"
 	"time"
