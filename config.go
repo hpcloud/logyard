@@ -1,4 +1,4 @@
-package config
+package logyard
 
 import (
 	"encoding/json"

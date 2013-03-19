@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/ActiveState/log"
-	"logyard/config"
+	"logyard"
 )
 
 type delete struct {
@@ -23,7 +23,7 @@ func (cmd *delete) Run(args []string) error {
 		return fmt.Errorf("need at least one positional argument")
 	}
 	for _, name := range args {
-		err := config.Config.DeleteDrain(name)
+		err := logyard.Config.DeleteDrain(name)
 		if err != nil {
 			log.Fatal(err)
 		}

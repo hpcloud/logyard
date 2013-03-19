@@ -4,7 +4,6 @@ import (
 	"github.com/ActiveState/log"
 	"github.com/alecthomas/gozmq"
 	"logyard"
-	"logyard/config"
 	"logyard/drain"
 	"stackato/server"
 )
@@ -18,7 +17,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	config.Init(doozer, headRev, true)
+	logyard.Init(doozer, headRev, true)
 	server.Init(doozer, headRev)
 
 	f, err := logyard.NewForwarder()

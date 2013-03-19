@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/ActiveState/doozerconfig"
 	"github.com/ActiveState/log"
-	"logyard/config"
+	"logyard"
 	"logyard/retry"
 	"strings"
 	"sync"
@@ -109,7 +109,7 @@ func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 			if !proceed {
 				return
 			}
-			if _, ok := config.Config.Drains[name]; ok {
+			if _, ok := logyard.Config.Drains[name]; ok {
 				manager.StartDrain(name, uri, retry)
 			} else {
 				log.Infof("[%s] Not restarting because the drain was deleted recently", name)
@@ -122,7 +122,7 @@ func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 func NewRetryerForDrain(name string) retry.Retryer {
 	var retryLimit time.Duration
 	var err error
-	for prefix, duration := range config.Config.RetryLimits {
+	for prefix, duration := range logyard.Config.RetryLimits {
 		if strings.HasPrefix(name, prefix) {
 			if retryLimit, err = time.ParseDuration(duration); err != nil {
 				log.Error("[%s] Invalid duration (%s) for drain prefix %s "+
@@ -144,20 +144,20 @@ func NewRetryerForDrain(name string) retry.Retryer {
 }
 
 func (manager *DrainManager) Run() {
-	log.Infof("Found %d drains to start\n", len(config.Config.Drains))
-	for name, uri := range config.Config.Drains {
+	log.Infof("Found %d drains to start\n", len(logyard.Config.Drains))
+	for name, uri := range logyard.Config.Drains {
 		manager.StartDrain(name, uri, NewRetryerForDrain(name))
 	}
 
 	// Watch for config changes in doozer
-	for change := range config.Config.Ch {
+	for change := range logyard.Config.Ch {
 		switch change.Type {
 		case doozerconfig.DELETE:
 			manager.StopDrain(change.Key)
 		case doozerconfig.SET:
 			manager.StopDrain(change.Key)
 			manager.StartDrain(
-				change.Key, config.Config.Drains[change.Key], NewRetryerForDrain(change.Key))
+				change.Key, logyard.Config.Drains[change.Key], NewRetryerForDrain(change.Key))
 		}
 	}
 }
