@@ -11,7 +11,7 @@ import (
 )
 
 // DrainConstructor is a function that returns a new drain instance
-type DrainConstructor func(*log.Logger) Drain
+type DrainConstructor func(string) Drain
 
 // DRAINS is a map of drain type (string) to its constructur function
 var DRAINS = map[string]DrainConstructor{
@@ -49,7 +49,7 @@ func (manager *DrainManager) StopDrain(drainName string) {
 	manager.mux.Lock()
 	defer manager.mux.Unlock()
 	if drain, ok := manager.running[drainName]; ok {
-		log.Infof("Stopping drain %s ...\n", drainName)
+		log.Infof("[%s] Stopping drain ...\n", drainName)
 
 		// drain.Stop is expected to stop in 1s, but a known bug
 		// (#96008) causes certain drains to hang. workaround it using
@@ -69,13 +69,13 @@ func (manager *DrainManager) StopDrain(drainName string) {
 		}
 
 		if err != nil {
-			log.Errorf("failed to stop drain %s: %s\n", drainName, err)
+			log.Errorf("[%s] Unable to stop drain: %s\n", drainName, err)
 		} else {
 			delete(manager.running, drainName)
-			log.Infof("Removed drain %s\n", drainName)
+			log.Infof("[%s] Removed drain from memory\n", drainName)
 		}
 	} else {
-		log.Infof("Drain %s cannot be stopped; it is not running.\n", drainName)
+		log.Infof("[%s] Drain cannot be stopped (it is not running)", drainName)
 	}
 }
 
@@ -85,28 +85,27 @@ func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 	defer manager.mux.Unlock()
 
 	if _, ok := manager.running[name]; ok {
-		log.Errorf("drain %s is already running", name)
+		log.Errorf("[%s] Cannot start drain (already running)", name)
 		return
 	}
 
 	config, err := DrainConfigFromUri(name, uri)
 	if err != nil {
-		log.Errorf("invalid drain URI (%s): %s\n", uri, err)
+		log.Errorf("[%s] Invalid drain URI (%s): %s", name, uri, err)
 		return
 	}
 
-	drainLog := NewDrainLogger(config)
 	var drain Drain
 
 	if constructor, ok := DRAINS[config.Type]; ok && constructor != nil {
-		drain = constructor(drainLog)
+		drain = constructor(name)
 	} else {
-		log.Info("unsupported drain")
+		log.Info("[%s] Unsupported drain", name)
 		return
 	}
 
 	manager.running[config.Name] = drain
-	drainLog.Infof("Starting drain: %+v", config)
+	log.Infof("[%s] Starting drain: %+v", name, config)
 	go drain.Start(config)
 
 	go func() {
@@ -121,7 +120,7 @@ func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 			shouldWarn := !strings.HasPrefix(name, "appdrain.")
 
 			proceed := retry.Wait(
-				fmt.Sprintf("Drain '%s' exited abruptly -- %s", name, err),
+				fmt.Sprintf("[%s] Drain exited abruptly: %s", name, err),
 				shouldWarn)
 			if !proceed {
 				return
@@ -129,17 +128,10 @@ func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 			if _, ok := Config.Drains[name]; ok {
 				manager.StartDrain(name, uri, retry)
 			} else {
-				log.Infof("Not restarting crashed drain %s, becase it was deleted recently", name)
+				log.Infof("[%s] Not restarting because the drain was deleted recently", name)
 			}
 		}
 	}()
-}
-
-func NewDrainLogger(c *DrainConfig) *log.Logger {
-	l := log.New()
-	prefix := c.Name + "--" + c.Type
-	l.SetPrefix(fmt.Sprintf("[%30s] ", prefix))
-	return l
 }
 
 // chooseRetryer chooses an appropriate retryer for the given drain

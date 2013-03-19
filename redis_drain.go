@@ -12,13 +12,13 @@ import (
 
 type RedisDrain struct {
 	client *redis.Client
-	log    *log.Logger
+	name   string
 	tomb.Tomb
 }
 
-func NewRedisDrain(log *log.Logger) Drain {
+func NewRedisDrain(name string) Drain {
 	rd := &RedisDrain{}
-	rd.log = log
+	rd.name = name
 	return rd
 }
 
@@ -92,13 +92,12 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 }
 
 func (d *RedisDrain) Stop() error {
-	d.log.Info("Stopping...")
 	d.Kill(nil)
 	return d.Wait()
 }
 
 func (d *RedisDrain) connect(addr string, database int64) error {
-	d.log.Infof("Connecting to redis %s[%d] ...", addr, database)
+	log.Infof("[%s] Connecting to redis %s[%d] ...", d.name, addr, database)
 
 	// Bug #97459 -- is the redis client library faking connection for
 	// the down server?
@@ -109,7 +108,7 @@ func (d *RedisDrain) connect(addr string, database int64) error {
 	conn.Close()
 
 	d.client = redis.NewTCPClient(addr, "", database)
-	d.log.Infof("Connected to redis %s[%d]", addr, database)
+	log.Infof("[%s] Connected to redis %s[%d]", d.name, addr, database)
 	return nil
 }
 

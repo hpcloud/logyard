@@ -9,13 +9,12 @@ import (
 
 // IPConnDrain is a drain based on net.IPConn
 type IPConnDrain struct {
-	log *log.Logger
+	name string
 	tomb.Tomb
 }
 
-func NewIPConnDrain(log *log.Logger) Drain {
-	rd := &IPConnDrain{}
-	rd.log = log
+func NewIPConnDrain(name string) Drain {
+	rd := &IPConnDrain{name, tomb.Tomb{}}
 	return rd
 }
 
@@ -27,14 +26,14 @@ func (d *IPConnDrain) Start(config *DrainConfig) {
 		return
 	}
 
-	d.log.Infof("Connecting to %s addr %s ...", config.Scheme, config.Host)
+	log.Infof("[%s] Connecting to %s addr %s ...", d.name, config.Scheme, config.Host)
 	conn, err := net.DialTimeout(config.Scheme, config.Host, 10*time.Second)
 	if err != nil {
 		d.Kill(err)
 		return
 	}
 	defer conn.Close()
-	d.log.Infof("Connected to %s addr %s\n", config.Scheme, config.Host)
+	log.Infof("[%s] Connected to %s addr %s\n", d.name, config.Scheme, config.Host)
 
 	c, err := NewClientGlobal(false)
 	if err != nil {
@@ -70,7 +69,6 @@ func (d *IPConnDrain) Start(config *DrainConfig) {
 }
 
 func (d *IPConnDrain) Stop() error {
-	d.log.Info("Stopping...")
 	d.Kill(nil)
 	return d.Wait()
 }

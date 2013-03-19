@@ -8,13 +8,13 @@ import (
 
 // File drain is used to write to local files
 type FileDrain struct {
-	log *log.Logger
+	name string
 	tomb.Tomb
 }
 
-func NewFileDrain(log *log.Logger) Drain {
+func NewFileDrain(name string) Drain {
 	rd := &FileDrain{}
-	rd.log = log
+	rd.name = name
 	return rd
 }
 
@@ -33,13 +33,13 @@ func (d *FileDrain) Start(config *DrainConfig) {
 	} else {
 		mode |= os.O_APPEND
 	}
-	d.log.Infof("Opening %s (overwrite=%v) ...", config.Path, overwrite)
+	log.Infof("[%s] Opening %s (overwrite=%v) ...", d.name, config.Path, overwrite)
 	f, err := os.OpenFile(config.Path, mode, 0600)
 	if err != nil {
 		d.Kill(err)
 		return
 	}
-	d.log.Infof("Opened %s", config.Path)
+	log.Infof("[%s] Opened %s", d.name, config.Path)
 	defer f.Close()
 
 	c, err := NewClientGlobal(false)
@@ -76,7 +76,6 @@ func (d *FileDrain) Start(config *DrainConfig) {
 }
 
 func (d *FileDrain) Stop() error {
-	d.log.Info("Stopping...")
 	d.Kill(nil)
 	return d.Wait()
 }
