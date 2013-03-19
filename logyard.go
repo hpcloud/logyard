@@ -63,7 +63,7 @@ func Init(conn *doozer.Conn, rev int64, monitor bool) {
 
 // DeleteDrain deletes the drain from doozer tree
 func (Config *logyardConfig) DeleteDrain(name string) error {
-	err := Config.Doozer.Del(DOOZER_PREFIX+"drains/"+name, Config.Rev)
+	err := Config.Doozer.Del(DOOZER_PREFIX+"drains/"+name, -1)
 	if err != nil {
 		return err
 	}
