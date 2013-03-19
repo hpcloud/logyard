@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/ActiveState/log"
-	"logyard"
+	"logyard/config"
 	"net/url"
 	"strings"
 )
@@ -93,7 +93,7 @@ func (cmd *add) Run(args []string) error {
 	fmt.Printf("Added drain %s: %s\n", name, uri)
 
 	Init()
-	err := logyard.Config.AddDrain(name, uri)
+	err := config.Config.AddDrain(name, uri)
 	if err != nil {
 		log.Fatal(err)
 	}

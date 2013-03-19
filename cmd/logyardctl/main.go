@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/ActiveState/log"
-	"logyard"
 	"logyard/cmd/logyardctl/subcommand"
+	"logyard/config"
 	"stackato/server"
 )
 
@@ -13,7 +13,7 @@ func Init() {
 		log.Fatal(err)
 	}
 
-	logyard.Init(conn, headRev, false)
+	config.Init(conn, headRev, false)
 }
 
 func main() {

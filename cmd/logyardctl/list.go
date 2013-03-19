@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"logyard"
+	"logyard/config"
 	"sort"
 )
 
@@ -19,8 +19,8 @@ func (cmd *list) DefineFlags(fs *flag.FlagSet) {
 
 func (cmd *list) Run(args []string) error {
 	Init()
-	for _, name := range sortedKeys(logyard.Config.Drains) {
-		uri := logyard.Config.Drains[name]
+	for _, name := range sortedKeys(config.Config.Drains) {
+		uri := config.Config.Drains[name]
 		fmt.Printf("%-20s\t%s\n", name, uri)
 	}
 	return nil

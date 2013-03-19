@@ -1,8 +1,9 @@
-package logyard
+package drain
 
 import (
 	"github.com/ActiveState/log"
 	"launchpad.net/tomb"
+	"logyard"
 	"os"
 )
 
@@ -42,7 +43,7 @@ func (d *FileDrain) Start(config *DrainConfig) {
 	log.Infof("[%s] Opened %s", d.name, config.Path)
 	defer f.Close()
 
-	c, err := NewClientGlobal(false)
+	c, err := logyard.NewClientGlobal(false)
 	if err != nil {
 		d.Kill(err)
 		return

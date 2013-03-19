@@ -1,31 +1,15 @@
-package logyard
+package drain
 
 import (
 	"fmt"
 	"github.com/ActiveState/doozerconfig"
 	"github.com/ActiveState/log"
+	"logyard/config"
 	"logyard/retry"
 	"strings"
 	"sync"
 	"time"
 )
-
-// DrainConstructor is a function that returns a new drain instance
-type DrainConstructor func(string) Drain
-
-// DRAINS is a map of drain type (string) to its constructur function
-var DRAINS = map[string]DrainConstructor{
-	"redis": NewRedisDrain,
-	"tcp":   NewIPConnDrain,
-	"udp":   NewIPConnDrain,
-	"file":  NewFileDrain,
-}
-
-type Drain interface {
-	Start(*DrainConfig)
-	Stop() error
-	Wait() error
-}
 
 const configKey = "/proc/logyard/config/"
 
@@ -89,7 +73,7 @@ func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 		return
 	}
 
-	config, err := DrainConfigFromUri(name, uri)
+	cfg, err := DrainConfigFromUri(name, uri)
 	if err != nil {
 		log.Errorf("[%s] Invalid drain URI (%s): %s", name, uri, err)
 		return
@@ -97,16 +81,16 @@ func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 
 	var drain Drain
 
-	if constructor, ok := DRAINS[config.Type]; ok && constructor != nil {
+	if constructor, ok := DRAINS[cfg.Type]; ok && constructor != nil {
 		drain = constructor(name)
 	} else {
 		log.Info("[%s] Unsupported drain", name)
 		return
 	}
 
-	manager.running[config.Name] = drain
+	manager.running[cfg.Name] = drain
 	log.Infof("[%s] Starting drain: %s", name, uri)
-	go drain.Start(config)
+	go drain.Start(cfg)
 
 	go func() {
 		err = drain.Wait()
@@ -125,7 +109,7 @@ func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 			if !proceed {
 				return
 			}
-			if _, ok := Config.Drains[name]; ok {
+			if _, ok := config.Config.Drains[name]; ok {
 				manager.StartDrain(name, uri, retry)
 			} else {
 				log.Infof("[%s] Not restarting because the drain was deleted recently", name)
@@ -138,7 +122,7 @@ func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 func NewRetryerForDrain(name string) retry.Retryer {
 	var retryLimit time.Duration
 	var err error
-	for prefix, duration := range Config.RetryLimits {
+	for prefix, duration := range config.Config.RetryLimits {
 		if strings.HasPrefix(name, prefix) {
 			if retryLimit, err = time.ParseDuration(duration); err != nil {
 				log.Error("[%s] Invalid duration (%s) for drain prefix %s "+
@@ -160,20 +144,20 @@ func NewRetryerForDrain(name string) retry.Retryer {
 }
 
 func (manager *DrainManager) Run() {
-	log.Infof("Found %d drains to start\n", len(Config.Drains))
-	for name, uri := range Config.Drains {
+	log.Infof("Found %d drains to start\n", len(config.Config.Drains))
+	for name, uri := range config.Config.Drains {
 		manager.StartDrain(name, uri, NewRetryerForDrain(name))
 	}
 
 	// Watch for config changes in doozer
-	for change := range Config.Ch {
+	for change := range config.Config.Ch {
 		switch change.Type {
 		case doozerconfig.DELETE:
 			manager.StopDrain(change.Key)
 		case doozerconfig.SET:
 			manager.StopDrain(change.Key)
 			manager.StartDrain(
-				change.Key, Config.Drains[change.Key], NewRetryerForDrain(change.Key))
+				change.Key, config.Config.Drains[change.Key], NewRetryerForDrain(change.Key))
 		}
 	}
 }

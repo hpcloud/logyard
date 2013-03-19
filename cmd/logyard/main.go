@@ -4,6 +4,8 @@ import (
 	"github.com/ActiveState/log"
 	"github.com/alecthomas/gozmq"
 	"logyard"
+	"logyard/config"
+	"logyard/drain"
 	"stackato/server"
 )
 
@@ -16,14 +18,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	logyard.Init(doozer, headRev, true)
+	config.Init(doozer, headRev, true)
 	server.Init(doozer, headRev)
 
 	f, err := logyard.NewForwarder()
 	if err != nil {
 		log.Fatal(err)
 	}
-	m := logyard.NewDrainManager()
+	m := drain.NewDrainManager()
 	log.Info("Starting drain manager")
 	go m.Run()
 	log.Info("Running zmq forwarder", f)

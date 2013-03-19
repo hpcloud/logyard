@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/ActiveState/log"
-	"logyard"
+	"logyard/config"
 	"os"
 	"os/signal"
 	"stackato/server"
@@ -45,7 +45,7 @@ func (cmd *stream) Run(args []string) error {
 		[]string{name})
 
 	deleteDrain := func() {
-		if err := logyard.Config.DeleteDrain(name); err != nil {
+		if err := config.Config.DeleteDrain(name); err != nil {
 			log.Fatal(err)
 		}
 		log.Infof("Deleted drain %s", name)

@@ -1,10 +1,11 @@
-package logyard
+package drain
 
 import (
 	"fmt"
 	"github.com/ActiveState/log"
 	"github.com/vmihailenco/redis"
 	"launchpad.net/tomb"
+	"logyard"
 	"net"
 	"stackato/server"
 	"strings"
@@ -54,7 +55,7 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 		return
 	}
 	defer d.disconnect()
-	c, err := NewClientGlobal(false)
+	c, err := logyard.NewClientGlobal(false)
 	if err != nil {
 		d.Kill(err)
 		return

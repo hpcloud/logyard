@@ -1,8 +1,9 @@
-package logyard
+package drain
 
 import (
 	"github.com/ActiveState/log"
 	"launchpad.net/tomb"
+	"logyard"
 	"net"
 	"time"
 )
@@ -35,7 +36,7 @@ func (d *IPConnDrain) Start(config *DrainConfig) {
 	defer conn.Close()
 	log.Infof("[%s] Connected to %s addr %s\n", d.name, config.Scheme, config.Host)
 
-	c, err := NewClientGlobal(false)
+	c, err := logyard.NewClientGlobal(false)
 	if err != nil {
 		d.Kill(err)
 		return
