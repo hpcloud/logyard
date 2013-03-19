@@ -19,6 +19,7 @@ func Init() {
 func main() {
 	subcommand.Parse(
 		new(recv),
+		new(stream),
 		new(list),
 		new(add),
 		new(delete))
