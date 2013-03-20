@@ -27,14 +27,16 @@ func (d *IPConnDrain) Start(config *DrainConfig) {
 		return
 	}
 
-	log.Infof("[drain:%s] Connecting to %s addr %s ...", d.name, config.Scheme, config.Host)
+	log.Infof("[drain:%s] Attempting to connect to %s://%s ...",
+		d.name, config.Scheme, config.Host)
 	conn, err := net.DialTimeout(config.Scheme, config.Host, 10*time.Second)
 	if err != nil {
 		d.Kill(err)
 		return
 	}
 	defer conn.Close()
-	log.Infof("[drain:%s] Connected to %s addr %s\n", d.name, config.Scheme, config.Host)
+	log.Infof("[drain:%s] Successfully connected to %s://%s.",
+		d.name, config.Scheme, config.Host)
 
 	c, err := logyard.NewClientGlobal(false)
 	if err != nil {
