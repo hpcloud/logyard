@@ -64,7 +64,7 @@ func AppInstanceStarted(instance *AppInstance, nodeid string) {
 
 	for _, filename := range instance.LogFiles {
 		go func(filename string) {
-			pub, err := logyard.Logyard.NewPublisher()
+			pub, err := logyard.Broker.NewPublisher()
 			if err != nil {
 				log.Fatal(err)
 			}

@@ -22,7 +22,7 @@ func (cmd *recv) DefineFlags(fs *flag.FlagSet) {
 }
 
 func (cmd *recv) Run(args []string) error {
-	sub := logyard.Logyard.Subscribe([]string{*cmd.filter})
+	sub := logyard.Broker.Subscribe([]string{*cmd.filter})
 	for msg := range sub.Ch {
 		if *cmd.hideprefix {
 			fmt.Println(msg.Value)

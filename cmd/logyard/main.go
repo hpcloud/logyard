@@ -24,5 +24,5 @@ func main() {
 	log.Info("Starting drain manager")
 	go m.Run()
 	log.Info("Running zeroutine broker")
-	logyard.RunBroker()
+	log.Fatal(logyard.Broker.Run())
 }

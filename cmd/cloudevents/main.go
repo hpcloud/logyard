@@ -19,12 +19,12 @@ func main() {
 	parser := events.NewStackatoParser()
 	parser.DeleteSamples()
 
-	pub, err := logyard.Logyard.NewPublisher()
+	pub, err := logyard.Broker.NewPublisher()
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer pub.Stop()
-	sub := logyard.Logyard.Subscribe([]string{"systail"})
+	sub := logyard.Broker.Subscribe([]string{"systail"})
 	defer sub.Stop()
 
 	log.Info("Watching the systail stream on this node")

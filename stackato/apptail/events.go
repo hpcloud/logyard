@@ -22,9 +22,9 @@ func MonitorCloudEvents(nodeid string) {
 		"event.cc_app_update",
 	}
 
-	sub := logyard.Logyard.Subscribe(filters)
+	sub := logyard.Broker.Subscribe(filters)
 	defer sub.Stop()
-	pub, err := logyard.Logyard.NewPublisher()
+	pub, err := logyard.Broker.NewPublisher()
 	if err != nil {
 		log.Fatal(err)
 	}

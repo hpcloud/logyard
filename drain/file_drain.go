@@ -44,7 +44,7 @@ func (d *FileDrain) Start(config *DrainConfig) {
 	log.Infof("[drain:%s] Successfully opened %s.", d.name, config.Path)
 	defer f.Close()
 
-	sub := logyard.Logyard.Subscribe(config.Filters)
+	sub := logyard.Broker.Subscribe(config.Filters)
 	defer sub.Stop()
 
 	for {

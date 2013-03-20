@@ -56,7 +56,7 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 	}
 	defer d.disconnect()
 
-	sub := logyard.Logyard.Subscribe(config.Filters)
+	sub := logyard.Broker.Subscribe(config.Filters)
 	defer sub.Stop()
 
 	for {

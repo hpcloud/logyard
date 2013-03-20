@@ -8,7 +8,7 @@ import (
 // separated by a single space assuming the convention that Key is
 // used to match against subscribe filters.
 type Message struct {
-	Key   string // FIXME: use []byte througout for performance
+	Key   string
 	Value string
 }
 

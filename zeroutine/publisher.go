@@ -4,7 +4,8 @@ import (
 	zmq "github.com/alecthomas/gozmq"
 )
 
-// Publisher creates a thread/goroutine-unsafe publisher.
+// Publisher creates a thread/goroutine-unsafe publisher. Only a
+// single goroutine must use the created publisher.
 type Publisher struct {
 	sock zmq.Socket
 }
@@ -16,7 +17,6 @@ func newPublisher(sock zmq.Socket) *Publisher {
 }
 
 func (p *Publisher) Publish(key string, value string) error {
-	// TODO: use []byte only
 	return p.sock.Send([]byte(key+" "+key), 0)
 }
 

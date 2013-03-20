@@ -38,7 +38,7 @@ func (d *IPConnDrain) Start(config *DrainConfig) {
 	log.Infof("[drain:%s] Successfully connected to %s://%s.",
 		d.name, config.Scheme, config.Host)
 
-	sub := logyard.Logyard.Subscribe(config.Filters)
+	sub := logyard.Broker.Subscribe(config.Filters)
 	defer sub.Stop()
 
 	for {

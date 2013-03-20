@@ -33,7 +33,7 @@ func tailLogFile(name string, filepath string, nodeid string) (*tail.Tail, error
 	}
 
 	go func(name string, tail *tail.Tail) {
-		pub, err := logyard.Logyard.NewPublisher()
+		pub, err := logyard.Broker.NewPublisher()
 		if err != nil {
 			log.Fatal(err)
 		}

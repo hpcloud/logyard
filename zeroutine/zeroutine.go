@@ -11,7 +11,8 @@ type Zeroutine struct {
 	SubscribeFilter string
 }
 
-func (z Zeroutine) RunBroker() error {
+// Run runs a broker for this zeroutine configuration.
+func (z Zeroutine) Run() error {
 	broker, err := NewBroker(z)
 	if err == nil {
 		err = broker.Run()
