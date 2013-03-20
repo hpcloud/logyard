@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"logyard"
 	"net/url"
 	"strconv"
 	"strings"
@@ -58,6 +59,7 @@ func (c *DrainConfig) GetParamBool(key string, def bool) (bool, error) {
 // FormatJSON formats the given message and returns it with a newline
 func (c *DrainConfig) FormatJSON(data string) ([]byte, error) {
 	if c.Format == nil {
+		// raw JSON
 		return []byte(data + "\n"), nil
 	}
 	record := make(map[string]interface{})
@@ -117,6 +119,12 @@ func DrainConfigFromUri(name string, uri string) (*DrainConfig, error) {
 	// parse format
 	if format, ok := params["format"]; ok {
 		params.Del("format")
+
+		if value, ok := logyard.Config.DrainFormats[format[0]]; ok {
+			// using config.yml format value
+			format[0] = value
+		}
+
 		tmpl, err := template.New(name).Parse(format[0])
 		if err != nil {
 			return nil, err
@@ -124,7 +132,7 @@ func DrainConfigFromUri(name string, uri string) (*DrainConfig, error) {
 		config.Format = tmpl
 	}
 
-	// assign rest of the params
+	// assign the rest of the params
 	config.Params = make(map[string]string)
 	for k, v := range params {
 		// NOTE: multi value params are not supported.

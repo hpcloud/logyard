@@ -15,6 +15,13 @@ drains:
   # Recent cloud events from across the cluster
   builtin.cloudevents: "redis://stackato-core:6464/?filter=event&limit=256&key=cloud_events"
 
+# A configurable set of format strings that can be referred to from
+# the drain URIs.
+drainformats:
+  systail: "{{.Name}}@{{.NodeID}}: {{.Text}}"
+  apptail: "{{.HumanTime}} {{.Source}}.{{.InstanceIndex}}: {{.Text}}"
+  event: "{{.Type}}@{{.NodeID}}: {{.Desc}} -- via {{.Process}}"
+
 # retrylimit prevents infinite retrying of certain drains (identified
 # by name prefix) by putting a upper bound on the how long a drain
 # will be retried during successive failures.
