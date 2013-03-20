@@ -34,13 +34,13 @@ func (d *FileDrain) Start(config *DrainConfig) {
 	} else {
 		mode |= os.O_APPEND
 	}
-	log.Infof("[%s] Opening %s (overwrite=%v) ...", d.name, config.Path, overwrite)
+	log.Infof("[drain:%s] Opening %s (overwrite=%v) ...", d.name, config.Path, overwrite)
 	f, err := os.OpenFile(config.Path, mode, 0600)
 	if err != nil {
 		d.Kill(err)
 		return
 	}
-	log.Infof("[%s] Opened %s", d.name, config.Path)
+	log.Infof("[drain:%s] Opened %s", d.name, config.Path)
 	defer f.Close()
 
 	c, err := logyard.NewClientGlobal(false)

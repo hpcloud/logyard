@@ -98,7 +98,7 @@ func (d *RedisDrain) Stop() error {
 }
 
 func (d *RedisDrain) connect(addr string, database int64) error {
-	log.Infof("[%s] Connecting to redis %s[%d] ...", d.name, addr, database)
+	log.Infof("[drain:%s] Connecting to redis %s[%d] ...", d.name, addr, database)
 
 	// Bug #97459 -- is the redis client library faking connection for
 	// the down server?
@@ -109,7 +109,7 @@ func (d *RedisDrain) connect(addr string, database int64) error {
 	conn.Close()
 
 	d.client = redis.NewTCPClient(addr, "", database)
-	log.Infof("[%s] Connected to redis %s[%d]", d.name, addr, database)
+	log.Infof("[drain:%s] Connected to redis %s[%d]", d.name, addr, database)
 	return nil
 }
 

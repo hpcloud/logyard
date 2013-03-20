@@ -33,7 +33,7 @@ func (manager *DrainManager) StopDrain(drainName string) {
 	manager.mux.Lock()
 	defer manager.mux.Unlock()
 	if drain, ok := manager.running[drainName]; ok {
-		log.Infof("[%s] Stopping drain ...\n", drainName)
+		log.Infof("[drain:%s] Stopping drain ...\n", drainName)
 
 		// drain.Stop is expected to stop in 1s, but a known bug
 		// (#96008) causes certain drains to hang. workaround it using
@@ -53,13 +53,13 @@ func (manager *DrainManager) StopDrain(drainName string) {
 		}
 
 		if err != nil {
-			log.Errorf("[%s] Unable to stop drain: %s\n", drainName, err)
+			log.Errorf("[drain:%s] Unable to stop drain: %s\n", drainName, err)
 		} else {
 			delete(manager.running, drainName)
-			log.Infof("[%s] Removed drain from memory\n", drainName)
+			log.Infof("[drain:%s] Removed drain from memory\n", drainName)
 		}
 	} else {
-		log.Infof("[%s] Drain cannot be stopped (it is not running)", drainName)
+		log.Infof("[drain:%s] Drain cannot be stopped (it is not running)", drainName)
 	}
 }
 
@@ -69,13 +69,13 @@ func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 	defer manager.mux.Unlock()
 
 	if _, ok := manager.running[name]; ok {
-		log.Errorf("[%s] Cannot start drain (already running)", name)
+		log.Errorf("[drain:%s] Cannot start drain (already running)", name)
 		return
 	}
 
 	cfg, err := DrainConfigFromUri(name, uri)
 	if err != nil {
-		log.Errorf("[%s] Invalid drain URI (%s): %s", name, uri, err)
+		log.Errorf("[drain:%s] Invalid drain URI (%s): %s", name, uri, err)
 		return
 	}
 
@@ -84,12 +84,12 @@ func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 	if constructor, ok := DRAINS[cfg.Type]; ok && constructor != nil {
 		drain = constructor(name)
 	} else {
-		log.Info("[%s] Unsupported drain", name)
+		log.Info("[drain:%s] Unsupported drain", name)
 		return
 	}
 
 	manager.running[cfg.Name] = drain
-	log.Infof("[%s] Starting drain: %s", name, uri)
+	log.Infof("[drain:%s] Starting drain: %s", name, uri)
 	go drain.Start(cfg)
 
 	go func() {
@@ -104,7 +104,7 @@ func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 			shouldWarn := !strings.HasPrefix(name, "appdrain.")
 
 			proceed := retry.Wait(
-				fmt.Sprintf("[%s] Drain exited abruptly -- %s", name, err),
+				fmt.Sprintf("[drain:%s] Drain exited abruptly -- %s", name, err),
 				shouldWarn)
 			if !proceed {
 				return
@@ -112,7 +112,7 @@ func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 			if _, ok := logyard.Config.Drains[name]; ok {
 				manager.StartDrain(name, uri, retry)
 			} else {
-				log.Infof("[%s] Not restarting because the drain was deleted recently", name)
+				log.Infof("[drain:%s] Not restarting because the drain was deleted recently", name)
 			}
 		}
 	}()
@@ -125,13 +125,13 @@ func NewRetryerForDrain(name string) retry.Retryer {
 	for prefix, duration := range logyard.Config.RetryLimits {
 		if strings.HasPrefix(name, prefix) {
 			if retryLimit, err = time.ParseDuration(duration); err != nil {
-				log.Error("[%s] Invalid duration (%s) for drain prefix %s "+
+				log.Error("[drain:%s] Invalid duration (%s) for drain prefix %s "+
 					"-- %s -- using default value (infinite)",
 					name, duration, prefix, err)
 				retryLimit = time.Duration(0)
 			}
 			if retryLimit <= retry.RESET_AFTER {
-				log.Error("[%s] Invalid retry limit (%v); must be >%v. "+
+				log.Error("[drain:%s] Invalid retry limit (%v); must be >%v. "+
 					"Using default value (infinite)",
 					name, retryLimit, retry.RESET_AFTER)
 				retryLimit = time.Duration(0)
@@ -139,7 +139,7 @@ func NewRetryerForDrain(name string) retry.Retryer {
 			break
 		}
 	}
-	log.Infof("[%s] Choosing retry limit %v", name, retryLimit)
+	log.Infof("[drain:%s] Choosing retry limit %v", name, retryLimit)
 	return retry.NewProgressiveRetryer(retryLimit)
 }
 
