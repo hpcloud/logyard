@@ -33,11 +33,11 @@ func tailLogFile(name string, filepath string, nodeid string) (*tail.Tail, error
 	}
 
 	go func(name string, tail *tail.Tail) {
-		c, err := logyard.NewClientGlobal(true)
+		pub, err := logyard.Logyard.NewPublisher()
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer c.Close()
+		defer pub.Stop()
 
 		for line := range tail.Lines {
 			// JSON must be a valid UTF-8 string
@@ -53,7 +53,7 @@ func tailLogFile(name string, filepath string, nodeid string) (*tail.Tail, error
 				tail.Killf("Failed to convert to JSON: %v", err)
 				break
 			}
-			err = c.Send("systail."+name+"."+nodeid, string(data))
+			err = pub.Publish("systail."+name+"."+nodeid, string(data))
 			if err != nil {
 				log.Fatal("Failed to send to logyard: ", err)
 			}

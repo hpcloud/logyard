@@ -22,22 +22,15 @@ func (cmd *recv) DefineFlags(fs *flag.FlagSet) {
 }
 
 func (cmd *recv) Run(args []string) error {
-	c, err := logyard.NewClientGlobal(false)
-	if err != nil {
-		log.Fatal(err)
-	}
-	ss, err := c.Recv([]string{*cmd.filter})
-	if err != nil {
-		log.Fatal(err)
-	}
-	for msg := range ss.Ch {
+	sub := logyard.Logyard.Subscribe([]string{*cmd.filter})
+	for msg := range sub.Ch {
 		if *cmd.hideprefix {
 			fmt.Println(msg.Value)
 		} else {
 			fmt.Println(msg.Key, msg.Value)
 		}
 	}
-	err = ss.Wait()
+	err := sub.Wait()
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -38,23 +38,12 @@ func (d *IPConnDrain) Start(config *DrainConfig) {
 	log.Infof("[drain:%s] Successfully connected to %s://%s.",
 		d.name, config.Scheme, config.Host)
 
-	c, err := logyard.NewClientGlobal(false)
-	if err != nil {
-		d.Kill(err)
-		return
-	}
-	defer c.Close()
-
-	ss, err := c.Recv(config.Filters)
-	if err != nil {
-		d.Kill(err)
-		return
-	}
-	defer ss.Stop()
+	sub := logyard.Logyard.Subscribe(config.Filters)
+	defer sub.Stop()
 
 	for {
 		select {
-		case msg := <-ss.Ch:
+		case msg := <-sub.Ch:
 			data, err := config.FormatJSON(msg.Value)
 			if err != nil {
 				d.Kill(err)

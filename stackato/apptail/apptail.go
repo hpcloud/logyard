@@ -6,6 +6,7 @@ import (
 	"github.com/ActiveState/log"
 	"github.com/ActiveState/tail"
 	"logyard"
+	"logyard/zeroutine"
 	"path/filepath"
 	"unicode/utf8"
 )
@@ -34,7 +35,7 @@ type AppLogMessage struct {
 }
 
 // Publish publishes the receiver to logyard. Must be called once.
-func (line *AppLogMessage) Publish(c *logyard.Client, allowInvalidJson bool) error {
+func (line *AppLogMessage) Publish(pub *zeroutine.Publisher, allowInvalidJson bool) error {
 	// JSON must be a UTF-8 encoded string.
 	if !utf8.ValidString(line.Text) {
 		line.Text = string([]rune(line.Text))
@@ -49,7 +50,7 @@ func (line *AppLogMessage) Publish(c *logyard.Client, allowInvalidJson bool) err
 		}
 	}
 	key := fmt.Sprintf("apptail.%d", line.AppID)
-	err = c.Send(key, string(data))
+	err = pub.Publish(key, string(data))
 	if err != nil {
 		return fmt.Errorf("Failed to send applogmsg to logyard: ", err)
 	}
@@ -63,11 +64,11 @@ func AppInstanceStarted(instance *AppInstance, nodeid string) {
 
 	for _, filename := range instance.LogFiles {
 		go func(filename string) {
-			c, err := logyard.NewClientGlobal(true)
+			pub, err := logyard.Logyard.NewPublisher()
 			if err != nil {
 				log.Fatal(err)
 			}
-			defer c.Close()
+			defer pub.Stop()
 
 			tail, err := tail.TailFile(filename, tail.Config{
 				MaxLineSize: Config.MaxRecordSize,
@@ -95,7 +96,7 @@ func AppInstanceStarted(instance *AppInstance, nodeid string) {
 					AppID:         instance.AppID,
 					AppName:       instance.AppName,
 					NodeID:        nodeid,
-				}).Publish(c, false)
+				}).Publish(pub, false)
 				if err != nil {
 					log.Fatal(err)
 				}

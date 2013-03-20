@@ -19,15 +19,14 @@ func main() {
 	parser := events.NewStackatoParser()
 	parser.DeleteSamples()
 
-	logyardclient, err := logyard.NewClientGlobal(true)
+	pub, err := logyard.Logyard.NewPublisher()
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer pub.Stop()
+	sub := logyard.Logyard.Subscribe([]string{"systail"})
+	defer sub.Stop()
 
-	sub, err := logyardclient.Recv([]string{"systail"})
-	if err != nil {
-		log.Fatal(err)
-	}
 	log.Info("Watching the systail stream on this node")
 	for message := range sub.Ch {
 		var record SystailRecord
@@ -51,7 +50,10 @@ func main() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			logyardclient.Send("event."+event.Type, string(data))
+			err = pub.Publish("event."+event.Type, string(data))
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 
 	}

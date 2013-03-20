@@ -19,6 +19,23 @@ func (z Zeroutine) RunBroker() error {
 	return err
 }
 
+// Subscribe returns a subscription (channel) for given filters.
+func (z Zeroutine) Subscribe(filters []string) *Subscription {
+	return newSubscription(z.SubAddr, filters)
+}
+
+func (z Zeroutine) NewPublisher() (*Publisher, error) {
+	sock, err := z.NewPubSocket()
+	if err != nil {
+		return nil, err
+	}
+	if err = sock.Connect(z.PubAddr); err != nil {
+		sock.Close()
+		return nil, err
+	}
+	return newPublisher(sock), nil
+}
+
 func (z Zeroutine) NewPubSocket() (zmq.Socket, error) {
 	ctx, err := GetGlobalContext()
 	if err != nil {

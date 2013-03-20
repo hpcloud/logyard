@@ -5,6 +5,7 @@ import (
 	"github.com/ActiveState/log"
 	"logyard"
 	"logyard/stackato/events"
+	"logyard/zeroutine"
 	"time"
 )
 
@@ -21,17 +22,16 @@ func MonitorCloudEvents(nodeid string) {
 		"event.cc_app_update",
 	}
 
-	c, err := logyard.NewClientGlobal(true)
+	sub := logyard.Logyard.Subscribe(filters)
+	defer sub.Stop()
+	pub, err := logyard.Logyard.NewPublisher()
 	if err != nil {
 		log.Fatal(err)
 	}
-	ss, err := c.Recv(filters)
-	if err != nil {
-		log.Fatal(err)
-	}
+	defer pub.Stop()
 
 	log.Info("Listening for app relevant cloud events...")
-	for msg := range ss.Ch {
+	for msg := range sub.Ch {
 		var event events.Event
 		err := json.Unmarshal([]byte(msg.Value), &event)
 		if err != nil {
@@ -44,27 +44,27 @@ func MonitorCloudEvents(nodeid string) {
 			name := event.Info["app_name"].(string)
 			index := int(event.Info["instance"].(float64))
 			source := "stackato.dea"
-			PublishAppLog(c, appid, name, index, source, nodeid, &event)
+			PublishAppLog(pub, appid, name, index, source, nodeid, &event)
 		case "event.stager_start", "event.stager_end":
 			appid := int(event.Info["app_id"].(float64))
 			name := event.Info["app_name"].(string)
-			PublishAppLog(c, appid, name, -1, "stackato.stager", nodeid, &event)
+			PublishAppLog(pub, appid, name, -1, "stackato.stager", nodeid, &event)
 		case "event.cc_app_update":
 			appid := int(event.Info["app_id"].(float64))
 			name := event.Info["app_name"].(string)
-			PublishAppLog(c, appid, name, -1, "stackato.controller", nodeid, &event)
+			PublishAppLog(pub, appid, name, -1, "stackato.controller", nodeid, &event)
 		}
 	}
 	log.Warn("Finished listening for app relevant cloud events.")
 
-	err = ss.Wait()
+	err = sub.Wait()
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
 func PublishAppLog(
-	client *logyard.Client, app_id int, app_name string,
+	pub *zeroutine.Publisher, app_id int, app_name string,
 	index int, source string, nodeid string, event *events.Event) {
 
 	err := (&AppLogMessage{
@@ -77,7 +77,7 @@ func PublishAppLog(
 		AppID:         app_id,
 		AppName:       app_name,
 		NodeID:        nodeid,
-	}).Publish(client, true)
+	}).Publish(pub, true)
 
 	if err != nil {
 		log.Fatal(err)

@@ -10,15 +10,15 @@ import (
 type Subscription struct {
 	addr    string
 	filters []string
-	Ch      chan *Message // Channel to read messages from
+	Ch      chan Message // Channel to read messages from
 	tomb.Tomb
 }
 
-func NewSubscription(addr string, filters []string) *Subscription {
+func newSubscription(addr string, filters []string) *Subscription {
 	sub := new(Subscription)
 	sub.addr = addr
 	sub.filters = filters
-	sub.Ch = make(chan *Message)
+	sub.Ch = make(chan Message)
 	go sub.loop()
 	return sub
 }
@@ -86,7 +86,7 @@ func (sub *Subscription) loop() {
 	}
 }
 
-// Stop stops this Subscription with a max delay of 1 second.
+// Stop stops this Subscription
 func (sub *Subscription) Stop() error {
 	sub.Kill(nil)
 	return sub.Wait()
