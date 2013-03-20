@@ -26,7 +26,7 @@ func (z Zeroutine) Subscribe(filters ...string) *Subscription {
 }
 
 func (z Zeroutine) NewPublisher() (*Publisher, error) {
-	sock, err := z.NewPubSocket()
+	sock, err := newPubSocket(z.BufferSize)
 	if err != nil {
 		return nil, err
 	}
@@ -34,10 +34,11 @@ func (z Zeroutine) NewPublisher() (*Publisher, error) {
 		sock.Close()
 		return nil, err
 	}
+	// Publisher.Close is responsible for closing `sock`.
 	return newPublisher(sock), nil
 }
 
-func (z Zeroutine) NewPubSocket() (zmq.Socket, error) {
+func newPubSocket(bufferSize int) (zmq.Socket, error) {
 	ctx, err := GetGlobalContext()
 	if err != nil {
 		return nil, err
@@ -50,7 +51,7 @@ func (z Zeroutine) NewPubSocket() (zmq.Socket, error) {
 
 	// prevent 0mq from infinitely buffering messages
 	for _, hwm := range []zmq.IntSocketOption{zmq.SNDHWM, zmq.RCVHWM} {
-		err = sock.SetSockOptInt(hwm, z.BufferSize)
+		err = sock.SetSockOptInt(hwm, bufferSize)
 		if err != nil {
 			sock.Close()
 			return nil, err

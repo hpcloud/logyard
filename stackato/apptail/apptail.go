@@ -31,10 +31,10 @@ type AppLogMessage struct {
 	InstanceIndex int
 	AppID         int
 	AppName       string
-	NodeID        string // Host (DEA) IP of this app instance
+	NodeID        string // Host (DEA,stager) IP of this app instance
 }
 
-// Publish publishes the receiver to logyard. Must be called once.
+// Publish publishes an AppLogMessage to logyard after sanity checks.
 func (line *AppLogMessage) Publish(pub *zeroutine.Publisher, allowInvalidJson bool) error {
 	// JSON must be a UTF-8 encoded string.
 	if !utf8.ValidString(line.Text) {
@@ -44,15 +44,15 @@ func (line *AppLogMessage) Publish(pub *zeroutine.Publisher, allowInvalidJson bo
 	data, err := json.Marshal(line)
 	if err != nil {
 		if allowInvalidJson {
-			log.Errorf("cannot encode %+v into JSON; %s. Skipping this message", line, err)
+			log.Errorf("Cannot encode %+v into JSON -- %s. Skipping this message", line, err)
 		} else {
-			return fmt.Errorf("Failed to convert applogmsg to JSON: ", err)
+			return fmt.Errorf("Failed to encode app log record to JSON: ", err)
 		}
 	}
 	key := fmt.Sprintf("apptail.%d", line.AppID)
 	err = pub.Publish(key, string(data))
 	if err != nil {
-		return fmt.Errorf("Failed to send applogmsg to logyard: ", err)
+		return fmt.Errorf("Failed to publish app log record to logyard: ", err)
 	}
 	return nil
 }
@@ -60,7 +60,7 @@ func (line *AppLogMessage) Publish(pub *zeroutine.Publisher, allowInvalidJson bo
 // AppInstanceStarted is a function to be invoked when dea/stager
 // starts an application instance.
 func AppInstanceStarted(instance *AppInstance, nodeid string) {
-	log.Infof("New app instance was started: %+v\n", instance)
+	log.Infof("New app instance was started: %+v", instance)
 
 	for _, filename := range instance.LogFiles {
 		go func(filename string) {
@@ -78,7 +78,7 @@ func AppInstanceStarted(instance *AppInstance, nodeid string) {
 				ReOpen:      false,
 				Poll:        true})
 			if err != nil {
-				log.Errorf("Cannot tail file (%s); %s\n", filename, err)
+				log.Errorf("Cannot tail file (%s); %s", filename, err)
 				return
 			}
 			for line := range tail.Lines {

@@ -50,12 +50,12 @@ func tailLogFile(name string, filepath string, nodeid string) (*tail.Tail, error
 				"Name":     name,
 				"NodeID":   nodeid})
 			if err != nil {
-				tail.Killf("Failed to convert to JSON: %v", err)
+				tail.Killf("Failed to encode to JSON: %v", err)
 				break
 			}
 			err = pub.Publish("systail."+name+"."+nodeid, string(data))
 			if err != nil {
-				log.Fatal("Failed to send to logyard: ", err)
+				log.Fatal("Failed to publish to logyard: ", err)
 			}
 		}
 	}(name, t)

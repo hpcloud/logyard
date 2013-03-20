@@ -38,7 +38,7 @@ func NewBroker(options Zeroutine) (*Broker, error) {
 	}
 
 	// Subscribers speak to the backend socket
-	if b.backend, err = options.NewPubSocket(); err != nil {
+	if b.backend, err = newPubSocket(options.BufferSize); err != nil {
 		b.ctx.Close()
 		return nil, err
 	}
