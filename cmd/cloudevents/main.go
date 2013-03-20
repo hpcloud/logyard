@@ -24,7 +24,7 @@ func main() {
 		log.Fatal(err)
 	}
 	defer pub.Stop()
-	sub := logyard.Broker.Subscribe([]string{"systail"})
+	sub := logyard.Broker.Subscribe("systail")
 	defer sub.Stop()
 
 	log.Info("Watching the systail stream on this node")

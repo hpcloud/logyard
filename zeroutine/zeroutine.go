@@ -21,7 +21,7 @@ func (z Zeroutine) Run() error {
 }
 
 // Subscribe returns a subscription (channel) for given filters.
-func (z Zeroutine) Subscribe(filters []string) *Subscription {
+func (z Zeroutine) Subscribe(filters ...string) *Subscription {
 	return newSubscription(z.SubAddr, filters)
 }
 

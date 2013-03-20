@@ -13,17 +13,16 @@ import (
 func MonitorCloudEvents(nodeid string) {
 	// TODO: add more events; will require modifying the log
 	// invokation to include the required app id
-	filters := []string{
+	sub := logyard.Broker.Subscribe(
 		"event.dea_start",
 		"event.dea_ready",
 		"event.dea_stop",
 		"event.stager_start",
 		"event.stager_end",
 		"event.cc_app_update",
-	}
-
-	sub := logyard.Broker.Subscribe(filters)
+	)
 	defer sub.Stop()
+
 	pub, err := logyard.Broker.NewPublisher()
 	if err != nil {
 		log.Fatal(err)
