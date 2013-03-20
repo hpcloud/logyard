@@ -3,8 +3,8 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"fmt"
 	"github.com/ActiveState/log"
+	"github.com/wsxiaoys/terminal/color"
 	"logyard"
 	"os"
 	"os/signal"
@@ -88,8 +88,7 @@ func handleLine(line []byte) {
 		nodeid := record["NodeID"].(string)
 		text := record["Text"].(string)
 
-		fmt.Println(FgYellow + name + Reset + "@" + FgCyan + nodeid + Reset +
-			" : " + string(text))
+		color.Printf("@y%s@|@@@c%s@|: %s\n", name, nodeid, text)
 	} else if _, ok = record["Type"]; ok {
 		// cloud event
 		kind := record["Type"].(string)
@@ -98,18 +97,17 @@ func handleLine(line []byte) {
 		process := record["Process"].(string)
 		desc := record["Desc"].(string)
 
-		fmt.Println(FgGreen + kind + "[" + severity + "]" + Reset + " :: " +
-			FgYellow + process + Reset + "@" + FgCyan + nodeid + Reset +
-			" : " + string(desc))
+		color.Printf("@g%s[%s]@|::@y%s@!@@@c%s@|: %s\n",
+			kind, severity, process, nodeid, desc)
 	} else if _, ok = record["Source"]; ok {
 		// app logs
 		appname := record["AppName"].(string)
 		nodeid := record["NodeID"].(string)
 		source := record["Source"].(string)
 		text := record["Text"].(string)
-		fmt.Println(
-			FgBlue + appname + "[" + source + "]" + Reset + "@" + FgCyan + nodeid + Reset +
-				" : " + string(text))
+
+		color.Printf("@b%s[%s]@|@@@c%s@|: %s\n",
+			appname, source, nodeid, text)
 
 	}
 }
