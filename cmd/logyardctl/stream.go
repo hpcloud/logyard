@@ -3,12 +3,15 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"github.com/ActiveState/log"
 	"github.com/wsxiaoys/terminal/color"
 	"logyard"
+	"math/rand"
 	"os"
 	"os/signal"
 	"stackato/server"
+	"time"
 )
 
 type stream struct {
@@ -27,7 +30,9 @@ func (cmd *stream) Run(args []string) error {
 		return err
 	}
 
-	addr := ipaddr + ":7777"
+	rand.Seed(time.Now().UnixNano())
+	port := 7000 + rand.Intn(1000)
+	addr := fmt.Sprintf("%s:%d", ipaddr, port)
 
 	srv, err := NewLineServer("tcp", addr)
 	if err != nil {
@@ -36,7 +41,7 @@ func (cmd *stream) Run(args []string) error {
 
 	go srv.Start()
 
-	name := "tmp.logyardctl.stream.7777"
+	name := fmt.Sprintf("tmp.logyardctl.%s-%d", ipaddr, port)
 
 	// REFACTOR: extract URI construction of add.go and then use
 	// logyard.AddDrain directly.
@@ -58,7 +63,7 @@ func (cmd *stream) Run(args []string) error {
 	signal.Notify(sigCh, os.Interrupt)
 	go func() {
 		for sig := range sigCh {
-			log.Infof("captured %v", sig)
+			log.Infof("Captured signal '%v'", sig)
 			deleteDrain()
 			os.Exit(0)
 		}
