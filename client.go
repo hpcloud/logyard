@@ -47,8 +47,8 @@ func (c *Client) Send(key string, value string) error {
 	return c.pubSock.Send([]byte(key+" "+value), 0)
 }
 
-func (c *Client) Recv(filters []string) (*zeroutine.SubChannel, error) {
-	return zeroutine.NewSubChannel(SUBSCRIBER_ADDR, filters), nil
+func (c *Client) Recv(filters []string) (*zeroutine.Subscription, error) {
+	return zeroutine.NewSubscription(SUBSCRIBER_ADDR, filters), nil
 }
 
 func (c *Client) Close() {

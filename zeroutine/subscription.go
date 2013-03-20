@@ -3,33 +3,19 @@ package zeroutine
 import (
 	zmq "github.com/alecthomas/gozmq"
 	"launchpad.net/tomb"
-	"strings"
 	"time"
 )
 
-// Message represents a zeromq message with two parts, Key and Value
-// separated by a single space assuming the convention that Key is
-// used to match against subscribe filters.
-type Message struct {
-	Key   string
-	Value string
-}
-
-func NewMessage(data []byte) *Message {
-	parts := strings.SplitN(string(data), " ", 2)
-	return &Message{parts[0], parts[1]}
-}
-
-// SubChannel provides channel abstraction over zmq SUB sockets
-type SubChannel struct {
+// Subscription provides channel abstraction over zmq SUB sockets
+type Subscription struct {
 	addr    string
 	filters []string
 	Ch      chan *Message // Channel to read messages from
 	tomb.Tomb
 }
 
-func NewSubChannel(addr string, filters []string) *SubChannel {
-	sub := new(SubChannel)
+func NewSubscription(addr string, filters []string) *Subscription {
+	sub := new(Subscription)
 	sub.addr = addr
 	sub.filters = filters
 	sub.Ch = make(chan *Message)
@@ -37,7 +23,7 @@ func NewSubChannel(addr string, filters []string) *SubChannel {
 	return sub
 }
 
-func (sub *SubChannel) loop() {
+func (sub *Subscription) loop() {
 	defer sub.Done()
 	defer close(sub.Ch)
 
@@ -100,8 +86,8 @@ func (sub *SubChannel) loop() {
 	}
 }
 
-// Stop stops this SubChannel with a max delay of 1 second.
-func (sub *SubChannel) Stop() error {
+// Stop stops this Subscription with a max delay of 1 second.
+func (sub *Subscription) Stop() error {
 	sub.Kill(nil)
 	return sub.Wait()
 }
