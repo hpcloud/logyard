@@ -17,7 +17,7 @@ func newPublisher(sock zmq.Socket) *Publisher {
 }
 
 func (p *Publisher) Publish(key string, value string) error {
-	return p.sock.Send([]byte(key+" "+key), 0)
+	return p.sock.Send([]byte(key+" "+value), 0)
 }
 
 func (p *Publisher) Stop() {
