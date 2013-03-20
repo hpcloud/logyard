@@ -10,17 +10,10 @@ type Broker struct {
 	ctx      zmq.Context
 	frontend zmq.Socket
 	backend  zmq.Socket
-	options  BrokerOptions
+	options  Zeroutine
 }
 
-type BrokerOptions struct {
-	PubAddr         string // Publisher Endpoint Address 
-	SubAddr         string // Subscriber Endpoint Address
-	BufferSize      int    // Memory buffer size
-	SubscribeFilter string
-}
-
-func NewBroker(options BrokerOptions) (*Broker, error) {
+func NewBroker(options Zeroutine) (*Broker, error) {
 	var err error
 	b := new(Broker)
 	b.options = options
@@ -45,7 +38,7 @@ func NewBroker(options BrokerOptions) (*Broker, error) {
 	}
 
 	// Subscribers speak to the backend socket
-	if b.backend, err = NewPubSocket(b.ctx, options.BufferSize); err != nil {
+	if b.backend, err = options.NewPubSocket(); err != nil {
 		b.ctx.Close()
 		return nil, err
 	}
@@ -59,22 +52,4 @@ func NewBroker(options BrokerOptions) (*Broker, error) {
 
 func (b *Broker) Run() error {
 	return zmq.Device(zmq.FORWARDER, b.frontend, b.backend)
-}
-
-func NewPubSocket(ctx zmq.Context, bufsize int) (zmq.Socket, error) {
-	sock, err := ctx.NewSocket(zmq.PUB)
-	if err != nil {
-		return nil, err
-	}
-
-	// prevent 0mq from infinitely buffering messages
-	for _, hwm := range []zmq.IntSocketOption{zmq.SNDHWM, zmq.RCVHWM} {
-		err = sock.SetSockOptInt(hwm, bufsize)
-		if err != nil {
-			sock.Close()
-			return nil, err
-		}
-	}
-
-	return sock, nil
 }

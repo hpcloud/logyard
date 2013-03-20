@@ -19,11 +19,11 @@ func NewClient(ctx zmq.Context, rw bool) (*Client, error) {
 	c := &Client{ctx, nil}
 	if rw {
 		var err error
-		c.pubSock, err = zeroutine.NewPubSocket(c.ctx, MEMORY_BUFFER_SIZE)
+		c.pubSock, err = Logyard.NewPubSocket()
 		if err != nil {
 			return nil, err
 		}
-		err = c.pubSock.Connect(PUBLISHER_ADDR)
+		err = c.pubSock.Connect(Logyard.PubAddr)
 		if err != nil {
 			return nil, err
 		}
@@ -48,7 +48,7 @@ func (c *Client) Send(key string, value string) error {
 }
 
 func (c *Client) Recv(filters []string) (*zeroutine.Subscription, error) {
-	return zeroutine.NewSubscription(SUBSCRIBER_ADDR, filters), nil
+	return zeroutine.NewSubscription(Logyard.SubAddr, filters), nil
 }
 
 func (c *Client) Close() {
