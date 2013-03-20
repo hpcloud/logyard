@@ -20,13 +20,9 @@ func main() {
 	logyard.Init(doozer, headRev, true)
 	server.Init(doozer, headRev)
 
-	f, err := logyard.NewForwarder()
-	if err != nil {
-		log.Fatal(err)
-	}
 	m := drain.NewDrainManager()
 	log.Info("Starting drain manager")
 	go m.Run()
-	log.Info("Running zmq forwarder", f)
-	f.Run()
+	log.Info("Running zeroutine broker")
+	logyard.RunBroker()
 }

@@ -3,6 +3,7 @@ package logyard
 import (
 	"github.com/ActiveState/log"
 	zmq "github.com/alecthomas/gozmq"
+	"logyard/zeroutine"
 	"logyard/zmqch"
 )
 
@@ -19,7 +20,7 @@ func NewClient(ctx zmq.Context, rw bool) (*Client, error) {
 	c := &Client{ctx, nil}
 	if rw {
 		var err error
-		c.pubSock, err = NewPubSocket(c.ctx)
+		c.pubSock, err = zeroutine.NewPubSocket(c.ctx, MEMORY_BUFFER_SIZE)
 		if err != nil {
 			return nil, err
 		}
