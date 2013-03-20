@@ -22,6 +22,9 @@ func (z Zeroutine) Run() error {
 
 // Subscribe returns a subscription (channel) for given filters.
 func (z Zeroutine) Subscribe(filters ...string) *Subscription {
+	if len(filters) == 0 {
+		panic("Subscribe requires at least one filter")
+	}
 	return newSubscription(z.SubAddr, filters)
 }
 
