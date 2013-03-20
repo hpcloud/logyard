@@ -74,7 +74,7 @@ func (retry *ProgressiveRetryer) Wait(msg string, shouldWarn bool) bool {
 	if delay == 0 {
 		msg = fmt.Sprintf("%s -- retrying now.", msg)
 	} else {
-		msg = fmt.Sprintf("%s -- retrying after %v..", msg, delay)
+		msg = fmt.Sprintf("%s -- retrying after %v.", msg, delay)
 	}
 
 	if shouldWarn {
