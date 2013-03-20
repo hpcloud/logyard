@@ -4,7 +4,6 @@ import (
 	"github.com/ActiveState/log"
 	zmq "github.com/alecthomas/gozmq"
 	"logyard/zeroutine"
-	"logyard/zmqch"
 )
 
 // A logyard client must not be shared between threads (and thus
@@ -34,7 +33,7 @@ func NewClient(ctx zmq.Context, rw bool) (*Client, error) {
 }
 
 func NewClientGlobal(rw bool) (*Client, error) {
-	ctx, err := zmqch.GetGlobalContext()
+	ctx, err := zeroutine.GetGlobalContext()
 	if err != nil {
 		return nil, err
 	}
@@ -48,8 +47,8 @@ func (c *Client) Send(key string, value string) error {
 	return c.pubSock.Send([]byte(key+" "+value), 0)
 }
 
-func (c *Client) Recv(filters []string) (*zmqch.SubChannel, error) {
-	return zmqch.NewSubChannel(SUBSCRIBER_ADDR, filters), nil
+func (c *Client) Recv(filters []string) (*zeroutine.SubChannel, error) {
+	return zeroutine.NewSubChannel(SUBSCRIBER_ADDR, filters), nil
 }
 
 func (c *Client) Close() {

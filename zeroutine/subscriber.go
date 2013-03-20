@@ -1,30 +1,11 @@
-// zmqch package provides channel abstractions for zeromq sockets.
-package zmqch
+package zeroutine
 
 import (
 	zmq "github.com/alecthomas/gozmq"
 	"launchpad.net/tomb"
 	"strings"
-	"sync"
 	"time"
 )
-
-var globalContext zmq.Context
-var globalContextErr error
-var once sync.Once
-
-func initializeGlobalContext() {
-	globalContext, globalContextErr = zmq.NewContext()
-}
-
-// GetGlobalContext returns a singleton zmq Context for the current Go
-// process. "Each process has its own ZeroMQ context, that is the only
-// object that should be shared among threads. Nothing else, ZeroMQ
-// socket included, should be shared."
-func GetGlobalContext() (zmq.Context, error) {
-	once.Do(initializeGlobalContext)
-	return globalContext, globalContextErr
-}
 
 // Message represents a zeromq message with two parts, Key and Value
 // separated by a single space assuming the convention that Key is

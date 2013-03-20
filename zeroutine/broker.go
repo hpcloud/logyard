@@ -25,7 +25,7 @@ func NewBroker(options BrokerOptions) (*Broker, error) {
 	b := new(Broker)
 	b.options = options
 
-	if b.ctx, err = zmq.NewContext(); err != nil {
+	if b.ctx, err = GetGlobalContext(); err != nil {
 		return nil, err
 	}
 
