@@ -23,10 +23,7 @@ func MonitorCloudEvents(nodeid string) {
 	)
 	defer sub.Stop()
 
-	pub, err := logyard.Broker.NewPublisher()
-	if err != nil {
-		log.Fatal(err)
-	}
+	pub := logyard.Broker.NewPublisherMust()
 	defer pub.Stop()
 
 	log.Info("Listening for app relevant cloud events...")
@@ -56,7 +53,7 @@ func MonitorCloudEvents(nodeid string) {
 	}
 	log.Warn("Finished listening for app relevant cloud events.")
 
-	err = sub.Wait()
+	err := sub.Wait()
 	if err != nil {
 		log.Fatal(err)
 	}

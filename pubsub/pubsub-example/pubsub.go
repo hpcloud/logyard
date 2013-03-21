@@ -16,18 +16,12 @@ func init() {
 }
 
 func RunPublisher(name string) {
-	pub, err := Broker.NewPublisher()
-	if err != nil {
-		panic(err)
-	}
+	pub := Broker.NewPublisherMust()
 	defer pub.Stop()
 
 	count := 1
 	for {
-		err := pub.Publish(name, fmt.Sprintf("%d", count))
-		if err != nil {
-			panic(err)
-		}
+		pub.MustPublish(name, fmt.Sprintf("%d", count))
 		count += 1
 		time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond)
 	}

@@ -19,10 +19,7 @@ func main() {
 	parser := events.NewStackatoParser()
 	parser.DeleteSamples()
 
-	pub, err := logyard.Broker.NewPublisher()
-	if err != nil {
-		log.Fatal(err)
-	}
+	pub := logyard.Broker.NewPublisherMust()
 	defer pub.Stop()
 	sub := logyard.Broker.Subscribe("systail")
 	defer sub.Stop()
@@ -50,10 +47,7 @@ func main() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			err = pub.Publish("event."+event.Type, string(data))
-			if err != nil {
-				log.Fatal(err)
-			}
+			pub.MustPublish("event."+event.Type, string(data))
 		}
 
 	}

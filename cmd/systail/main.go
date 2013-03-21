@@ -33,10 +33,7 @@ func tailLogFile(name string, filepath string, nodeid string) (*tail.Tail, error
 	}
 
 	go func(name string, tail *tail.Tail) {
-		pub, err := logyard.Broker.NewPublisher()
-		if err != nil {
-			log.Fatal(err)
-		}
+		pub := logyard.Broker.NewPublisherMust()
 		defer pub.Stop()
 
 		for line := range tail.Lines {
@@ -53,10 +50,7 @@ func tailLogFile(name string, filepath string, nodeid string) (*tail.Tail, error
 				tail.Killf("Failed to encode to JSON: %v", err)
 				break
 			}
-			err = pub.Publish("systail."+name+"."+nodeid, string(data))
-			if err != nil {
-				log.Fatal("Failed to publish to logyard: ", err)
-			}
+			pub.MustPublish("systail."+name+"."+nodeid, string(data))
 		}
 	}(name, t)
 

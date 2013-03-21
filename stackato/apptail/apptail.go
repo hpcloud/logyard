@@ -50,10 +50,7 @@ func (line *AppLogMessage) Publish(pub *pubsub.Publisher, allowInvalidJson bool)
 		}
 	}
 	key := fmt.Sprintf("apptail.%d", line.AppID)
-	err = pub.Publish(key, string(data))
-	if err != nil {
-		return fmt.Errorf("Failed to publish app log record to logyard: ", err)
-	}
+	pub.MustPublish(key, string(data))
 	return nil
 }
 
@@ -64,10 +61,7 @@ func AppInstanceStarted(instance *AppInstance, nodeid string) {
 
 	for _, filename := range instance.LogFiles {
 		go func(filename string) {
-			pub, err := logyard.Broker.NewPublisher()
-			if err != nil {
-				log.Fatal(err)
-			}
+			pub := logyard.Broker.NewPublisherMust()
 			defer pub.Stop()
 
 			tail, err := tail.TailFile(filename, tail.Config{

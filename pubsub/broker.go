@@ -45,6 +45,14 @@ func (z Broker) NewPublisher() (*Publisher, error) {
 	return newPublisher(sock), nil
 }
 
+func (z Broker) NewPublisherMust() *Publisher {
+	pub, err := z.NewPublisher()
+	if err != nil {
+		panic(err)
+	}
+	return pub
+}
+
 func newPubSocket(bufferSize int) (zmq.Socket, error) {
 	ctx, err := GetGlobalContext()
 	if err != nil {
