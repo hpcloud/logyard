@@ -75,11 +75,18 @@ func (retry *ProgressiveRetryer) Wait(msg string) bool {
 		}
 	}
 
+	// Log the retry action
 	if delay == 0 {
 		// Warn only for the first retry until next reset.
 		log.Warnf(fmt.Sprintf("%s -- retrying now.", msg))
 	} else {
-		log.Infof(fmt.Sprintf("%s -- retrying after %v.", msg, delay))
+		var msg string
+		if retry.hasRetryLimit() {
+			msg = fmt.Sprintf("%s -- retrying after %v (max %v).", msg, delay, retry.retryLimit)
+		} else {
+			msg = fmt.Sprintf("%s -- retrying after %v.", msg, delay)
+		}
+		log.Infof(msg)
 	}
 
 	time.Sleep(delay)
