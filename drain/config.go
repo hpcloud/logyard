@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"logyard"
 	"net/url"
 	"strconv"
 	"strings"
@@ -79,7 +78,7 @@ func (c *DrainConfig) FormatJSON(data string) ([]byte, error) {
 // Examples:
 //  - "redis://core/?max_records=1500&filter=apptail"
 //  - "udp://logs.papertrailapp.com:35234/?filter=systail&filter=events"
-func DrainConfigFromUri(name string, uri string) (*DrainConfig, error) {
+func DrainConfigFromUri(name string, uri string, namedFormats map[string]string) (*DrainConfig, error) {
 	url, err := url.Parse(uri)
 	if err != nil {
 		return nil, err
@@ -120,8 +119,7 @@ func DrainConfigFromUri(name string, uri string) (*DrainConfig, error) {
 	if format, ok := params["format"]; ok {
 		params.Del("format")
 
-		if value, ok := logyard.Config.DrainFormats[format[0]]; ok {
-			// using config.yml format value
+		if value, ok := namedFormats[format[0]]; ok {
 			format[0] = value
 		}
 

@@ -21,7 +21,7 @@ func RunPublisher(name string) {
 		panic(err)
 	}
 	defer pub.Stop()
-	
+
 	count := 1
 	for {
 		err := pub.Publish(name, fmt.Sprintf("%d", count))

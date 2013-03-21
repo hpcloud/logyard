@@ -49,7 +49,7 @@ func TestMonolithic(t *testing.T) {
 		for count > 0 {
 			msg := <-sub.Ch
 			if msg.Key == "test" {
-				if _, ok := data[msg.Value]; !ok  {
+				if _, ok := data[msg.Value]; !ok {
 					t.Fatalf("got garbage data: %s", msg.Value)
 				}
 				count -= 1

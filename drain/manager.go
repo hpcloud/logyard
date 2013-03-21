@@ -73,7 +73,7 @@ func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 		return
 	}
 
-	cfg, err := DrainConfigFromUri(name, uri)
+	cfg, err := DrainConfigFromUri(name, uri, logyard.Config.DrainFormats)
 	if err != nil {
 		log.Errorf("[drain:%s] Invalid drain URI (%s): %s", name, uri, err)
 		return
