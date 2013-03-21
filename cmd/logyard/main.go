@@ -23,6 +23,6 @@ func main() {
 	m := drain.NewDrainManager()
 	log.Info("Starting drain manager")
 	go m.Run()
-	log.Info("Running zmqsub broker")
+	log.Info("Running pubsub broker")
 	log.Fatal(logyard.Broker.Run())
 }

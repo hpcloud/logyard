@@ -1,4 +1,4 @@
-package zmqsub
+package pubsub
 
 import (
 	zmq "github.com/alecthomas/gozmq"
@@ -11,7 +11,7 @@ type Broker struct {
 	SubscribeFilter string
 }
 
-// Run runs a broker for this zmqsub configuration.
+// Run runs a broker for this pubsub configuration.
 func (z Broker) Run() error {
 	f, err := NewForwarder(z)
 	if err == nil {

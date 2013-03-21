@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	"logyard/zmqsub"
+	"logyard/pubsub"
 	"math/rand"
 	"time"
 )
 
-var Broker zmqsub.Broker
+var Broker pubsub.Broker
 
 func init() {
 	Broker.PubAddr = "tcp://127.0.0.1:4000"
