@@ -1,21 +1,21 @@
-package zeroutine
+package zmqsub
 
 import (
 	zmq "github.com/alecthomas/gozmq"
 )
 
-// Broker is a zeromq forwarder device acting as a broker between
+// Forwarder is a zeromq forwarder device acting as a broker between
 // multiple publishers and multiple subscribes.
-type Broker struct {
+type Forwarder struct {
 	ctx      zmq.Context
 	frontend zmq.Socket
 	backend  zmq.Socket
-	options  Zeroutine
+	options  Broker
 }
 
-func NewBroker(options Zeroutine) (*Broker, error) {
+func NewForwarder(options Broker) (*Forwarder, error) {
 	var err error
-	b := new(Broker)
+	b := new(Forwarder)
 	b.options = options
 
 	if b.ctx, err = GetGlobalContext(); err != nil {
@@ -50,6 +50,6 @@ func NewBroker(options Zeroutine) (*Broker, error) {
 	return b, nil
 }
 
-func (b *Broker) Run() error {
+func (b *Forwarder) Run() error {
 	return zmq.Device(zmq.FORWARDER, b.frontend, b.backend)
 }

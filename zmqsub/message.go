@@ -1,4 +1,4 @@
-package zeroutine
+package zmqsub
 
 import (
 	"strings"

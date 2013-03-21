@@ -6,7 +6,7 @@ import (
 	"github.com/ActiveState/log"
 	"github.com/ActiveState/tail"
 	"logyard"
-	"logyard/zeroutine"
+	"logyard/zmqsub"
 	"path/filepath"
 	"unicode/utf8"
 )
@@ -35,7 +35,7 @@ type AppLogMessage struct {
 }
 
 // Publish publishes an AppLogMessage to logyard after sanity checks.
-func (line *AppLogMessage) Publish(pub *zeroutine.Publisher, allowInvalidJson bool) error {
+func (line *AppLogMessage) Publish(pub *zmqsub.Publisher, allowInvalidJson bool) error {
 	// JSON must be a UTF-8 encoded string.
 	if !utf8.ValidString(line.Text) {
 		line.Text = string([]rune(line.Text))

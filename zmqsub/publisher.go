@@ -1,4 +1,4 @@
-package zeroutine
+package zmqsub
 
 import (
 	zmq "github.com/alecthomas/gozmq"

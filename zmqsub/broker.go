@@ -1,34 +1,34 @@
-package zeroutine
+package zmqsub
 
 import (
 	zmq "github.com/alecthomas/gozmq"
 )
 
-type Zeroutine struct {
+type Broker struct {
 	PubAddr         string // Publisher Endpoint Address 
 	SubAddr         string // Subscriber Endpoint Address
 	BufferSize      int    // Memory buffer size
 	SubscribeFilter string
 }
 
-// Run runs a broker for this zeroutine configuration.
-func (z Zeroutine) Run() error {
-	broker, err := NewBroker(z)
+// Run runs a broker for this zmqsub configuration.
+func (z Broker) Run() error {
+	f, err := NewForwarder(z)
 	if err == nil {
-		err = broker.Run()
+		err = f.Run()
 	}
 	return err
 }
 
 // Subscribe returns a subscription (channel) for given filters.
-func (z Zeroutine) Subscribe(filters ...string) *Subscription {
+func (z Broker) Subscribe(filters ...string) *Subscription {
 	if len(filters) == 0 {
 		panic("Subscribe requires at least one filter")
 	}
 	return newSubscription(z.SubAddr, filters)
 }
 
-func (z Zeroutine) NewPublisher() (*Publisher, error) {
+func (z Broker) NewPublisher() (*Publisher, error) {
 	sock, err := newPubSocket(z.BufferSize)
 	if err != nil {
 		return nil, err

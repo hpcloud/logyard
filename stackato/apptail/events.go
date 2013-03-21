@@ -5,7 +5,7 @@ import (
 	"github.com/ActiveState/log"
 	"logyard"
 	"logyard/stackato/events"
-	"logyard/zeroutine"
+	"logyard/zmqsub"
 	"time"
 )
 
@@ -63,7 +63,7 @@ func MonitorCloudEvents(nodeid string) {
 }
 
 func PublishAppLog(
-	pub *zeroutine.Publisher, app_id int, app_name string,
+	pub *zmqsub.Publisher, app_id int, app_name string,
 	index int, source string, nodeid string, event *events.Event) {
 
 	err := (&AppLogMessage{

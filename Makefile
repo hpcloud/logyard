@@ -91,4 +91,4 @@ fmt:
 	gofmt -w .
 
 dev-test:
-	go test -v logyard/... github.com/ActiveState/log
+	go test logyard/...

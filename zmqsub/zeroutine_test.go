@@ -1,4 +1,4 @@
-package zeroutine
+package zmqsub
 
 import (
 	"testing"
@@ -11,7 +11,7 @@ import (
 func TestMonolithic(t *testing.T) {
 	data := map[string]bool{
 		"foo": true, "bar": true, "golang": true}
-	z := Zeroutine{
+	z := Broker{
 		PubAddr:    "tcp://127.0.0.1:5000",
 		SubAddr:    "tcp://127.0.0.1:5001",
 		BufferSize: 100}
