@@ -20,6 +20,8 @@ func RunPublisher(name string) {
 	if err != nil {
 		panic(err)
 	}
+	defer pub.Stop()
+	
 	count := 1
 	for {
 		err := pub.Publish(name, fmt.Sprintf("%d", count))
@@ -41,16 +43,16 @@ func EchoSubscribe() {
 }
 
 func main() {
+	// Subscribe
+	fmt.Println("Starting subscriber")
+	go EchoSubscribe()
+
 	// Setup sample publishers
 	fmt.Println("Setting up publishers")
 	go RunPublisher("srid")
 	go RunPublisher("suraj")
 	go RunPublisher("kalai")
 	go RunPublisher("jill")
-
-	// Subscribe
-	fmt.Println("Starting subscriber")
-	go EchoSubscribe()
 
 	// Run the broker
 	fmt.Printf("Running the broker: %+v\n", Broker)
