@@ -43,17 +43,22 @@ func TestMonolithic(t *testing.T) {
 
 	go func() {
 		sub := z.Subscribe("test")
-		defer sub.Stop()
+
 		// retrieve at least three values from the eternal publishers.
 		count := 3
 		for count > 0 {
 			msg := <-sub.Ch
 			if msg.Key == "test" {
 				if _, ok := data[msg.Value]; !ok {
+					sub.Stop()
 					t.Fatalf("got garbage data: %s", msg.Value)
 				}
 				count -= 1
 			}
+		}
+		err := sub.Stop()
+		if err != nil {
+			t.Fatal(err)
 		}
 		done <- true
 	}()
@@ -65,6 +70,6 @@ func TestMonolithic(t *testing.T) {
 	case <-done:
 		// all done
 	case <-time.After(1 * time.Second):
-		t.Fatal("not enough values from subscribtion")
+		t.Fatal("not enough values from subscription")
 	}
 }

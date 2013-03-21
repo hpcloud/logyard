@@ -20,6 +20,10 @@ func (z Broker) Run() error {
 	return err
 }
 
+func (z Broker) MustRun() {
+	panic(z.Run())
+}
+
 // Subscribe returns a subscription (channel) for given filters.
 func (z Broker) Subscribe(filters ...string) *Subscription {
 	if len(filters) == 0 {

@@ -35,10 +35,20 @@ func RunPublisher(name string) {
 
 func EchoSubscribe() {
 	sub := Broker.Subscribe("")
+	defer sub.Stop()
+
 	fmt.Println("Monitoring subscription..")
 	for msg := range sub.Ch {
-		fmt.Printf("%s => %s\n", msg.Key, msg.Value)
+		fmt.Printf("%12s => %3s\n", msg.Key, msg.Value)
 	}
+
+	// if there was an error, `sub.Ch` will be closed and `sub.Wait`
+	// will report the original error.
+	err := sub.Wait()
+	if err != nil {
+		panic(err)
+	}
+
 	fmt.Println("End of subscription")
 }
 
@@ -49,12 +59,12 @@ func main() {
 
 	// Setup sample publishers
 	fmt.Println("Setting up publishers")
-	go RunPublisher("srid")
-	go RunPublisher("suraj")
-	go RunPublisher("kalai")
-	go RunPublisher("jill")
+	go RunPublisher("bonobo")
+	go RunPublisher("chimpanzee")
+	go RunPublisher("lemur")
+	go RunPublisher("macaque")
 
 	// Run the broker
 	fmt.Printf("Running the broker: %+v\n", Broker)
-	panic(Broker.Run())
+	Broker.MustRun()
 }
