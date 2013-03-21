@@ -96,16 +96,8 @@ func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 		err = drain.Wait()
 		delete(manager.running, name)
 		if err != nil {
-			// HACK: apptail.* drains should not log WARN or ERROR
-			// records. ideally, make this configurable in drain URI
-			// arguments (eg: tcp://google.com:12345?warn=false);
-			// doing so will require changes to cloud_controller/kato
-			// (the ruby code).
-			shouldWarn := !strings.HasPrefix(name, "appdrain.")
-
 			proceed := retry.Wait(
-				fmt.Sprintf("[drain:%s] Drain exited abruptly -- %s", name, err),
-				shouldWarn)
+				fmt.Sprintf("[drain:%s] Drain exited abruptly -- %s", name, err))
 			if !proceed {
 				return
 			}

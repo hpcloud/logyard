@@ -15,6 +15,10 @@ type ProgressiveRetryer struct {
 	retryLimit time.Duration
 }
 
+// RESET_AFTER is the duration of no-retry period (`Wait` was not
+// called) after which retry stats will be resetted. Calling `Wait`
+// after reset happens is effectively the same as calling `Wait` the
+// very first time.
 var RESET_AFTER time.Duration
 
 func init() {
@@ -31,7 +35,7 @@ func NewProgressiveRetryer(retryLimit time.Duration) Retryer {
 	return r
 }
 
-func (retry *ProgressiveRetryer) Wait(msg string, shouldWarn bool) bool {
+func (retry *ProgressiveRetryer) Wait(msg string) bool {
 	var delay time.Duration
 
 	// how long is the retry happening?
@@ -72,15 +76,10 @@ func (retry *ProgressiveRetryer) Wait(msg string, shouldWarn bool) bool {
 	}
 
 	if delay == 0 {
-		msg = fmt.Sprintf("%s -- retrying now.", msg)
+		// Warn only for the first retry until next reset.
+		log.Warnf(fmt.Sprintf("%s -- retrying now.", msg))
 	} else {
-		msg = fmt.Sprintf("%s -- retrying after %v.", msg, delay)
-	}
-
-	if shouldWarn {
-		log.Warnf(msg)
-	} else {
-		log.Infof(msg)
+		log.Infof(fmt.Sprintf("%s -- retrying after %v.", msg, delay))
 	}
 
 	time.Sleep(delay)
