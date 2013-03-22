@@ -2,9 +2,9 @@ package logyard
 
 import (
 	"encoding/json"
-	"github.com/ActiveState/doozer"
 	"github.com/ActiveState/doozerconfig"
 	"github.com/ActiveState/log"
+	"github.com/ha/doozer"
 )
 
 type logyardConfig struct {
