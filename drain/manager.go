@@ -69,7 +69,7 @@ func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 	defer manager.mux.Unlock()
 
 	if _, ok := manager.running[name]; ok {
-		log.Errorf("[drain:%s] Cannot start drain (already running)", name)
+		log.Infof("[drain:%s] Cannot start drain (already running)", name)
 		return
 	}
 
