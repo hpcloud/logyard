@@ -1,6 +1,7 @@
 package drain
 
 import (
+	"logyard/util/pubsub"
 	"testing"
 )
 
@@ -49,7 +50,8 @@ func TestFormat(_t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	data, err := cfg.FormatJSON(`{"Name":"dea", "NodeID":"192", "Text":"started app"}`)
+	data, err := cfg.FormatJSON(
+		pubsub.Message{"samplekey", `{"Name":"dea", "NodeID":"192", "Text":"started app"}`})
 	if err != nil {
 		t.Fatal(err)
 	}
