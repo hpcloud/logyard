@@ -68,9 +68,9 @@ func (cmd *stream) Run(args []string) error {
 
 	printer := cli.NewMessagePrinter()
 	printer.AddFormat("systail",
-		"@y{{.Name}}@|@@@c{{.NodeID}}@|: {{.Text}}")
+		"@m{{.Name}}@|@@@c{{.NodeID}}@|: {{.Text}}")
 	printer.AddFormat("event",
-		"@g{{.Type}}@|[@c{{.Process}}@!]@@@c{{.NodeID}}@|: {{.Desc}}")
+		"@g{{.Type}}@|[@m{{.Process}}@!]@@@c{{.NodeID}}@|: {{.Desc}}")
 	printer.AddFormat("apptail",
 		"@b{{.AppName}}[{{.Source}}]@|@@@c{{.NodeID}}@|: {{.Text}}")
 

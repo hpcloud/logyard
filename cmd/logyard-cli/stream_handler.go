@@ -2,21 +2,37 @@ package main
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 )
+
+var datetimePatterns []*regexp.Regexp
+
+func init() {
+	fmt.Println("Initializing datetime patterns")
+	datetimePatterns = []*regexp.Regexp{
+		// vcap log prefix
+		regexp.MustCompile(
+			`\[[^\]]+\] \S+ \- \S+=\S+ \S+=\S+ \S+=\S+ (.+)`),
+		// Go projects log prefix
+		regexp.MustCompile(
+			`\d+\/\d+\/\d+ \d+\:\d+\:\d+ (.+)`),
+		// supervisord log prefix
+		regexp.MustCompile(
+			`\d+-\d+-\d+ \d+:\d+:\d+,\d+ (.+)`),
+	}
+}
 
 func handleSystail(record map[string]interface{}) bool {
 	text := record["Text"].(string)
 	process := record["Name"].(string)
 	severity := ""
 
-	// TODO: raw?
-
 	if process == "logyard" && strings.Contains(text, "INFO") {
 		return false
 	}
 
-	if process == "nginx" {
+	if strings.Contains(process, "nginx") {
 		// FIXME: nginx logs reflect requests to not only vcap
 		// processes (eg: cc and services), but also deployed
 		// apps. the purpose of `kato tail` is to tail the log of
@@ -42,11 +58,22 @@ func handleSystail(record map[string]interface{}) bool {
 		}
 	}
 
+	// Strip non-essential data
+	for _, re := range datetimePatterns {
+		res := re.FindStringSubmatch(text)
+		if len(res) > 1 {
+			text = res[1]
+			break
+		}
+	}
+
 	switch severity {
 	case "ERROR":
 		record["Text"] = colorize(text, "r")
 	case "WARN":
 		record["Text"] = colorize(text, "y")
+	default:
+		record["Text"] = text
 	}
 	return true
 }
