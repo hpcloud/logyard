@@ -66,7 +66,7 @@ install:
 	rsync -a $(BUILDGOPATH)/bin $(INSTGOPATH)
 	rsync -a etc $(BASEDIR)
 	mkdir -p $(INSTBINDIR)
-	ln -sf $(GOBINDIR)/logyardctl $(INSTBINDIR)
+	ln -sf $(GOBINDIR)/logyard-cli $(INSTBINDIR)
 
 clean: 
 	GOPATH=$(BUILDGOPATH) go clean
