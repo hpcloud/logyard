@@ -66,7 +66,7 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 			if redisKey != "" {
 				key = redisKey
 			}
-			data, err := config.FormatJSON(msg.Value)
+			data, err := config.FormatJSON(msg)
 			if err != nil {
 				d.Kill(err)
 				return

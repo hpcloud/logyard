@@ -44,7 +44,7 @@ func (d *IPConnDrain) Start(config *DrainConfig) {
 	for {
 		select {
 		case msg := <-sub.Ch:
-			data, err := config.FormatJSON(msg.Value)
+			data, err := config.FormatJSON(msg)
 			if err != nil {
 				d.Kill(err)
 				return

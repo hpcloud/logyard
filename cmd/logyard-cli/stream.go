@@ -6,10 +6,12 @@ import (
 	"github.com/ActiveState/log"
 	"logyard"
 	"logyard/cli"
+	"logyard/util/pubsub"
 	"math/rand"
 	"os"
 	"os/signal"
 	"stackato/server"
+	"strings"
 	"time"
 )
 
@@ -44,8 +46,11 @@ func (cmd *stream) Run(args []string) error {
 
 	// REFACTOR: extract URI construction of add.go and then use
 	// logyard.AddDrain directly.
-	(&add{uri: "tcp://" + addr,
-		filters: Filters(args)}).Run(
+	(&add{
+		uri:     "tcp://" + addr,
+		filters: Filters(args),
+		params:  Options(map[string]string{"format": "raw"}),
+	}).Run(
 		[]string{name})
 
 	deleteDrain := func() {
@@ -61,9 +66,24 @@ func (cmd *stream) Run(args []string) error {
 		os.Exit(1)
 	})
 
+	printer := cli.NewMessagePrinter()
+	printer.AddFormat("systail",
+		"@y{{.Name}}@|@@@c{{.NodeID}}@|: {{.Text}}")
+	printer.AddFormat("event",
+		"@g{{.Type}}[{{.Severity}}]@|::@y{{.Process}}@!@@@c{{.NodeID}}@|: {{.Desc}}")
+	printer.AddFormat("apptail",
+		"@b{{.AppName}}[{{.Source}}]@|@@@c{{.NodeID}}@|: {{.Text}}")
+
 	// Print incoming records
 	for line := range srv.Ch {
-		cli.PrintMessage(line)
+		parts := strings.SplitN(string(line), " ", 2)
+		if len(parts) != 2 {
+			log.Fatal("received invalid message: %s", string(line))
+		}
+		msg := pubsub.Message{parts[0], parts[1]}
+		if err := printer.Print(msg); err != nil {
+			log.Fatalf("Error -- %s -- printing message %v", err, msg)
+		}
 	}
 
 	return nil

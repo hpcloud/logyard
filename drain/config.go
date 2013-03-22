@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"logyard/util/pubsub"
 	"net/url"
 	"strconv"
 	"strings"
@@ -11,14 +12,18 @@ import (
 )
 
 type DrainConfig struct {
-	Name    string // name of this particular drain instance
-	Type    string // drain type
+	Name    string
+	Type    string
 	Scheme  string
 	Host    string // host+port part of the uri (optional in some drains)
 	Path    string
-	Format  *template.Template // format message json using go's tempate library
-	Filters []string           // the messages a drain is interested in
-	Params  map[string]string  // params specific to a drain
+	Filters []string           // Filter messages by these keys.
+	Format  *template.Template // Format message json using Go's
+	// template library; if
+	// format==raw, send the raw
+	// stream: "<key> <msg>"
+	Params    map[string]string // Params specific to that drain type.
+	rawFormat bool
 }
 
 // GetParam returns the corresponding param; else the default value (def)
@@ -56,13 +61,18 @@ func (c *DrainConfig) GetParamBool(key string, def bool) (bool, error) {
 }
 
 // FormatJSON formats the given message and returns it with a newline
-func (c *DrainConfig) FormatJSON(data string) ([]byte, error) {
+func (c *DrainConfig) FormatJSON(msg pubsub.Message) ([]byte, error) {
 	if c.Format == nil {
-		// raw JSON
-		return []byte(data + "\n"), nil
+		if c.rawFormat {
+			// <key> <json>
+			return []byte(fmt.Sprintf("%s %s\n", msg.Key, msg.Value)), nil
+		} else {
+			// <json>
+			return []byte(msg.Value + "\n"), nil
+		}
 	}
 	record := make(map[string]interface{})
-	err := json.Unmarshal([]byte(data), &record)
+	err := json.Unmarshal([]byte(msg.Value), &record)
 	if err != nil {
 		return nil, err
 	}
@@ -119,15 +129,19 @@ func DrainConfigFromUri(name string, uri string, namedFormats map[string]string)
 	if format, ok := params["format"]; ok {
 		params.Del("format")
 
-		if value, ok := namedFormats[format[0]]; ok {
-			format[0] = value
-		}
+		if format[0] == "raw" {
+			config.rawFormat = true
+		} else {
+			if value, ok := namedFormats[format[0]]; ok {
+				format[0] = value
+			}
 
-		tmpl, err := template.New(name).Parse(format[0])
-		if err != nil {
-			return nil, err
+			tmpl, err := template.New(name).Parse(format[0])
+			if err != nil {
+				return nil, err
+			}
+			config.Format = tmpl
 		}
-		config.Format = tmpl
 	}
 
 	// assign the rest of the params
