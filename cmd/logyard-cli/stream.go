@@ -70,9 +70,16 @@ func (cmd *stream) Run(args []string) error {
 	printer.AddFormat("systail",
 		"@y{{.Name}}@|@@@c{{.NodeID}}@|: {{.Text}}")
 	printer.AddFormat("event",
-		"@g{{.Type}}[{{.Severity}}]@|::@y{{.Process}}@!@@@c{{.NodeID}}@|: {{.Desc}}")
+		"@g{{.Type}}@|[@c{{.Process}}@!]@@@c{{.NodeID}}@|: {{.Desc}}")
 	printer.AddFormat("apptail",
 		"@b{{.AppName}}[{{.Source}}]@|@@@c{{.NodeID}}@|: {{.Text}}")
+
+	printer.SetPrePrintHook(streamHandler)
+
+	// TODO:
+	//   * highlighting based on severity (ERROR,WARN)
+	//   * skipping based on regex patterns (eg: logyard INFO)
+	//   * stripping based on regex patterns (eg: datetime)
 
 	// Print incoming records
 	for line := range srv.Ch {

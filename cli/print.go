@@ -10,14 +10,18 @@ import (
 	"text/template"
 )
 
+// FilterFn is a function to filter incoming messages
+type FilterFn func(keypart1 string, record map[string]interface{}) bool
+
 // MessagePrinter handles print representation of messages streamed by
 // logyard.
 type MessagePrinter struct {
 	templates map[string]*template.Template
+	filterFn  FilterFn
 }
 
 func NewMessagePrinter() MessagePrinter {
-	return MessagePrinter{make(map[string]*template.Template)}
+	return MessagePrinter{make(map[string]*template.Template), nil}
 }
 
 // Add print format for messages identified by this key prefix. The
@@ -30,6 +34,10 @@ func (p MessagePrinter) AddFormat(keypart1 string, format string) {
 	}
 	p.templates[keypart1] = template.Must(
 		template.New("print-" + keypart1).Parse(format))
+}
+
+func (p *MessagePrinter) SetPrePrintHook(fn FilterFn) {
+	p.filterFn = fn
 }
 
 // Print a message from logyard streams
@@ -50,10 +58,12 @@ func (p MessagePrinter) Print(msg pubsub.Message) error {
 
 		escapeSpecialColorChars(record)
 
-		if err := tmpl.Execute(&buf, record); err != nil {
-			return err
+		if p.filterFn(key, record) {
+			if err := tmpl.Execute(&buf, record); err != nil {
+				return err
+			}
+			color.Println(string(buf.Bytes()))
 		}
-		color.Println(string(buf.Bytes()))
 		return nil
 	}
 	return fmt.Errorf("no format added for key: %s", key)
