@@ -55,27 +55,30 @@ func (cmd *stream) Run(args []string) error {
 		}
 		log.Infof("Deleted drain %s", name)
 	}
-
 	defer deleteDrain()
 
-	// Handle Ctrl+C
-	sigCh := make(chan os.Signal, 1)
-	signal.Notify(sigCh, os.Interrupt)
-	go func() {
-		for sig := range sigCh {
-			log.Infof("Captured signal '%v'", sig)
-			deleteDrain()
-			os.Exit(0)
-		}
-	}()
+	handleKeyboardInterrupt(func() {
+		deleteDrain()
+		os.Exit(1)
+	})
 
 	// Print incoming records
 	for line := range srv.Ch {
 		handleLine(line)
-
 	}
 
 	return nil
+}
+
+func handleKeyboardInterrupt(cleanupFn func()) {
+	// Handle Ctrl+C
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, os.Interrupt)
+	go func() {
+		for _ = range sigCh {
+			cleanupFn()
+		}
+	}()
 }
 
 func handleLine(line []byte) {

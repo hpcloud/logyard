@@ -5,7 +5,7 @@ import (
 	"github.com/ActiveState/doozerconfig"
 	"github.com/ActiveState/log"
 	"logyard"
-	"logyard/retry"
+	"logyard/util/retry"
 	"strings"
 	"sync"
 	"time"

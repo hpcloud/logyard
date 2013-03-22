@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/ActiveState/log"
 	"logyard"
-	"logyard/cmd/logyardctl/subcommand"
+	"logyard/util/subcommand"
 	"stackato/server"
 )
 

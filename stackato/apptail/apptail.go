@@ -6,7 +6,7 @@ import (
 	"github.com/ActiveState/log"
 	"github.com/ActiveState/tail"
 	"logyard"
-	"logyard/pubsub"
+	"logyard/util/pubsub"
 	"path/filepath"
 	"unicode/utf8"
 )

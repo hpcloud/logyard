@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"logyard/pubsub"
+	"logyard/util/pubsub"
 	"math/rand"
 	"time"
 )
