@@ -8,11 +8,12 @@ import (
 	"logyard/util/pubsub"
 	"strings"
 	"text/template"
+	"time"
 )
 
 type MessagePrinterOptions struct {
-	// FIXME: handler specific options should not live here.
-	Raw bool
+	Raw      bool
+	ShowTime bool
 }
 
 // FilterFn is a function to filter incoming messages
@@ -72,7 +73,11 @@ func (p MessagePrinter) Print(msg pubsub.Message) error {
 			if err := tmpl.Execute(&buf, record); err != nil {
 				return err
 			}
-			color.Println(string(buf.Bytes()))
+			s := string(buf.Bytes())
+			if p.options.ShowTime {
+				s = fmt.Sprintf("%s %s", time.Now(), s)
+			}
+			color.Println(s)
 		}
 		return nil
 	}

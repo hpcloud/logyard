@@ -6,11 +6,11 @@ import (
 	"strings"
 )
 
-func Stream(ch chan []byte, raw bool) {
+func Stream(ch chan []byte, options MessagePrinterOptions) {
 	// REFACTOR: do we need MessagePrinter at all? all it does to
 	// provide abstraction over color formatting; most other things
 	// (formatting, skipping) happens in stream_handler.go.
-	printer := NewMessagePrinter(MessagePrinterOptions{raw})
+	printer := NewMessagePrinter(options)
 	printer.AddFormat("systail",
 		"@m{{.Name}}@|@@@c{{.NodeID}}@|: {{.Text}}")
 	printer.AddFormat("event",

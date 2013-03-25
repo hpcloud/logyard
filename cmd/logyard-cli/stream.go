@@ -15,7 +15,8 @@ import (
 )
 
 type stream struct {
-	raw bool
+	raw  bool
+	time bool
 }
 
 func (cmd *stream) Name() string {
@@ -25,6 +26,8 @@ func (cmd *stream) Name() string {
 func (cmd *stream) DefineFlags(fs *flag.FlagSet) {
 	fs.BoolVar(&cmd.raw, "raw", false,
 		"Show unformatted logs, including logyard INFO records (skipped by default)")
+	fs.BoolVar(&cmd.time, "time", false,
+		"Show timestamp")
 }
 
 func (cmd *stream) Run(args []string) error {
@@ -68,7 +71,8 @@ func (cmd *stream) Run(args []string) error {
 		os.Exit(1)
 	})
 
-	cli_stream.Stream(srv.Ch, cmd.raw)
+	cli_stream.Stream(srv.Ch, cli_stream.MessagePrinterOptions{
+		cmd.raw, cmd.time})
 
 	return nil
 }
