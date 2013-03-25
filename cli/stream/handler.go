@@ -1,8 +1,7 @@
-package main
+package stream
 
 import (
 	"fmt"
-	"logyard/cli"
 	"regexp"
 	"strings"
 )
@@ -23,7 +22,7 @@ func init() {
 	}
 }
 
-func handleSystail(record map[string]interface{}, options cli.MessagePrinterOptions) bool {
+func handleSystail(record map[string]interface{}, options MessagePrinterOptions) bool {
 	text := record["Text"].(string)
 	process := record["Name"].(string)
 	severity := ""
@@ -82,7 +81,7 @@ func handleSystail(record map[string]interface{}, options cli.MessagePrinterOpti
 	return true
 }
 
-func handleEvent(record map[string]interface{}, options cli.MessagePrinterOptions) bool {
+func handleEvent(record map[string]interface{}, options MessagePrinterOptions) bool {
 	desc := record["Desc"].(string)
 	severity := record["Severity"].(string)
 
@@ -99,7 +98,7 @@ func handleEvent(record map[string]interface{}, options cli.MessagePrinterOption
 func streamHandler(
 	keypart1 string,
 	record map[string]interface{},
-	options cli.MessagePrinterOptions) bool {
+	options MessagePrinterOptions) bool {
 
 	if keypart1 == "systail" {
 		return handleSystail(record, options)

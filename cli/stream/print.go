@@ -1,4 +1,4 @@
-package cli
+package stream
 
 import (
 	"bytes"
@@ -11,6 +11,7 @@ import (
 )
 
 type MessagePrinterOptions struct {
+	// FIXME: handler specific options should not live here.
 	Raw bool
 }
 
