@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"logyard/cli"
 	"regexp"
 	"strings"
 )
@@ -9,7 +10,6 @@ import (
 var datetimePatterns []*regexp.Regexp
 
 func init() {
-	fmt.Println("Initializing datetime patterns")
 	datetimePatterns = []*regexp.Regexp{
 		// vcap log prefix
 		regexp.MustCompile(
@@ -23,7 +23,7 @@ func init() {
 	}
 }
 
-func handleSystail(record map[string]interface{}) bool {
+func handleSystail(record map[string]interface{}, options cli.MessagePrinterOptions) bool {
 	text := record["Text"].(string)
 	process := record["Name"].(string)
 	severity := ""
@@ -31,6 +31,8 @@ func handleSystail(record map[string]interface{}) bool {
 	if process == "logyard" && strings.Contains(text, "INFO") {
 		return false
 	}
+
+	// TODO: highlight process names
 
 	if strings.Contains(process, "nginx") {
 		// FIXME: nginx logs reflect requests to not only vcap
@@ -59,11 +61,13 @@ func handleSystail(record map[string]interface{}) bool {
 	}
 
 	// Strip non-essential data
-	for _, re := range datetimePatterns {
-		res := re.FindStringSubmatch(text)
-		if len(res) > 1 {
-			text = res[1]
-			break
+	if !options.Raw {
+		for _, re := range datetimePatterns {
+			res := re.FindStringSubmatch(text)
+			if len(res) > 1 {
+				text = res[1]
+				break
+			}
 		}
 	}
 
@@ -78,7 +82,7 @@ func handleSystail(record map[string]interface{}) bool {
 	return true
 }
 
-func handleEvent(record map[string]interface{}) bool {
+func handleEvent(record map[string]interface{}, options cli.MessagePrinterOptions) bool {
 	desc := record["Desc"].(string)
 	severity := record["Severity"].(string)
 
@@ -92,12 +96,15 @@ func handleEvent(record map[string]interface{}) bool {
 	return true
 }
 
-func streamHandler(keypart1 string, record map[string]interface{}) bool {
+func streamHandler(
+	keypart1 string,
+	record map[string]interface{},
+	options cli.MessagePrinterOptions) bool {
 
 	if keypart1 == "systail" {
-		return handleSystail(record)
+		return handleSystail(record, options)
 	} else if keypart1 == "event" {
-		return handleEvent(record)
+		return handleEvent(record, options)
 	}
 
 	return true

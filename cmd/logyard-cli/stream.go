@@ -16,6 +16,7 @@ import (
 )
 
 type stream struct {
+	raw bool
 }
 
 func (cmd *stream) Name() string {
@@ -23,6 +24,8 @@ func (cmd *stream) Name() string {
 }
 
 func (cmd *stream) DefineFlags(fs *flag.FlagSet) {
+	fs.BoolVar(&cmd.raw, "raw", false,
+		"Show unformatted logs, including logyard INFO records (skipped by default)")
 }
 
 func (cmd *stream) Run(args []string) error {
@@ -66,7 +69,10 @@ func (cmd *stream) Run(args []string) error {
 		os.Exit(1)
 	})
 
-	printer := cli.NewMessagePrinter()
+	// REFACTOR: do we need MessagePrinter at all? all it does to
+	// provide abstraction over color formatting; most other things
+	// (formatting, skipping) happens in stream_handler.go.
+	printer := cli.NewMessagePrinter(cli.MessagePrinterOptions{cmd.raw})
 	printer.AddFormat("systail",
 		"@m{{.Name}}@|@@@c{{.NodeID}}@|: {{.Text}}")
 	printer.AddFormat("event",
@@ -75,11 +81,6 @@ func (cmd *stream) Run(args []string) error {
 		"@b{{.AppName}}[{{.Source}}]@|@@@c{{.NodeID}}@|: {{.Text}}")
 
 	printer.SetPrePrintHook(streamHandler)
-
-	// TODO:
-	//   * highlighting based on severity (ERROR,WARN)
-	//   * skipping based on regex patterns (eg: logyard INFO)
-	//   * stripping based on regex patterns (eg: datetime)
 
 	// Print incoming records
 	for line := range srv.Ch {
