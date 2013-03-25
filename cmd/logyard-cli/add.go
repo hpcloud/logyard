@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"logyard/cli"
+	"logyard"
 	"strings"
 )
 
@@ -63,7 +63,6 @@ func (cmd *add) DefineFlags(fs *flag.FlagSet) {
 }
 
 func (cmd *add) Run(args []string) error {
-	fmt.Printf("%+v\n%+v\n", args, *cmd)
 	if len(args) != 1 {
 		return fmt.Errorf("need exactly one positional argument")
 	}
@@ -72,7 +71,7 @@ func (cmd *add) Run(args []string) error {
 
 	Init("add")
 
-	uri, err := cli.AddDrain(name, cmd.uri, cmd.filters, cmd.params)
+	uri, err := logyard.Config.AddDrain(name, cmd.uri, cmd.filters, cmd.params)
 	if err != nil {
 		return err
 	}

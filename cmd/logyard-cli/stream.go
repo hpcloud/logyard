@@ -50,7 +50,7 @@ func (cmd *stream) Run(args []string) error {
 	name := fmt.Sprintf("tmp.logyardctl.%s-%d", ipaddr, port)
 
 	Init("stream")
-	if uri, err := cli.AddDrain(name, "tcp://"+addr, args, map[string]string{
+	if uri, err := logyard.Config.AddDrain(name, "tcp://"+addr, args, map[string]string{
 		"format": "raw",
 	}); err != nil {
 		return err
