@@ -3,9 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/ActiveState/log"
-	"logyard"
-	"net/url"
+	"logyard/cli"
 	"strings"
 )
 
@@ -65,37 +63,20 @@ func (cmd *add) DefineFlags(fs *flag.FlagSet) {
 }
 
 func (cmd *add) Run(args []string) error {
+	fmt.Printf("%+v\n%+v\n", args, *cmd)
 	if len(args) != 1 {
 		return fmt.Errorf("need exactly one positional argument")
 	}
 	name := args[0]
 	uri := cmd.uri
-	if uri == "" {
-		return fmt.Errorf("need -uri")
+
+	Init("add")
+
+	uri, err := cli.AddDrain(name, cmd.uri, cmd.filters, cmd.params)
+	if err != nil {
+		return err
 	}
-
-	if !strings.Contains(uri, "://") {
-		return fmt.Errorf("not an URI: %s", uri)
-	}
-
-	query := url.Values{}
-
-	for _, filter := range cmd.filters {
-		query.Add("filter", filter)
-	}
-
-	for key, value := range cmd.params {
-		query.Set(key, value)
-	}
-
-	uri += "?" + query.Encode()
 
 	fmt.Printf("Added drain %s: %s\n", name, uri)
-
-	Init()
-	err := logyard.Config.AddDrain(name, uri)
-	if err != nil {
-		log.Fatal(err)
-	}
 	return nil
 }

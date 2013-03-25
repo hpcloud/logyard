@@ -49,19 +49,20 @@ func (cmd *stream) Run(args []string) error {
 
 	name := fmt.Sprintf("tmp.logyardctl.%s-%d", ipaddr, port)
 
-	// REFACTOR: extract URI construction of add.go and then use
-	// logyard.AddDrain directly.
-	(&add{
-		uri:     "tcp://" + addr,
-		filters: Filters(args),
-		params:  Options(map[string]string{"format": "raw"}),
-	}).Run(
-		[]string{name})
+	Init("stream")
+	if uri, err := cli.AddDrain(name, "tcp://"+addr, args, map[string]string{
+		"format": "raw",
+	}); err != nil {
+		return err
+	} else {
+		log.Infof("Added drain %s", uri)
+	}
 
 	deleteDrain := func() {
 		if err := logyard.Config.DeleteDrain(name); err != nil {
 			log.Fatal(err)
 		}
+		fmt.Println("")
 		log.Infof("Deleted drain %s", name)
 	}
 	defer deleteDrain()

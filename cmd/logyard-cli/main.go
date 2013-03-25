@@ -7,8 +7,8 @@ import (
 	"stackato/server"
 )
 
-func Init() {
-	conn, headRev, err := server.NewDoozerClient("logyardctl")
+func Init(name string) {
+	conn, headRev, err := server.NewDoozerClient("logyard-cli:" + name)
 	if err != nil {
 		log.Fatal(err)
 	}
