@@ -84,11 +84,8 @@ func (c *DrainConfig) FormatJSON(msg pubsub.Message) ([]byte, error) {
 	return append(buf.Bytes(), byte('\n')), nil
 }
 
-// DrainConfigFromUri constructs a DrainConfig from a drain URI spec.
-// Examples:
-//  - "redis://core/?max_records=1500&filter=apptail"
-//  - "udp://logs.papertrailapp.com:35234/?filter=systail&filter=events"
-func DrainConfigFromUri(name string, uri string, namedFormats map[string]string) (*DrainConfig, error) {
+// ParseDrainUri creates a DrainConfig from the drain URI.
+func ParseDrainUri(name string, uri string, namedFormats map[string]string) (*DrainConfig, error) {
 	url, err := url.Parse(uri)
 	if err != nil {
 		return nil, err
@@ -129,18 +126,9 @@ func DrainConfigFromUri(name string, uri string, namedFormats map[string]string)
 	if format, ok := params["format"]; ok {
 		params.Del("format")
 
-		if format[0] == "raw" {
-			config.rawFormat = true
-		} else {
-			if value, ok := namedFormats[format[0]]; ok {
-				format[0] = value
-			}
-
-			tmpl, err := template.New(name).Parse(format[0])
-			if err != nil {
-				return nil, err
-			}
-			config.Format = tmpl
+		config.Format, config.rawFormat, err = parseFormat(name, format[0], namedFormats)
+		if err != nil {
+			return nil, err
 		}
 	}
 
@@ -152,6 +140,18 @@ func DrainConfigFromUri(name string, uri string, namedFormats map[string]string)
 	}
 
 	return &config, nil
+}
+
+func parseFormat(
+	name, format string, aliases map[string]string) (*template.Template, bool, error) {
+	if format == "raw" {
+		return nil, true, nil
+	}
+	if value, ok := aliases[format]; ok {
+		format = value
+	}
+	tmpl, err := template.New(name).Parse(format)
+	return tmpl, false, err
 }
 
 // ConstructDrainURI constructs the drain URI from given parameters.

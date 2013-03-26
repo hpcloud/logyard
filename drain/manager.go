@@ -73,7 +73,7 @@ func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 		return
 	}
 
-	cfg, err := DrainConfigFromUri(name, uri, logyard.Config.DrainFormats)
+	cfg, err := ParseDrainUri(name, uri, logyard.Config.DrainFormats)
 	if err != nil {
 		log.Errorf("[drain:%s] Invalid drain URI (%s): %s", name, uri, err)
 		return
@@ -123,8 +123,8 @@ func NewRetryerForDrain(name string) retry.Retryer {
 				retryLimit = time.Duration(0)
 			}
 			if retryLimit <= retry.RESET_AFTER {
-				log.Error("[drain:%s] Invalid retry limit (%v); must be >%v. "+
-					"Using default value (infinite)",
+				log.Error("[drain:%s] Invalid retry limit (%v) -- must be >%v -- "+
+					"using default value (infinite)",
 					name, retryLimit, retry.RESET_AFTER)
 				retryLimit = time.Duration(0)
 			}

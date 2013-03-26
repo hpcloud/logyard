@@ -44,7 +44,7 @@ func TestParams(_t *testing.T) {
 func TestFormat(_t *testing.T) {
 	t := &DrainConfigTest{_t}
 	formatEncoded := "%7B%7B.Name%7D%7D%40%7B%7B.NodeID%7D%7D%3A+%7B%7B.Text%7D%7D"
-	cfg, err := DrainConfigFromUri(
+	cfg, err := ParseDrainUri(
 		"loggly", "tcp://logs.loggly.com:123/?format="+formatEncoded,
 		make(map[string]string))
 	if err != nil {
@@ -60,6 +60,19 @@ func TestFormat(_t *testing.T) {
 		t.Fatalf("FormatJSON returned unexpected value: `%s` -- expecting `%s`",
 			string(data), expected)
 	}
+}
+
+func TestRawFormat(_t *testing.T) {
+	t := &DrainConfigTest{_t}
+	t.Verify("loggly", "tcp://logs.loggly.com:12345/?format=raw", DrainConfig{
+		Name:      "loggly",
+		Type:      "tcp",
+		Scheme:    "tcp",
+		Host:      "logs.loggly.com:12345",
+		Format:    nil,
+		rawFormat: true,
+		Filters:   []string{""},
+		Params:    nil})
 }
 
 func TestURIConstruction(_t *testing.T) {
@@ -90,7 +103,7 @@ type DrainConfigTest struct {
 }
 
 func (t *DrainConfigTest) Verify(name string, uri string, config DrainConfig) {
-	c, err := DrainConfigFromUri(name, uri, make(map[string]string))
+	c, err := ParseDrainUri(name, uri, make(map[string]string))
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -32,6 +32,7 @@ func handleSystail(record map[string]interface{}, options MessagePrinterOptions)
 	}
 
 	// TODO: highlight process names
+	// TODO: hide ip addr in micro cloud.
 
 	if strings.Contains(process, "nginx") {
 		// FIXME: nginx logs reflect requests to not only vcap
