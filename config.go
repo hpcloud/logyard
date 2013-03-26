@@ -76,7 +76,7 @@ func doozerConfigChangedCallbackFn(change *doozerconfig.Change, err error) {
 		log.Errorf("Unable to process drain config change in doozer: %s", err)
 		return
 	}
-	log.Infof("Detected change in doozer drains config: %s", change.Key)
+	log.Infof("Detected change in doozer config: %s (%s)", change.Key, change.FieldName)
 	if change.FieldName == "Drains" {
 		switch change.Type {
 		case doozerconfig.DELETE, doozerconfig.SET:
@@ -97,6 +97,6 @@ func Init(conn *doozer.Conn, rev int64, monitor bool) {
 
 	if monitor {
 		// Monitor drain config changes in doozer
-		go doozerCfg.Monitor(DOOZER_PREFIX+"drains/*", doozerConfigChangedCallbackFn)
+		go doozerCfg.Monitor(DOOZER_PREFIX+"**", doozerConfigChangedCallbackFn)
 	}
 }

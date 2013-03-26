@@ -14,7 +14,7 @@ func Stream(ch chan []byte, options MessagePrinterOptions) {
 	printer.AddFormat("systail",
 		"@m{{.Name}}@|@@@c{{.NodeID}}@|: {{.Text}}")
 	printer.AddFormat("event",
-		"@g{{.Type}}@|[@m{{.Process}}@!]@@@c{{.NodeID}}@|: {{.Desc}}")
+		"@g{{.Type}}@|[@m{{.Process}}@|]@@@c{{.NodeID}}@|: {{.Desc}}")
 	printer.AddFormat("apptail",
 		"@b{{.AppName}}[{{.Source}}]@|@@@c{{.NodeID}}@|: {{.Text}}")
 
