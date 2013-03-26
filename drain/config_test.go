@@ -62,6 +62,27 @@ func TestFormat(_t *testing.T) {
 	}
 }
 
+func TestURIConstruction(_t *testing.T) {
+	t := &DrainConfigTest{_t}
+	uri, err := ConstructDrainURI(
+		"loggly",
+		"tcp://logs.loggly.com:12345",
+		[]string{"systail"},
+		map[string]string{"format": "raw"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Verify("loggly", uri, DrainConfig{
+		Name:      "loggly",
+		Type:      "tcp",
+		Scheme:    "tcp",
+		Host:      "logs.loggly.com:12345",
+		Format:    nil,
+		rawFormat: true,
+		Filters:   []string{"systail"},
+		Params:    nil})
+}
+
 // Test library
 
 type DrainConfigTest struct {
@@ -105,5 +126,8 @@ func (t *DrainConfigTest) Verify(name string, uri string, config DrainConfig) {
 		if value != config.Params[key] {
 			t.Fatal("A param didn't match")
 		}
+	}
+	if c.rawFormat != config.rawFormat {
+		t.Fatal("rawFormat didn't match")
 	}
 }

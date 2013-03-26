@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"logyard"
+	"logyard/drain"
 	"strings"
 )
 
@@ -71,8 +72,11 @@ func (cmd *add) Run(args []string) error {
 
 	Init("add")
 
-	uri, err := logyard.Config.AddDrain(name, cmd.uri, cmd.filters, cmd.params)
+	uri, err := drain.ConstructDrainURI(name, cmd.uri, cmd.filters, cmd.params)
 	if err != nil {
+		return err
+	}
+	if err = logyard.Config.AddDrain(name, uri); err != nil {
 		return err
 	}
 

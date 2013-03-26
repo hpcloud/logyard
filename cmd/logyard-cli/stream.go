@@ -7,6 +7,7 @@ import (
 	"logyard"
 	"logyard/cli"
 	cli_stream "logyard/cli/stream"
+	"logyard/drain"
 	"math/rand"
 	"os"
 	"os/signal"
@@ -50,13 +51,16 @@ func (cmd *stream) Run(args []string) error {
 	name := fmt.Sprintf("tmp.logyardctl.%s-%d", ipaddr, port)
 
 	Init("stream")
-	if uri, err := logyard.Config.AddDrain(name, "tcp://"+addr, args, map[string]string{
+	uri, err := drain.ConstructDrainURI(name, "tcp://"+addr, args, map[string]string{
 		"format": "raw",
-	}); err != nil {
+	})
+	if err != nil {
 		return err
-	} else {
-		log.Infof("Added drain %s", uri)
 	}
+	if err = logyard.Config.AddDrain(name, uri); err != nil {
+		return err
+	}
+	log.Infof("Added drain %s", uri)
 
 	deleteDrain := func() {
 		if err := logyard.Config.DeleteDrain(name); err != nil {

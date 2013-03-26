@@ -153,3 +153,30 @@ func DrainConfigFromUri(name string, uri string, namedFormats map[string]string)
 
 	return &config, nil
 }
+
+// ConstructDrainURI constructs the drain URI from given parameters.
+func ConstructDrainURI(
+	name, uri string, filters []string, params map[string]string) (string, error) {
+	if uri == "" {
+		return "", fmt.Errorf("URI cannot be empty")
+	}
+
+	if !strings.Contains(uri, "://") {
+		return "", fmt.Errorf("Not an URI: %s", uri)
+	}
+
+	// Build the query string
+	query := url.Values{}
+	for _, filter := range filters {
+		query.Add("filter", filter)
+	}
+	for key, value := range params {
+		if key == "filter" {
+			return "", fmt.Errorf("params cannot have a key called 'filter'")
+		}
+		query.Set(key, value)
+	}
+
+	uri += "?" + query.Encode()
+	return uri, nil
+}

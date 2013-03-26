@@ -142,7 +142,7 @@ func (manager *DrainManager) Run() {
 	}
 
 	// Watch for config changes in doozer
-	for change := range logyard.Config.Ch {
+	for change := range logyard.Config.DrainChanges {
 		switch change.Type {
 		case doozerconfig.DELETE:
 			manager.StopDrain(change.Key)
