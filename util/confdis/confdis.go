@@ -9,48 +9,80 @@ import (
 
 type ConfDis struct {
 	rootKey      string
-	pubKey       string
+	pubChannel   string
 	configStruct interface{}
 	redis        *redis.Client
 }
 
-func New(addr, rootKey string, struc interface{}) *ConfDis {
+func New(addr, rootKey string, struc interface{}) (*ConfDis, error) {
 	c := ConfDis{rootKey, rootKey + ":_changes", struc, nil}
-	c.connect(addr)
-	return &c
+	if err := c.connect(addr); err != nil {
+		return nil, err
+	}
+	c.reload()
+	return &c, c.watch()
 }
 
 // Save saves current config onto redis.
 func (c *ConfDis) Save() error {
+	// TODO: use mutex with reload()
 	if data, err := json.Marshal(c.configStruct); err != nil {
 		return err
 	} else {
 		if r := c.redis.Set(c.rootKey, string(data)); r.Err() != nil {
 			return r.Err()
 		}
+		if r := c.redis.Publish(c.pubChannel, "confdis"); r.Err() != nil {
+			return r.Err()
+		}
 	}
 	return nil
 }
 
-func (c *ConfDis) connect(addr string) {
+func (c *ConfDis) connect(addr string) error {
 	// Bug #97459 -- is the redis client library faking connection for
 	// the down server?
 	if conn, err := net.Dial("tcp", addr); err != nil {
-		panic(err)
+		return err
 	} else {
 		conn.Close()
 	}
 
 	c.redis = redis.NewTCPClient(addr, "", 0)
+	return nil
 }
 
-// reload reloads the config tree from redis
+// reload reloads the config tree from redis.
 func (c *ConfDis) reload() error {
+	// FIXME: must zero-value c.configStruct before overwriting it.
 	if r := c.redis.Get(c.rootKey); r.Err() != nil {
 		return r.Err()
 	} else {
 		data := []byte(r.Val())
 		json.Unmarshal(data, c.configStruct)
 	}
+	return nil
+}
+
+// watch watches for changes from other clients
+func (c *ConfDis) watch() error {
+	pubsub, err := c.redis.PubSubClient()
+	if err != nil {
+		return err
+	}
+	defer pubsub.Close()
+
+	ch, err := pubsub.Subscribe(c.pubChannel)
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		for {
+			<-ch
+			c.reload()
+		}
+	}()
+
 	return nil
 }
