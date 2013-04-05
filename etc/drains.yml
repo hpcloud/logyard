@@ -1,0 +1,17 @@
+---
+# logyard drains.
+# TODO: store these in redis only. 
+
+# Builtin list of drains.
+drains:
+  # Bounded storage for application logs, to be accessed from `s
+  # logs`.  limit: how many log lines per app to keep? (XXX: must be a
+  # low value until we move away from redis for app log buffer) heroku
+  # uses 1500; https://devcenter.heroku.com/articles/logging#log
+  builtin.apptail: "redis://stackato-core:6464/?filter=apptail&limit=400"
+  # Recent history of kato commands ran across the cluster stored as
+  # cloud events JSON
+  builtin.katohistory: "redis://stackato-core:6464/?filter=event.kato_action&limit=256&key=kato_history"
+  # Recent cloud events from across the cluster
+  builtin.cloudevents: "redis://stackato-core:6464/?filter=event&limit=256&key=cloud_events"
+

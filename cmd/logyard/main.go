@@ -21,8 +21,8 @@ func main() {
 	}
 
 	logyard.Init(doozer, headRev, true)
-	logyard.Init2()
 	server.Init(doozer, headRev)
+	logyard.Init2()
 
 	m := drain.NewDrainManager()
 	log.Info("Starting drain manager")
