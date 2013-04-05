@@ -34,7 +34,7 @@ func newLogyardConfig(conn *doozer.Conn, rev int64) *logyardConfig {
 	return c
 }
 
-// DeleteDrain deletes the drain from doozer tree
+// DeleteDrain deletes the drain from doozer tree.
 func (Config *logyardConfig) DeleteDrain(name string) error {
 	Config.mustBeInitialized()
 	err := Config.Doozer.Del(DOOZER_PREFIX+"drains/"+name, -1)
@@ -44,9 +44,7 @@ func (Config *logyardConfig) DeleteDrain(name string) error {
 	return nil
 }
 
-// AddDrain adds a drain. URI should not contain a query fragment,
-// which will be constructed from the `filters` and `params`
-// arguments.
+// AddDrain adds a drain to the doozer tree.
 func (Config *logyardConfig) AddDrain(name, uri string) error {
 	Config.mustBeInitialized()
 
@@ -62,7 +60,7 @@ func (Config *logyardConfig) AddDrain(name, uri string) error {
 }
 
 func (Config *logyardConfig) mustBeInitialized() {
-	// XXX: there should be a way to make the compiler do this job.
+	// XXX: there should be a way to let the compiler do this job.
 	if Config == nil {
 		log.Fatal("Config object not initialized (`Init()` not called)")
 	}

@@ -23,7 +23,7 @@ func TestSampleLogs(t *testing.T) {
 				t.Fatalf("misdetection type %s != %s -- for: %s", event.Type, event_type, event_parser.Sample)
 			}
 			// TODO: we should test the Desc field as well. meanwhile,
-			// displaying the desc to the user.
+			// displaying the Desc field to the user.
 			fmt.Printf("<< %19s >> -- [%8s] %s\n", event.Type, event.Severity, event.Desc)
 		}
 	}
