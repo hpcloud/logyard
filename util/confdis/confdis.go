@@ -23,9 +23,10 @@ func New(addr, rootKey string, struc interface{}) (*ConfDis, error) {
 	return &c, c.watch()
 }
 
-// Save saves current config onto redis.
+// Save saves current config onto redis. WARNING: Save() may not work
+// correctly if there are concurrent changes from other clients
+// (notified via pubsub).
 func (c *ConfDis) Save() error {
-	// TODO: use mutex with reload()
 	if data, err := json.Marshal(c.configStruct); err != nil {
 		return err
 	} else {

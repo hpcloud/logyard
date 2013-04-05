@@ -1,5 +1,7 @@
 ---
 # logyard configuration.
+# Must be loaded first using:
+# $ ruby -ryaml -rjson -e 'puts YAML.load_file("config.yml").to_json'  | redis-cli -p 5454 -x set config:logyard
 
 # Builtin list of drains. More can be added in doozer via 'kato drain'
 # (or logyardctl).

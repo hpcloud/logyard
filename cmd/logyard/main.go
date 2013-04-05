@@ -21,6 +21,7 @@ func main() {
 	}
 
 	logyard.Init(doozer, headRev, true)
+	logyard.Init2()
 	server.Init(doozer, headRev)
 
 	m := drain.NewDrainManager()
