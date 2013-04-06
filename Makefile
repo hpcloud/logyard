@@ -63,7 +63,7 @@ compile:
 
 install:	
 	mkdir -p $(INSTGOPATH)/$(SRCDIR)
-	rsync -a $(BUILDGOPATH)/$(SRCDIR)/config.yml $(INSTGOPATH)/$(SRCDIR)
+	rsync -a $(BUILDGOPATH)/$(SRCDIR)/etc/*.yml $(INSTGOPATH)/$(SRCDIR)/etc/
 	rsync -a $(BUILDGOPATH)/bin $(INSTGOPATH)
 	rsync -a etc $(INSTROOTDIR)
 	mkdir -p $(INSTBINDIR)
