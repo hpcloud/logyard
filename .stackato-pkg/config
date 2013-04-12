@@ -8,7 +8,7 @@
 PKG_NAME="stackato-logyard"
 PKG_VERSION="auto"
 PKG_DESCR_SHORT="stackato-logyard"
-PKG_DESCR_LONG="Stackato log aggregator implemented in go."
+PKG_DESCR_LONG="Stackato log management component implemented in Go."
 # redis-server is a test dependency (used for confdis.git unit tests)
 PKG_BUILD_DEPENDS="golang, mercurial, bzr, zeromq-dev (>=3.2.2), redis-server"
 PKG_DEPENDS="zeromq-dev"
