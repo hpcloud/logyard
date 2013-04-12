@@ -1,8 +1,8 @@
 package logyard
 
 import (
+	"confdis/go/confdis"
 	"github.com/ActiveState/log"
-	"logyard/util/confdis"
 	"stackato/server"
 )
 
