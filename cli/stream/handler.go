@@ -1,7 +1,6 @@
 package stream
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 )
@@ -31,7 +30,6 @@ func handleSystail(record map[string]interface{}, options MessagePrinterOptions)
 		return false
 	}
 
-	// TODO: highlight process names
 	// TODO: hide ip addr in micro cloud.
 
 	if strings.Contains(process, "nginx") {
@@ -79,6 +77,9 @@ func handleSystail(record map[string]interface{}, options MessagePrinterOptions)
 	default:
 		record["Text"] = text
 	}
+
+	// Assign an unique color to the process name
+	record["Name"] = colorizeString(process)
 	return true
 }
 
@@ -108,9 +109,4 @@ func streamHandler(
 	}
 
 	return true
-}
-
-// colorize applies the given color on the string.
-func colorize(s string, code string) string {
-	return fmt.Sprintf("@%s%s@|", code, s)
 }
