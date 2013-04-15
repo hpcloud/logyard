@@ -16,6 +16,7 @@ const configKey = "/proc/logyard/config/"
 type DrainManager struct {
 	mux       sync.Mutex       // mutex to protect Start/Stop
 	running   map[string]Drain // map of drain instance name to drain
+	stopCh    chan bool
 	doozerCfg *doozerconfig.DoozerConfig
 	doozerRev int64
 }
@@ -23,7 +24,25 @@ type DrainManager struct {
 func NewDrainManager() *DrainManager {
 	manager := new(DrainManager)
 	manager.running = make(map[string]Drain)
+	manager.stopCh = make(chan bool)
 	return manager
+}
+
+// Stop stops the drain manager including running drains.
+func (manager *DrainManager) Stop() {
+	manager.mux.Lock()
+	defer manager.mux.Unlock()
+	for name, _ := range manager.running {
+		manager.stopDrain(name)
+	}
+	// Sending on stopCh could block if DrainManager:Run().select{ ...
+	// } is blocking on a mutex (via Start/Stop). A better solution
+	// would be to get rid of mutexes and use channels. Until that
+	// happens, we asynchronously send on stopCh. Blocking is fine,
+	// because the process will be killed eventually.
+	go func() {
+		manager.stopCh <- true
+	}()
 }
 
 // XXX: use tomb and channels to properly process start/stop events.
@@ -32,12 +51,16 @@ func NewDrainManager() *DrainManager {
 func (manager *DrainManager) StopDrain(drainName string) {
 	manager.mux.Lock()
 	defer manager.mux.Unlock()
+	manager.stopDrain(drainName)
+}
+
+// StopDrain starts the drain if it is running
+func (manager *DrainManager) stopDrain(drainName string) {
 	if drain, ok := manager.running[drainName]; ok {
 		log.Infof("[drain:%s] Stopping drain ...\n", drainName)
 
-		// drain.Stop is expected to stop in 1s, but a known bug
-		// (#96008) causes certain drains to hang. workaround it using
-		// timeouts. 
+		// timeout faulty drains (unlikely) from blocking the rest of
+		// the logyard.
 		done := make(chan error)
 		go func() {
 			done <- drain.Stop()
@@ -142,14 +165,19 @@ func (manager *DrainManager) Run() {
 	}
 
 	// Watch for config changes in doozer
-	for change := range logyard.Config.DrainChanges {
-		switch change.Type {
-		case doozerconfig.DELETE:
-			manager.StopDrain(change.Key)
-		case doozerconfig.SET:
-			manager.StopDrain(change.Key)
-			manager.StartDrain(
-				change.Key, logyard.Config.Drains[change.Key], NewRetryerForDrain(change.Key))
+	for {
+		select {
+		case change := <-logyard.Config.DrainChanges:
+			switch change.Type {
+			case doozerconfig.DELETE:
+				manager.StopDrain(change.Key)
+			case doozerconfig.SET:
+				manager.StopDrain(change.Key)
+				manager.StartDrain(
+					change.Key, logyard.Config.Drains[change.Key], NewRetryerForDrain(change.Key))
+			}
+		case <-manager.stopCh:
+			break
 		}
 	}
 }

@@ -5,7 +5,10 @@ import (
 	"github.com/alecthomas/gozmq"
 	"logyard"
 	"logyard/drain"
+	"os"
+	"os/signal"
 	"stackato/server"
+	"syscall"
 )
 
 func main() {
@@ -23,6 +26,17 @@ func main() {
 	m := drain.NewDrainManager()
 	log.Info("Starting drain manager")
 	go m.Run()
+	// SIGTERM handle for stopping running drains.
+	go func() {
+		sigchan := make(chan os.Signal)
+		signal.Notify(sigchan, syscall.SIGTERM)
+		<-sigchan
+		log.Info("Stopping all drains before exiting")
+		m.Stop()
+		log.Info("Exiting now.")
+		os.Exit(0)
+	}()
+
 	log.Info("Running pubsub broker")
 	log.Fatal(logyard.Broker.Run())
 }

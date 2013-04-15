@@ -48,7 +48,7 @@ func (cmd *stream) Run(args []string) error {
 
 	go srv.Start()
 
-	name := fmt.Sprintf("tmp.logyardctl.%s-%d", ipaddr, port)
+	name := fmt.Sprintf("tmp.logyard-cli.%s-%d", ipaddr, port)
 
 	Init("stream")
 	uri, err := drain.ConstructDrainURI(name, "tcp://"+addr, args, map[string]string{
