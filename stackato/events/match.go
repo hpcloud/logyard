@@ -3,6 +3,7 @@
 package events
 
 import (
+	"github.com/ActiveState/log"
 	"regexp"
 	"strings"
 )
@@ -23,11 +24,13 @@ func NewMultiRegexpMatcher() *MultiRegexpMatcher {
 }
 
 func (m *MultiRegexpMatcher) MustAdd(name string, substring string, re string) {
-	if _, ok := m.substrings[substring]; ok {
-		panic("already in substrings")
+	if oldName, ok := m.substrings[substring]; ok {
+		log.Fatalf(
+			"substring %s already added under %s; being added again by %s",
+			substring, oldName, name)
 	}
 	if _, ok := m.regexps[name]; ok {
-		panic("already in regexps")
+		log.Fatal("already in regexps")
 	}
 	m.substrings[substring] = name
 	m.regexps[name] = regexp.MustCompile(re)

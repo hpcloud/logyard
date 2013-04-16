@@ -4,29 +4,35 @@ import (
 	"github.com/ActiveState/log"
 )
 
-type EventParser struct {
-	Substring   string       `json:"substring"` // substring unique to this log record for efficient matching
-	Re          string       `json:"regex"`     // regex to use for matching
-	Sample      string       `json:"sample"`    // sample log record
-	Format      string       `json:"format"`
-	Severity    string       `json:"severity"`
-	HandlerType string       `json:"handlertype"`
-	Handler     EventHandler // event handler
+// TODO: somehow merge this redundant struct with EventParser.
+type EventParserSpec struct {
+	Substring   string `json:"substring"`
+	Re          string `json:"regex"`
+	Sample      string `json:"sample"`
+	Format      string `json:"format"`
+	Severity    string `json:"severity"`
+	HandlerType string `json:"handlertype"`
 }
 
-func (p *EventParser) initialize() {
-	if p.Handler != nil {
-		panic("already initialized")
-	}
+type EventParser struct {
+	Substring string       // substring unique to this log record for efficient matching
+	Re        string       // regex to use for matching
+	Sample    string       // sample log record
+	Handler   EventHandler // event handler
+}
+
+func (p *EventParserSpec) Create() *EventParser {
 	if p.Severity == "" {
 		p.Severity = "INFO" // default severity
 	}
+	e := &EventParser{p.Substring, p.Re, p.Sample, nil}
 	switch p.HandlerType {
 	case "", "simple":
-		p.Handler = NewSimpleEventHandler(p.Severity, p.Format)
+		e.Handler = NewSimpleEventHandler(p.Severity, p.Format)
 	case "json":
-		p.Handler = NewJsonEventHandler(p.Severity, p.Format)
+		e.Handler = NewJsonEventHandler(p.Severity, p.Format)
 	}
+	return e
 }
 
 // EventParserGroup is a group of event parsers, which group is
@@ -105,13 +111,16 @@ func (parser Parser) parseStarGroup(orig_group string, text string) (*Event, err
 	return nil, nil
 }
 
-func NewStackatoParser(spec map[string]map[string]EventParser) Parser {
+func NewStackatoParser(spec map[string]map[string]EventParserSpec) Parser {
 	parserSpec := builtinSpec()
 	for process, d := range spec {
+		if _, ok := parserSpec[process]; !ok {
+			parserSpec[process] = map[string]*EventParser{}
+		}
 		for eventName, evt := range d {
-			evt.initialize()
-			log.Infof("Loading parse spec [%s]: %+v", eventName, evt)
-			parserSpec[process][eventName] = &evt
+			e := evt.Create()
+			log.Infof("Loading parse spec [%s]: %+v", eventName, e)
+			parserSpec[process][eventName] = e
 		}
 	}
 	parser := NewParser(parserSpec)
@@ -122,23 +131,6 @@ func NewStackatoParser(spec map[string]map[string]EventParser) Parser {
 func builtinSpec() map[string]EventParserGroup {
 	serviceNodeParserGroup := serviceParsers()
 	return map[string]EventParserGroup{
-		"supervisord": map[string]*EventParser{
-			"process_start": &EventParser{
-				Substring: "entered RUNNING state",
-				Re:        `(\w+) entered RUNNING`,
-				Sample:    `INFO success: memcached_node entered RUNNING state, process has ...`,
-				Handler:   NewSimpleEventHandler("INFO", "Process '$1' started on a node")},
-			"process_stop": &EventParser{
-				Substring: "stopped",
-				Re:        `stopped: (\w+) \((.+)\)`,
-				Sample:    `INFO stopped: mysql_node (terminated by SIGKILL)`,
-				Handler:   NewSimpleEventHandler("WARNING", "Process '$1' stopped on a node ($2)")},
-			"process_exit": &EventParser{
-				Substring: "exited",
-				Re:        `exited: (\w+) \((.+)\)`,
-				Sample:    `INFO exited: dea (exit status 1; not expected)`,
-				Handler:   NewSimpleEventHandler("ERROR", "Process '$1' crashed on a node ($2)")},
-		},
 		"kato": map[string]*EventParser{
 			"kato_action": &EventParser{
 				Substring: "INVOKE",

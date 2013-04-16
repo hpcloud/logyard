@@ -8,7 +8,7 @@ import (
 )
 
 var Config struct {
-	Events map[string]map[string]events.EventParser `json:"events"`
+	Events map[string]map[string]events.EventParserSpec `json:"events"`
 }
 
 func LoadConfig() {
@@ -17,7 +17,7 @@ func LoadConfig() {
 		log.Fatal(err)
 	}
 	server.Init(conn, headRev)
-	Config.Events = make(map[string]map[string]events.EventParser)
+	Config.Events = make(map[string]map[string]events.EventParserSpec)
 	if _, err = confdis.New(server.Config.CoreIP+":5454", "config:cloud_events", &Config); err != nil {
 		log.Fatal(err)
 	}

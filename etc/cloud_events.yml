@@ -8,3 +8,15 @@ events:
       regex: !!str (\w+) entered RUNNING
       sample: "INFO success: memcached_node entered RUNNING state, process has ..."
       format: "Process '$1' started on a node"
+    process_stop:
+      substring: "stopped"
+      regex: 'stopped: (\w+) \((.+)\)'
+      sample: 'INFO stopped: mysql_node (terminated by SIGKILL)'
+      severity: WARNING
+      format: "Process '$1' stopped on a node ($2)"
+    process_exit:
+      substring: "exited"
+      regex: 'exited: (\w+) \((.+)\)'
+      sample: 'INFO exited: dea (exit status 1; not expected)'
+      severity: ERROR
+      format: "Process '$1' crashed on a node ($2)"
