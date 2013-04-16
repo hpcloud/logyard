@@ -13,8 +13,12 @@ var config struct {
 
 func TestSampleLogs(t *testing.T) {
 	parser := NewStackatoParser(config.Events)
-	for process, event_types := range parser.tree {
+	for process_pat, event_types := range parser.tree {
 		for event_type, event_parser := range event_types {
+			process := process_pat
+			if process_pat == "*" {
+				process = "foo"
+			}
 			event, err := parser.Parse(process, event_parser.Sample)
 			if err != nil {
 				t.Fatalf("parse error (%s) for %s", err, event_parser.Sample)
@@ -30,7 +34,7 @@ func TestSampleLogs(t *testing.T) {
 			}
 			// TODO: we should test the Desc field as well. meanwhile,
 			// displaying the Desc field to the user.
-			fmt.Printf("<< %19s >> -- [%8s] %s\n", event.Type, event.Severity, event.Desc)
+				fmt.Printf("<< %19s | %16s >> -- [%8s] %s\n", event.Type, event.Process, event.Severity, event.Desc)
 		}
 	}
 }
