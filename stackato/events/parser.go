@@ -139,25 +139,6 @@ func builtinSpec() map[string]EventParserGroup {
 		"memcached_node":  serviceNodeParserGroup,
 		"mysql_node":      serviceNodeParserGroup,
 		"rabbit_node":     serviceNodeParserGroup,
-		// catch all matching
-		"*": map[string]*EventParser{
-			// Note: the "ERROR --" style of log prefix originates
-			// from vcap logger. conventionally we try to use the same
-			// prefix for non-vcap components. for eg., logyard itself
-			// uses the same prefix style.
-			"error": &EventParser{
-				Substring: "ERROR",
-				Re:        `ERROR -- (.+)$`,
-				Sample:    `postgresql_gateway - pid=4340 tid=2e99 fid=bad6  ERROR -- Failed fetching handles: Errno::ETIMEDOUT`,
-				Handler:   NewSimpleEventHandler("ERROR", "$1"),
-			},
-			"warning": &EventParser{
-				Substring: "WARN",
-				Re:        `WARN -- (.+)$`,
-				Sample:    `WARN -- Took 18.09s to process ps and du stats`,
-				Handler:   NewSimpleEventHandler("WARNING", "$1"),
-			},
-		},
 	}
 }
 

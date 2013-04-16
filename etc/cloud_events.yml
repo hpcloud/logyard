@@ -1,6 +1,9 @@
 ---
 # cloud_events configuration
 
+# The two formats under '*' -- error and warning -- parse the default
+# vcap_logger logging format, which is also followed by Go components.
+
 events:
   supervisord:
     process_start:
@@ -79,3 +82,17 @@ events:
       sample: 'EVENT -- INSTANCE_READY {"app_id":6,"app_name":"env","instance":0}'
       handlertype: json
       format: 'Application "{{.app_name}}" is now running on DEA {{.dea_id}}'
+  "*":
+    error:
+      substring: ERROR
+      regex: 'ERROR -- (.+)$'
+      sample: 'postgresql_gateway - pid=4340 tid=2e99 fid=bad6  ERROR -- Failed fetching handles: Errno::ETIMEDOUT'
+      severity: ERROR
+      format: '$1'
+    warning:
+      substring: WARN
+      regex: 'WARN -- (.+)$'
+      sample: 'WARN -- Took 18.09s to process ps and du stats'
+      severity: WARNING
+      format: '$1'
+      
