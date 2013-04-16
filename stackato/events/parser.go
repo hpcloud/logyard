@@ -112,43 +112,18 @@ func (parser Parser) parseStarGroup(orig_group string, text string) (*Event, err
 }
 
 func NewStackatoParser(spec map[string]map[string]EventParserSpec) Parser {
-	parserSpec := builtinSpec()
+	parserSpec := map[string]EventParserGroup{}
 	for process, d := range spec {
 		if _, ok := parserSpec[process]; !ok {
 			parserSpec[process] = map[string]*EventParser{}
 		}
 		for eventName, evt := range d {
 			e := evt.Create()
-			log.Infof("Loading parse spec [%s]: %+v", eventName, e)
+			log.Infof("Loading parse spec %s", eventName)
 			parserSpec[process][eventName] = e
 		}
 	}
 	parser := NewParser(parserSpec)
 	parser.Build()
 	return parser
-}
-
-func builtinSpec() map[string]EventParserGroup {
-	serviceNodeParserGroup := serviceParsers()
-	return map[string]EventParserGroup{
-		// Xxx: dynamic way to maintain this list?
-		"filesystem_node": serviceNodeParserGroup,
-		"mongodb_node":    serviceNodeParserGroup,
-		"postgresql_node": serviceNodeParserGroup,
-		"redis_node":      serviceNodeParserGroup,
-		"memcached_node":  serviceNodeParserGroup,
-		"mysql_node":      serviceNodeParserGroup,
-		"rabbit_node":     serviceNodeParserGroup,
-	}
-}
-
-func serviceParsers() map[string]*EventParser {
-	return map[string]*EventParser{
-		"service_provision": &EventParser{
-			Substring: "Successfully provisioned service",
-			Re:        `^\[[^\]]+\] (\w+) .+ Successfully provisioned service for request`,
-			Sample:    `[2012-11-01 07:30:51.290253] memcached_node_1 - pid=23282 tid=d0cf fid=5280 DEBUG -- MaaS-Node: Successfully provisioned service for request {"plan":"free"}: {:credentials=>{"hostname"=>"192.168.203.197", "host"=>"192.168.203.197", "port"=>11000, "user"=>"cc06b88a-aa63-45f2-82d8-e9ab06f6a3cf", "password"=>"7ce87b70-1ed8-4c12-86ab-0e1c237f6853", "name"=>"20017185-bfb3-4b5a-b9b1-3add745e6552", "node_id"=>"memcached_node_1"}}`,
-			Handler:   NewSimpleEventHandler("INFO", "Provisioned a new service on $1"),
-		},
-	}
 }

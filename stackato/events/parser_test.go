@@ -34,7 +34,7 @@ func TestSampleLogs(t *testing.T) {
 			}
 			// TODO: we should test the Desc field as well. meanwhile,
 			// displaying the Desc field to the user.
-				fmt.Printf("<< %19s | %16s >> -- [%8s] %s\n", event.Type, event.Process, event.Severity, event.Desc)
+			fmt.Printf("<< %19s | %16s >> -- [%8s] %s\n", event.Type, event.Process, event.Severity, event.Desc)
 		}
 	}
 }
