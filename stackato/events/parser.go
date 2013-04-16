@@ -131,62 +131,6 @@ func NewStackatoParser(spec map[string]map[string]EventParserSpec) Parser {
 func builtinSpec() map[string]EventParserGroup {
 	serviceNodeParserGroup := serviceParsers()
 	return map[string]EventParserGroup{
-		"kato": map[string]*EventParser{
-			"kato_action": &EventParser{
-				Substring: "INVOKE",
-				Re:        `INVOKE (.+)`,
-				Sample:    `[info] (12339) INVOKE kato start`,
-				Handler:   NewSimpleEventHandler("INFO", "$1"),
-			},
-		},
-		"cloud_controller": map[string]*EventParser{
-			"cc_waiting_for_dea": &EventParser{
-				Substring: "No resources available to",
-				Re:        `No resources available to start instance (.+)$`,
-				Sample:    `WARN -- No resources available to start instance {"droplet":6,"name":"sinatra-env","runtime":"ruby18"}`,
-				Handler:   NewJsonEventHandler("WARNING", "No DEA can accept app '{{.name}}' of runtime '{{.runtime}}'; retrying..."),
-			},
-			"cc_app_update": &EventParser{
-				Substring: "UPDATE_APP",
-				Re:        `EVENT -- UPDATE_APP (.+)$`,
-				Sample:    `EVENT -- UPDATE_APP {"app_id":7,"app_name":"env","msg":"Updating something"}`,
-				Handler:   NewJsonEventHandler("INFO", "{{.msg}}"),
-			},
-		},
-		"stager": map[string]*EventParser{
-			"stager_start": &EventParser{
-				Substring: "START_STAGING",
-				Re:        `EVENT -- START_STAGING (.+)$`,
-				Sample:    `EVENT -- START_STAGING {"app_id":7,"app_name":"env"}`,
-				Handler:   NewJsonEventHandler("INFO", "Staging application '{{.app_name}}'"),
-			},
-			"stager_end": &EventParser{
-				Substring: "STAGING_COMPLETED",
-				Re:        `EVENT -- STAGING_COMPLETED (.+)$`,
-				Sample:    `EVENT -- STAGING_COMPLETED {"app_id":6,"app_name":"env"}`,
-				Handler:   NewJsonEventHandler("INFO", "Completed staging application '{{.app_name}}'"),
-			},
-		},
-		"dea": map[string]*EventParser{
-			"dea_start": &EventParser{
-				Substring: "START_INSTANCE",
-				Re:        `EVENT -- START_INSTANCE (.+)$`,
-				Sample:    ` EVENT -- START_INSTANCE {"app_name":"env","app_id":6,"instance":0,"dea_id":"hash"}`,
-				Handler:   NewJsonEventHandler("INFO", "Starting application '{{.app_name}}' on DEA {{.dea_id}}"),
-			},
-			"dea_stop": &EventParser{
-				Substring: "STOPPING_INSTANCE",
-				Re:        `EVENT -- STOPPING_INSTANCE (.+)$`,
-				Sample:    `EVENT -- STOPPING_INSTANCE {"app_id":6,"app_name":"env","instance":0,"dea_id":"deahas"}`,
-				Handler:   NewJsonEventHandler("INFO", "Stopping application '{{.app_name}}' on DEA {{.dea_id}}"),
-			},
-			"dea_ready": &EventParser{
-				Substring: "INSTANCE_READY",
-				Re:        `EVENT -- INSTANCE_READY (.+)$`,
-				Sample:    `EVENT -- INSTANCE_READY {"app_id":6,"app_name":"env","instance":0}`,
-				Handler:   NewJsonEventHandler("INFO", "Application '{{.app_name}}' is now running on DEA {{.dea_id}}"),
-			},
-		},
 		// Xxx: dynamic way to maintain this list?
 		"filesystem_node": serviceNodeParserGroup,
 		"mongodb_node":    serviceNodeParserGroup,
@@ -195,15 +139,6 @@ func builtinSpec() map[string]EventParserGroup {
 		"memcached_node":  serviceNodeParserGroup,
 		"mysql_node":      serviceNodeParserGroup,
 		"rabbit_node":     serviceNodeParserGroup,
-		// non-vcap processes
-		"nginx": map[string]*EventParser{
-			"nginx_error": &EventParser{
-				Substring: "error",
-				Re:        `\[error\] (.+)$`,
-				Sample:    `23:29:20 [error] 8474#0: *163529 connect() failed(111: Connection refused)`,
-				Handler:   NewSimpleEventHandler("ERROR", "nginx error: $1"),
-			},
-		},
 		// catch all matching
 		"*": map[string]*EventParser{
 			// Note: the "ERROR --" style of log prefix originates

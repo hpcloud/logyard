@@ -20,3 +20,62 @@ events:
       sample: 'INFO exited: dea (exit status 1; not expected)'
       severity: ERROR
       format: "Process '$1' crashed on a node ($2)"
+  kato:
+    kato_action:
+      substring: 'INVOKE'
+      regex: 'INVOKE (.+)'
+      sample: '[info] (12339) INVOKE kato start'
+      format: '$1'
+  nginx:
+    nginx_error:
+      substring: "error"
+      regex: '\[error\] (.+)$'
+      sample: '23:29:20 [error] 8474#0: *163529 connect() failed(111: Connection refused)'
+      severity: ERROR
+      format: "nginx error: $1"
+  cloud_controller:
+    cc_waiting_for_dea:
+      substring: "No resources available to"
+      regex: 'No resources available to start instance (.+)$'
+      sample: 'WARN -- No resources available to start instance {"droplet":6,"name":"sinatra-env","runtime":"ruby18"}'
+      severity: WARNING
+      handlertype: json
+      format: 'No DEA can accept app "{{.name}}" of runtime "{{.runtime}}"; retrying...'
+    cc_app_update:
+      substring: "UPDATE_APP"
+      regex: 'EVENT -- UPDATE_APP (.+)$'
+      sample: 'EVENT -- UPDATE_APP {"app_id":7,"app_name":"env","msg":"Updating something"}'
+      handlertype: json
+      format: '{{.msg}}'
+  stager:
+    stager_start:
+      substring: 'START_STAGING'
+      regex: 'EVENT -- START_STAGING (.+)$'
+      sample: 'EVENT -- START_STAGING {"app_id":7,"app_name":"env"}'
+      handlertype: json
+      format: 'Staging application "{{.app_name}}"'
+    stager_end:
+      substring: "STAGING_COMPLETED"
+      regex: 'EVENT -- STAGING_COMPLETED (.+)$'
+      sample: 'EVENT -- STAGING_COMPLETED {"app_id":6,"app_name":"env"}'
+      handlertype: json
+      format: 'Completed staging application "{{.app_name}}"'
+  dea:
+    dea_start:
+      substring: "START_INSTANCE"
+      regex: 'EVENT -- START_INSTANCE (.+)$'
+      sample: 'EVENT -- START_INSTANCE {"app_name":"env","app_id":6,"instance":0,"dea_id":"hash"}'
+      handlertype: json
+      format: 'Starting application "{{.app_name}}" on DEA {{.dea_id}}'
+    dea_stop:
+      substring: "STOPPING_INSTANCE"
+      regex: 'EVENT -- STOPPING_INSTANCE (.+)$'
+      sample: 'EVENT -- STOPPING_INSTANCE {"app_id":6,"app_name":"env","instance":0,"dea_id":"deahas"}'
+      handlertype: json
+      format: 'Stopping application "{{.app_name}}" on DEA {{.dea_id}}'
+    dea_ready:
+      substring: "INSTANCE_READY"
+      regex: 'EVENT -- INSTANCE_READY (.+)$'
+      sample: 'EVENT -- INSTANCE_READY {"app_id":6,"app_name":"env","instance":0}'
+      handlertype: json
+      format: 'Application "{{.app_name}}" is now running on DEA {{.dea_id}}'
