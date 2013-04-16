@@ -94,11 +94,11 @@ func (parser Parser) Parse(group_name string, text string) (*Event, error) {
 }
 
 func (parser Parser) parseStarGroup(orig_group string, text string) (*Event, error) {
-	group, ok := parser.tree["*"]
+	group, ok := parser.tree["__all__"]
 	if !ok {
 		return nil, nil // no "*" group defined
 	}
-	matcher := parser.matchers["*"]
+	matcher := parser.matchers["__all__"]
 	if event_type, results := matcher.Match(text); results != nil {
 		event := Event{Type: event_type, Process: orig_group, Severity: "INFO"}
 		event_parser := group[event_type]

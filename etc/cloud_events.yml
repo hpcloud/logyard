@@ -82,7 +82,7 @@ events:
       sample: 'EVENT -- INSTANCE_READY {"app_id":6,"app_name":"env","instance":0}'
       handlertype: json
       format: 'Application "{{.app_name}}" is now running on DEA {{.dea_id}}'
-  "*":
+  __all__:
     error:
       substring: ERROR
       regex: 'ERROR -- (.+)$'
