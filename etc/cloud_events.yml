@@ -137,3 +137,9 @@ events:
       regex: '^\[[^\]]+\] (\w+) .+ Successfully provisioned service for request'
       sample: '[2012-11-01 07:30:51.290253] redis_node_1 - pid=23282 tid=d0cf fid=5280 DEBUG -- MaaS-Node: Successfully provisioned service for request {...}'
       format: 'Provisioned a new service on $1'
+  harbor_node:
+    service_provision:
+      substring: "Successfully provisioned service"
+      regex: '^\[[^\]]+\] (\w+) .+ Successfully provisioned service for request'
+      sample: '[2012-11-01 07:30:51.290253] redis_node_1 - pid=23282 tid=d0cf fid=5280 DEBUG -- MaaS-Node: Successfully provisioned service for request {...}'
+      format: 'Provisioned a new service on $1'
