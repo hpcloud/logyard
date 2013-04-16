@@ -21,7 +21,7 @@ type EventParser struct {
 	Handler   EventHandler // event handler
 }
 
-func (p *EventParserSpec) Create() *EventParser {
+func (p *EventParserSpec) ToEventParser() *EventParser {
 	if p.Severity == "" {
 		p.Severity = "INFO" // default severity
 	}
@@ -60,7 +60,7 @@ func (parser Parser) Build() {
 }
 
 // DeleteSamples deletes the samples (EventParser.Sample) to free up
-// some memory..
+// some memory.
 func (parser Parser) DeleteSamples() {
 	for _, group := range parser.tree {
 		for _, event_parser := range group {
@@ -70,7 +70,7 @@ func (parser Parser) DeleteSamples() {
 }
 
 // Parser parses the given message under the given group and returns
-// the matching event
+// the matching event.
 func (parser Parser) Parse(group_name string, text string) (*Event, error) {
 	group, ok := parser.tree[group_name]
 	if !ok {
@@ -118,9 +118,8 @@ func NewStackatoParser(spec map[string]map[string]EventParserSpec) Parser {
 			parserSpec[process] = map[string]*EventParser{}
 		}
 		for eventName, evt := range d {
-			e := evt.Create()
 			log.Infof("Loading parse spec %s", eventName)
-			parserSpec[process][eventName] = e
+			parserSpec[process][eventName] = evt.ToEventParser()
 		}
 	}
 	parser := NewParser(parserSpec)
