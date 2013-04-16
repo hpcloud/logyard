@@ -1,12 +1,18 @@
 package events
 
 import (
+	"encoding/json"
 	"fmt"
+	"os/exec"
 	"testing"
 )
 
+var config struct {
+	Events map[string]map[string]EventParserSpec `json:"events"`
+}
+
 func TestSampleLogs(t *testing.T) {
-	parser := NewStackatoParser()
+	parser := NewStackatoParser(config.Events)
 	for process, event_types := range parser.tree {
 		for event_type, event_parser := range event_types {
 			event, err := parser.Parse(process, event_parser.Sample)
@@ -27,4 +33,23 @@ func TestSampleLogs(t *testing.T) {
 			fmt.Printf("<< %19s >> -- [%8s] %s\n", event.Type, event.Severity, event.Desc)
 		}
 	}
+}
+
+func init() {
+	// XXX: I'm uncertain as to the simplest way to load
+	// cloud_events.yml as JSON and json.Unmarshal into config.Events
+	// .. all in Go. So, for now, I'll use ruby to do the JSON
+	// converstion.
+	fmt.Println("Loading etc/cloud_events.yml into test config struct")
+	if output, err := exec.Command(
+		"/usr/bin/ruby", "-ryaml", "-rjson", "-e",
+		"puts YAML.load_file('../../etc/cloud_events.yml').to_json",
+	).CombinedOutput(); err != nil {
+		panic(fmt.Sprintf("Failed to run ruby: %v (output: %s)", err, output))
+	} else {
+		if err := json.Unmarshal(output, &config); err != nil {
+			panic(err)
+		}
+	}
+
 }
