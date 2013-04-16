@@ -1,10 +1,32 @@
 package events
 
+import (
+	"github.com/ActiveState/log"
+)
+
 type EventParser struct {
-	Substring string       // substring unique to this log record for efficient matching
-	Re        string       // regex to use for matching
-	Sample    string       // sample log record
-	Handler   EventHandler // event handler
+	Substring   string       `json:"substring"` // substring unique to this log record for efficient matching
+	Re          string       `json:"regex"`     // regex to use for matching
+	Sample      string       `json:"sample"`    // sample log record
+	Format      string       `json:"format"`
+	Severity    string       `json:"severity"`
+	HandlerType string       `json:"handlertype"`
+	Handler     EventHandler // event handler
+}
+
+func (p *EventParser) initialize() {
+	if p.Handler != nil {
+		panic("already initialized")
+	}
+	if p.Severity == "" {
+		p.Severity = "INFO" // default severity
+	}
+	switch p.HandlerType {
+	case "", "simple":
+		p.Handler = NewSimpleEventHandler(p.Severity, p.Format)
+	case "json":
+		p.Handler = NewJsonEventHandler(p.Severity, p.Format)
+	}
 }
 
 // EventParserGroup is a group of event parsers, which group is
@@ -83,19 +105,13 @@ func (parser Parser) parseStarGroup(orig_group string, text string) (*Event, err
 	return nil, nil
 }
 
-func NewStackatoParser(spec map[string]map[string]map[string]string) Parser {
+func NewStackatoParser(spec map[string]map[string]EventParser) Parser {
 	parserSpec := builtinSpec()
 	for process, d := range spec {
-		for eventName, eventSpec := range d {
-			println("Loading spec: ", eventName, eventSpec)
-			parserSpec[process][eventName] = &EventParser{
-				Substring: eventSpec["substring"],
-				Re:        eventSpec["regex"],
-				Sample:    eventSpec["sample"],
-				Handler: NewSimpleEventHandler(
-					eventSpec["level"],
-					eventSpec["message"]),
-			}
+		for eventName, evt := range d {
+			evt.initialize()
+			log.Infof("Loading parse spec [%s]: %+v", eventName, evt)
+			parserSpec[process][eventName] = &evt
 		}
 	}
 	parser := NewParser(parserSpec)
