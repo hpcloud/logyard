@@ -83,10 +83,29 @@ func (parser Parser) parseStarGroup(orig_group string, text string) (*Event, err
 	return nil, nil
 }
 
-func NewStackatoParser() Parser {
-	serviceNodeParserGroup := serviceParsers()
+func NewStackatoParser(spec map[string]map[string]map[string]string) Parser {
+	parserSpec := builtinSpec()
+	for process, d := range spec {
+		for eventName, eventSpec := range d {
+			println("Loading spec: ", eventName, eventSpec)
+			parserSpec[process][eventName] = &EventParser{
+				Substring: eventSpec["substring"],
+				Re:        eventSpec["regex"],
+				Sample:    eventSpec["sample"],
+				Handler: NewSimpleEventHandler(
+					eventSpec["level"],
+					eventSpec["message"]),
+			}
+		}
+	}
+	parser := NewParser(parserSpec)
+	parser.Build()
+	return parser
+}
 
-	parser := NewParser(map[string]EventParserGroup{
+func builtinSpec() map[string]EventParserGroup {
+	serviceNodeParserGroup := serviceParsers()
+	return map[string]EventParserGroup{
 		"supervisord": map[string]*EventParser{
 			"process_start": &EventParser{
 				Substring: "entered RUNNING state",
@@ -196,11 +215,7 @@ func NewStackatoParser() Parser {
 				Handler:   NewSimpleEventHandler("WARNING", "$1"),
 			},
 		},
-	})
-
-	parser.Build()
-
-	return parser
+	}
 }
 
 func serviceParsers() map[string]*EventParser {

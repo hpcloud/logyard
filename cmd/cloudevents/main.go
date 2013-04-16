@@ -16,7 +16,9 @@ type SystailRecord struct {
 }
 
 func main() {
-	parser := events.NewStackatoParser()
+	LoadConfig()
+
+	parser := events.NewStackatoParser(Config.Events)
 	parser.DeleteSamples()
 
 	pub := logyard.Broker.NewPublisherMust()
