@@ -16,6 +16,7 @@ import (
 type AppInstance struct {
 	AppID    int
 	AppName  string
+	AppGroup string `json:"group"`
 	Type     string
 	Index    int
 	LogFiles []string
@@ -31,6 +32,7 @@ type AppLogMessage struct {
 	InstanceIndex int
 	AppID         int
 	AppName       string
+	AppGroup      string
 	NodeID        string // Host (DEA,stager) IP of this app instance
 }
 
@@ -89,6 +91,7 @@ func AppInstanceStarted(instance *AppInstance, nodeid string) {
 					InstanceIndex: instance.Index,
 					AppID:         instance.AppID,
 					AppName:       instance.AppName,
+					AppGroup:      instance.AppGroup,
 					NodeID:        nodeid,
 				}).Publish(pub, false)
 				if err != nil {
