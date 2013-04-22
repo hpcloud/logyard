@@ -2,6 +2,7 @@ package apptail
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/ActiveState/log"
 	"logyard"
 	"logyard/stackato/events"
@@ -12,7 +13,7 @@ import (
 // Make relevant cloud events available in application logs. Heroku style.
 func MonitorCloudEvents(nodeid string) {
 	// TODO: add more events; will require modifying the log
-	// invokation to include the required app id
+	// invocation to include the required app_id/app_name/group
 	sub := logyard.Broker.Subscribe(
 		"event.dea_start",
 		"event.dea_ready",
@@ -34,21 +35,21 @@ func MonitorCloudEvents(nodeid string) {
 			log.Fatal(err) // not expected at all
 		}
 
+		appid, name, group, err := extractAppInfo(event)
+		if err != nil {
+			log.Warn(err)
+			continue
+		}
+
 		switch msg.Key {
 		case "event.dea_start", "event.dea_ready", "event.dea_stop":
-			appid := int(event.Info["app_id"].(float64))
-			name := event.Info["app_name"].(string)
 			index := int(event.Info["instance"].(float64))
 			source := "stackato.dea"
-			PublishAppLog(pub, appid, name, index, source, nodeid, &event)
+			PublishAppLog(pub, appid, name, group, index, source, nodeid, &event)
 		case "event.stager_start", "event.stager_end":
-			appid := int(event.Info["app_id"].(float64))
-			name := event.Info["app_name"].(string)
-			PublishAppLog(pub, appid, name, -1, "stackato.stager", nodeid, &event)
+			PublishAppLog(pub, appid, name, group, -1, "stackato.stager", nodeid, &event)
 		case "event.cc_app_update":
-			appid := int(event.Info["app_id"].(float64))
-			name := event.Info["app_name"].(string)
-			PublishAppLog(pub, appid, name, -1, "stackato.controller", nodeid, &event)
+			PublishAppLog(pub, appid, name, group, -1, "stackato.controller", nodeid, &event)
 		}
 	}
 	log.Warn("Finished listening for app relevant cloud events.")
@@ -59,8 +60,32 @@ func MonitorCloudEvents(nodeid string) {
 	}
 }
 
+func extractAppInfo(e events.Event) (appId int, appName, group string, err error) {
+	appIdFloat, ok := e.Info["app_id"].(float64)
+	if !ok {
+		err = fmt.Errorf("app_id field missing in event '%s' from %s/%s'",
+			e.Type, e.NodeID, e.Process)
+		return
+	}
+	appId = int(appIdFloat)
+
+	appName, ok = e.Info["app_name"].(string)
+	if !ok {
+		err = fmt.Errorf("app_name field missing in event '%s' from %s/%s'",
+			e.Type, e.NodeID, e.Process)
+		return
+	}
+
+	group, ok = e.Info["group"].(string)
+	if !ok {
+		err = fmt.Errorf("group field missing in event '%s' from %s/%s",
+			e.Type, e.NodeID, e.Process)
+	}
+	return
+}
+
 func PublishAppLog(
-	pub *pubsub.Publisher, app_id int, app_name string,
+	pub *pubsub.Publisher, app_id int, app_name string, group string,
 	index int, source string, nodeid string, event *events.Event) {
 
 	err := (&AppLogMessage{
@@ -72,6 +97,7 @@ func PublishAppLog(
 		InstanceIndex: index,
 		AppID:         app_id,
 		AppName:       app_name,
+		AppGroup:      group,
 		NodeID:        nodeid,
 	}).Publish(pub, true)
 
