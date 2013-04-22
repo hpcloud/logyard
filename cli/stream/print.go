@@ -11,6 +11,7 @@ import (
 	"time"
 )
 
+// REFACTOR: remove coupling between color printer and options.
 type MessagePrinterOptions struct {
 	Raw      bool
 	ShowTime bool
