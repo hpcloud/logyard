@@ -69,17 +69,19 @@ func handleSystail(record map[string]interface{}, options MessagePrinterOptions)
 		}
 	}
 
-	switch severity {
-	case "ERROR":
-		record["Text"] = colorize(text, "r")
-	case "WARN":
-		record["Text"] = colorize(text, "y")
-	default:
-		record["Text"] = text
-	}
+	if !options.NoColor {
+		switch severity {
+		case "ERROR":
+			record["Text"] = colorize(text, "r")
+		case "WARN":
+			record["Text"] = colorize(text, "y")
+		default:
+			record["Text"] = text
+		}
 
-	// Assign an unique color to the process name
-	record["Name"] = colorizeString(process)
+		// Assign an unique color to the process name
+		record["Name"] = colorizeString(process)
+	}
 	return true
 }
 
@@ -87,12 +89,14 @@ func handleEvent(record map[string]interface{}, options MessagePrinterOptions) b
 	desc := record["Desc"].(string)
 	severity := record["Severity"].(string)
 
-	switch severity {
-	case "ERROR":
-		record["Desc"] = colorize(desc, "R")
-	case "WARNING":
-		record["Desc"] = colorize(desc, "Y")
-	default:
+	if !options.NoColor {
+		switch severity {
+		case "ERROR":
+			record["Desc"] = colorize(desc, "R")
+		case "WARNING":
+			record["Desc"] = colorize(desc, "Y")
+		default:
+		}
 	}
 	return true
 }

@@ -14,6 +14,7 @@ import (
 type MessagePrinterOptions struct {
 	Raw      bool
 	ShowTime bool
+	NoColor  bool
 }
 
 // FilterFn is a function to filter incoming messages
@@ -42,6 +43,10 @@ func NewMessagePrinter(options MessagePrinterOptions) MessagePrinter {
 func (p MessagePrinter) AddFormat(keypart1 string, format string) {
 	if _, ok := p.templates[keypart1]; ok {
 		panic("already added")
+	}
+	if p.options.NoColor {
+		format = stripColor(format)
+		fmt.Printf("Added format: %s\n", format)
 	}
 	p.templates[keypart1] = template.Must(
 		template.New("print-" + keypart1).Parse(format))
@@ -92,4 +97,25 @@ func escapeSpecialColorChars(m map[string]interface{}) {
 			m[key] = strings.Replace(s, "@", "@@", -1)
 		}
 	}
+}
+
+func stripColor(s string) string {
+	var buf bytes.Buffer
+	mode := false
+	for _, c := range s {
+		switch {
+		case mode && c == '@':
+			buf.WriteString("@@") // handle @
+			mode = false
+		case mode && c != '@':
+			mode = false
+			continue // ignore the special char
+		case c == '@' && !mode:
+			mode = true // ignore unescaped @
+		default:
+			buf.WriteRune(c)
+			mode = false
+		}
+	}
+	return buf.String()
 }
