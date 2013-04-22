@@ -24,7 +24,12 @@ func init() {
 func handleSystail(record map[string]interface{}, options MessagePrinterOptions) bool {
 	text := record["Text"].(string)
 	process := record["Name"].(string)
+	node := record["NodeID"].(string)
 	severity := ""
+
+	if len(options.NodeID) > 0 && node != options.NodeID {
+		return false
+	}
 
 	if process == "logyard" && strings.Contains(text, "INFO") {
 		return false
@@ -88,6 +93,11 @@ func handleSystail(record map[string]interface{}, options MessagePrinterOptions)
 func handleEvent(record map[string]interface{}, options MessagePrinterOptions) bool {
 	desc := record["Desc"].(string)
 	severity := record["Severity"].(string)
+	node := record["NodeID"].(string)
+
+	if len(options.NodeID) > 0 && node != options.NodeID {
+		return false
+	}
 
 	if !options.NoColor {
 		switch severity {

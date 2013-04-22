@@ -19,6 +19,7 @@ type stream struct {
 	raw     bool
 	time    bool
 	nocolor bool
+	nodeid  string
 }
 
 func (cmd *stream) Name() string {
@@ -32,6 +33,8 @@ func (cmd *stream) DefineFlags(fs *flag.FlagSet) {
 		"Show timestamp")
 	fs.BoolVar(&cmd.nocolor, "nocolor", false,
 		"Output with no colors")
+	fs.StringVar(&cmd.nodeid, "nodeid", "",
+		"Filter by this node IP address")
 }
 
 func (cmd *stream) Run(args []string) error {
@@ -80,7 +83,7 @@ func (cmd *stream) Run(args []string) error {
 	})
 
 	cli_stream.Stream(srv.Ch, cli_stream.MessagePrinterOptions{
-		cmd.raw, cmd.time, cmd.nocolor})
+		cmd.raw, cmd.time, cmd.nocolor, cmd.nodeid})
 
 	return nil
 }

@@ -15,6 +15,7 @@ type MessagePrinterOptions struct {
 	Raw      bool
 	ShowTime bool
 	NoColor  bool
+	NodeID   string
 }
 
 // FilterFn is a function to filter incoming messages
