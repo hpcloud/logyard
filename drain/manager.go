@@ -96,7 +96,8 @@ func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 		return
 	}
 
-	cfg, err := ParseDrainUri(name, uri, logyard.Config2.DrainFormats)
+	fmt.Printf("%+v\n", logyard.GetConfig().DrainFormats)
+	cfg, err := ParseDrainUri(name, uri, logyard.GetConfig().DrainFormats)
 	if err != nil {
 		log.Errorf("[drain:%s] Invalid drain URI (%s): %s", name, uri, err)
 		return
@@ -137,7 +138,7 @@ func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 func NewRetryerForDrain(name string) retry.Retryer {
 	var retryLimit time.Duration
 	var err error
-	for prefix, duration := range logyard.Config2.RetryLimits {
+	for prefix, duration := range logyard.GetConfig().RetryLimits {
 		if strings.HasPrefix(name, prefix) {
 			if retryLimit, err = time.ParseDuration(duration); err != nil {
 				log.Error("[drain:%s] Invalid duration (%s) for drain prefix %s "+

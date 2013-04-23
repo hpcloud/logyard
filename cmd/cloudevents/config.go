@@ -3,12 +3,19 @@ package main
 import (
 	"confdis/go/confdis"
 	"github.com/ActiveState/log"
+	"logyard"
 	"logyard/stackato/events"
 	"stackato/server"
 )
 
-var Config struct {
+type Config struct {
 	Events map[string]map[string]events.EventParserSpec `json:"events"`
+}
+
+var c *confdis.ConfDis
+
+func getConfig() *Config {
+	return c.Config.(*Config)
 }
 
 func LoadConfig() {
@@ -17,9 +24,9 @@ func LoadConfig() {
 		log.Fatal(err)
 	}
 	server.Init(conn, headRev)
-	Config.Events = make(map[string]map[string]events.EventParserSpec)
-	if _, err = confdis.New(server.Config.CoreIP+":5454", "config:cloud_events", &Config); err != nil {
+	if c, err = confdis.New(server.Config.CoreIP+":5454", "config:cloud_events", Config{}); err != nil {
 		log.Fatal(err)
 	}
-	log.Info(Config.Events)
+	go logyard.MonitorConfig(c)
+	log.Info(getConfig().Events)
 }

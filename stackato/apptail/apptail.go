@@ -67,7 +67,7 @@ func AppInstanceStarted(instance *AppInstance, nodeid string) {
 			defer pub.Stop()
 
 			tail, err := tail.TailFile(filename, tail.Config{
-				MaxLineSize: Config.MaxRecordSize,
+				MaxLineSize: GetConfig().MaxRecordSize,
 				MustExist:   true,
 				Follow:      true,
 				Location:    -1,

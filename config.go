@@ -7,6 +7,7 @@ import (
 	"github.com/ha/doozer"
 )
 
+// TODO: remove doozer config after bug 98325 
 type logyardConfig struct {
 	Drains       map[string]string `doozer:"drains"`
 	Doozer       *doozer.Conn

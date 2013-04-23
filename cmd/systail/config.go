@@ -3,12 +3,19 @@ package main
 import (
 	"confdis/go/confdis"
 	"github.com/ActiveState/log"
+	"logyard"
 	"stackato/server"
 )
 
-var Config struct {
+type Config struct {
 	MaxRecordSize int               `json:"max_record_size"`
 	LogFiles      map[string]string `json:"log_files"`
+}
+
+var c *confdis.ConfDis
+
+func getConfig() *Config {
+	return c.Config.(*Config)
 }
 
 func LoadConfig() {
@@ -17,8 +24,8 @@ func LoadConfig() {
 		log.Fatal(err)
 	}
 	server.Init(conn, headRev)
-	Config.LogFiles = make(map[string]string)
-	if _, err = confdis.New(server.Config.CoreIP+":5454", "config:systail", &Config); err != nil {
+	if c, err = confdis.New(server.Config.CoreIP+":5454", "config:systail", Config{}); err != nil {
 		log.Fatal(err)
 	}
+	go logyard.MonitorConfig(c)
 }
