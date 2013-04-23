@@ -17,6 +17,7 @@ type MessagePrinterOptions struct {
 	ShowTime bool
 	NoColor  bool
 	NodeID   string
+	JSON     bool
 }
 
 // FilterFn is a function to filter incoming messages
@@ -60,6 +61,15 @@ func (p *MessagePrinter) SetPrePrintHook(fn FilterFn) {
 
 // Print a message from logyard streams
 func (p MessagePrinter) Print(msg pubsub.Message) error {
+	if p.options.JSON {
+		if p.options.NoColor {
+			fmt.Printf("%s %s\n", msg.Key, msg.Value)
+		} else {
+			color.Printf("@y%s@| %s\n", msg.Key, msg.Value)
+		}
+		return nil
+	}
+
 	var record map[string]interface{}
 
 	if err := json.Unmarshal([]byte(msg.Value), &record); err != nil {
