@@ -18,6 +18,9 @@ func init() {
 		// supervisord log prefix
 		regexp.MustCompile(
 			`\d+-\d+-\d+ \d+:\d+:\d+,\d+ (.+)`),
+		// auth.log prefix
+		regexp.MustCompile(
+			`\w+ \d+ \d+\:\d+\:\d+ (.+)`),
 	}
 }
 
