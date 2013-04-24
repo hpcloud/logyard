@@ -34,8 +34,29 @@ func MonitorConfig(c *confdis.ConfDis) {
 	}
 }
 
+// DeleteDrain deletes the drain from config.
+func DeleteDrain(name string) error {
+	return c.AtomicSave(func(i interface{}) error {
+		config := i.(*logyardConfig2)
+		delete(config.Drains, name)
+		return nil
+	})
+}
+
+// AddDrain adds a drain to the doozer tree.
+func AddDrain(name, uri string) error {
+	return c.AtomicSave(func(i interface{}) error {
+		config := i.(*logyardConfig2)
+		config.Drains[name] = uri
+		return nil
+	})
+}
+
 func Init2(monitor bool) {
 	var err error
+	if server.Config == nil {
+		log.Fatal("stackato-go:server not initialized")
+	}
 	c, err = confdis.New(server.Config.CoreIP+":5454", "config:logyard", logyardConfig2{})
 	if err != nil {
 		log.Fatal(err)

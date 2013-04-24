@@ -66,13 +66,13 @@ func (cmd *stream) Run(args []string) error {
 	if err != nil {
 		return err
 	}
-	if err = logyard.Config.AddDrain(name, uri); err != nil {
+	if err = logyard.AddDrain(name, uri); err != nil {
 		return err
 	}
 	log.Infof("Added drain %s", uri)
 
 	deleteDrain := func() {
-		if err := logyard.Config.DeleteDrain(name); err != nil {
+		if err := logyard.DeleteDrain(name); err != nil {
 			log.Fatal(err)
 		}
 		fmt.Println("")

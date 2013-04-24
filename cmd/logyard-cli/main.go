@@ -13,7 +13,8 @@ func Init(name string) {
 		log.Fatal(err)
 	}
 
-	logyard.Init(conn, headRev, false)
+	server.Init(conn, headRev)
+	logyard.Init2(false)
 }
 
 func main() {

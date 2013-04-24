@@ -23,7 +23,7 @@ func (cmd *delete) Run(args []string) error {
 		return fmt.Errorf("need at least one positional argument")
 	}
 	for _, name := range args {
-		err := logyard.Config.DeleteDrain(name)
+		err := logyard.DeleteDrain(name)
 		if err != nil {
 			log.Fatal(err)
 		}

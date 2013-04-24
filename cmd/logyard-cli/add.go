@@ -76,7 +76,7 @@ func (cmd *add) Run(args []string) error {
 	if err != nil {
 		return err
 	}
-	if err = logyard.Config.AddDrain(name, uri); err != nil {
+	if err = logyard.AddDrain(name, uri); err != nil {
 		return err
 	}
 
