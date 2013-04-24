@@ -96,7 +96,6 @@ func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 		return
 	}
 
-	fmt.Printf("%+v\n", logyard.GetConfig().DrainFormats)
 	cfg, err := ParseDrainUri(name, uri, logyard.GetConfig().DrainFormats)
 	if err != nil {
 		log.Errorf("[drain:%s] Invalid drain URI (%s): %s", name, uri, err)
@@ -159,24 +158,38 @@ func NewRetryerForDrain(name string) retry.Retryer {
 	return retry.NewProgressiveRetryer(retryLimit)
 }
 
+func (manager *DrainManager) handleChange(change *doozerconfig.Change) {
+	switch change.Type {
+	case doozerconfig.DELETE:
+		manager.StopDrain(change.Key)
+	case doozerconfig.SET:
+		manager.StopDrain(change.Key)
+		manager.StartDrain(
+			change.Key, logyard.Config.Drains[change.Key], NewRetryerForDrain(change.Key))
+	}
+}
+
 func (manager *DrainManager) Run() {
 	log.Infof("Found %d drains to start\n", len(logyard.Config.Drains))
-	for name, uri := range logyard.Config.Drains {
+	for name, uri := range logyard.GetConfig().Drains {
 		manager.StartDrain(name, uri, NewRetryerForDrain(name))
 	}
 
-	// Watch for config changes in doozer
+	// Watch for config changes in doozer.
+	// TODO: read from redis, instead of doozer; also drop the use of
+	// doozerconfig.Change.
 	for {
 		select {
+		// doozer
 		case change := <-logyard.Config.DrainChanges:
-			switch change.Type {
-			case doozerconfig.DELETE:
-				manager.StopDrain(change.Key)
-			case doozerconfig.SET:
-				manager.StopDrain(change.Key)
-				manager.StartDrain(
-					change.Key, logyard.Config.Drains[change.Key], NewRetryerForDrain(change.Key))
+			manager.handleChange(change)
+			// redis
+		case err := <-logyard.GetConfigChanges():
+			if err != nil {
+				log.Fatalf("Error re-loading config: %v", err)
 			}
+			log.Info("Config changed; TODO: check drain changes")
+			// manager.handleChange(doozerconfig.Change{})
 		case <-manager.stopCh:
 			break
 		}

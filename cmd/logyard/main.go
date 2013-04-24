@@ -22,7 +22,7 @@ func main() {
 
 	logyard.Init(doozer, headRev, true)
 	server.Init(doozer, headRev)
-	logyard.Init2()
+	logyard.Init2(false) // config changes will be monitor by manager
 
 	m := drain.NewDrainManager()
 	log.Info("Starting drain manager")
