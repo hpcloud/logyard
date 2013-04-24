@@ -2,7 +2,6 @@ package drain
 
 import (
 	"fmt"
-	"github.com/ActiveState/doozerconfig"
 	"github.com/ActiveState/log"
 	"logyard"
 	"logyard/util/retry"
@@ -17,7 +16,6 @@ type DrainManager struct {
 	mux       sync.Mutex       // mutex to protect Start/Stop
 	running   map[string]Drain // map of drain instance name to drain
 	stopCh    chan bool
-	doozerCfg *doozerconfig.DoozerConfig
 	doozerRev int64
 }
 
@@ -158,38 +156,33 @@ func NewRetryerForDrain(name string) retry.Retryer {
 	return retry.NewProgressiveRetryer(retryLimit)
 }
 
-func (manager *DrainManager) handleChange(change *doozerconfig.Change) {
-	switch change.Type {
-	case doozerconfig.DELETE:
-		manager.StopDrain(change.Key)
-	case doozerconfig.SET:
-		manager.StopDrain(change.Key)
-		manager.StartDrain(
-			change.Key, logyard.Config.Drains[change.Key], NewRetryerForDrain(change.Key))
-	}
-}
-
 func (manager *DrainManager) Run() {
-	log.Infof("Found %d drains to start\n", len(logyard.Config.Drains))
-	for name, uri := range logyard.GetConfig().Drains {
+	drains := logyard.GetConfig().Drains
+	log.Infof("Found %d drains to start\n", len(drains))
+	for name, uri := range drains {
 		manager.StartDrain(name, uri, NewRetryerForDrain(name))
 	}
 
-	// Watch for config changes in doozer.
-	// TODO: read from redis, instead of doozer; also drop the use of
-	// doozerconfig.Change.
+	// Watch for config changes in redis.
 	for {
 		select {
-		// doozer
-		case change := <-logyard.Config.DrainChanges:
-			manager.handleChange(change)
-			// redis
 		case err := <-logyard.GetConfigChanges():
 			if err != nil {
 				log.Fatalf("Error re-loading config: %v", err)
 			}
-			log.Info("Config changed; TODO: check drain changes")
-			// manager.handleChange(doozerconfig.Change{})
+			log.Info("Config changed; checking drains.")
+			newDrains := logyard.GetConfig().Drains
+			for _, c := range MapDiff(drains, newDrains) {
+				if c.Deleted {
+					manager.StopDrain(c.Key)
+				} else {
+					manager.StopDrain(c.Key)
+					manager.StartDrain(
+						c.Key,
+						c.NewValue,
+						NewRetryerForDrain(c.Key))
+				}
+			}
 		case <-manager.stopCh:
 			break
 		}
