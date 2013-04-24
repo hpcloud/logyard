@@ -75,7 +75,7 @@ func main() {
 
 	fmt.Printf("%+v\n", logFiles)
 	if len(logFiles) == 0 {
-		log.Fatal("No log files configured in doozer")
+		log.Fatal("No log files exist in configuration.")
 	}
 
 	for name, logfile := range logFiles {

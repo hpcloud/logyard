@@ -1,97 +1,78 @@
 package logyard
 
 import (
-	"encoding/json"
-	"github.com/ActiveState/doozerconfig"
+	"confdis/go/confdis"
 	"github.com/ActiveState/log"
-	"github.com/ha/doozer"
+	"stackato/server"
 )
 
-// TODO: remove doozer config after bug 98325 
 type logyardConfig struct {
-	Drains       map[string]string `doozer:"drains"`
-	Doozer       *doozer.Conn
-	Rev          int64                     // Doozer revision this config struct corresponds to
-	DrainChanges chan *doozerconfig.Change // Doozer changes to the Drains map
+	RetryLimits  map[string]string `json:"retrylimits"`
+	DrainFormats map[string]string `json:"drainformats"`
+	Drains       map[string]string `json:"drains"`
 }
 
-// Logyard configuration object tied to doozer config
-var Config *logyardConfig
+var c *confdis.ConfDis
 
-const DOOZER_PREFIX = "/proc/logyard/config/"
-
-var doozerCfg *doozerconfig.DoozerConfig
-
-func newLogyardConfig(conn *doozer.Conn, rev int64) *logyardConfig {
-	c := new(logyardConfig)
-	c.Drains = make(map[string]string)
-	c.DrainChanges = make(chan *doozerconfig.Change)
-	c.Rev = rev
-	c.Doozer = conn
-	return c
+// GetConfig returns the latest logyard configuration.
+func GetConfig() *logyardConfig {
+	return c.Config.(*logyardConfig)
 }
 
-// DeleteDrain deletes the drain from doozer tree.
-func (Config *logyardConfig) DeleteDrain(name string) error {
-	Config.mustBeInitialized()
-	err := Config.Doozer.Del(DOOZER_PREFIX+"drains/"+name, -1)
-	if err != nil {
-		return err
-	}
-	return nil
+func GetConfigChanges() chan error {
+	return c.Changes
 }
 
-// AddDrain adds a drain to the doozer tree.
-func (Config *logyardConfig) AddDrain(name, uri string) error {
-	Config.mustBeInitialized()
-
-	data, err := json.Marshal(uri)
-	if err != nil {
-		return err
-	}
-	_, err = Config.Doozer.Set(DOOZER_PREFIX+"drains/"+name, Config.Rev, data)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (Config *logyardConfig) mustBeInitialized() {
-	// XXX: there should be a way to let the compiler do this job.
-	if Config == nil {
-		log.Fatal("Config object not initialized (`Init()` not called)")
-	}
-}
-
-func doozerConfigChangedCallbackFn(change *doozerconfig.Change, err error) {
-	if err != nil {
-		// Do not crash logyard, because we want the existing drains
-		// to continue to function despite an error in monitoring
-		// config changes.
-		log.Errorf("Unable to process drain config change in doozer: %s", err)
-		return
-	}
-	log.Infof("Detected change in doozer config: %s (%s)", change.Key, change.FieldName)
-	if change.FieldName == "Drains" {
-		switch change.Type {
-		case doozerconfig.DELETE, doozerconfig.SET:
-			Config.DrainChanges <- change
+// MonitorConfig monitors for configuration changes, and exits if
+// there is an error.
+func MonitorConfig(c *confdis.ConfDis) {
+	for err := range c.Changes {
+		if err != nil {
+			log.Fatalf("Error re-loading config: %v", err)
 		}
+		log.Info("Config changed.")
 	}
 }
 
-// Init initializes logyard with the given config entry point in
-// doozer.
-func Init(conn *doozer.Conn, rev int64, monitor bool) {
-	Config = newLogyardConfig(conn, rev)
-	doozerCfg = doozerconfig.New(conn, rev, Config, DOOZER_PREFIX)
+// DeleteDrain deletes the drain from config.
+func DeleteDrain(name string) error {
+	return c.AtomicSave(func(i interface{}) error {
+		config := i.(*logyardConfig)
+		delete(config.Drains, name)
+		return nil
+	})
+}
 
-	if err := doozerCfg.Load(); err != nil {
+// AddDrain adds a drain to the config.
+func AddDrain(name, uri string) error {
+	return c.AtomicSave(func(i interface{}) error {
+		config := i.(*logyardConfig)
+		config.Drains[name] = uri
+		return nil
+	})
+}
+
+// Initialize the logyard configuration system, optionally monitoring
+// for future changes.
+func Init(name string, monitor bool) {
+	// Initialize doozer connection for reading the redis URI.
+	if server.Config != nil {
+		panic("stackato-go:server already initialized")
+	}
+	conn, headRev, err := server.NewDoozerClient("logyard-cli:" + name)
+	if err != nil {
+		log.Fatal(err)
+	}
+	server.Init(conn, headRev)
+
+	// Setup confdis.
+	c, err = confdis.New(server.Config.CoreIP+":5454", "config:logyard", logyardConfig{})
+	if err != nil {
 		log.Fatal(err)
 	}
 
+	// Monitor for future config changes if required.
 	if monitor {
-		// Monitor drain config changes in doozer
-		go doozerCfg.Monitor(DOOZER_PREFIX+"**", doozerConfigChangedCallbackFn)
+		go MonitorConfig(c)
 	}
 }

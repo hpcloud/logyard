@@ -1,6 +1,5 @@
 #!/bin/sh
-# simple script to load config into doozer until 'kato' does it
-# itself.
+# simple script to load config into redis until 'kato' does it itself.
 
 set -xe
 

@@ -14,10 +14,9 @@ import (
 const configKey = "/proc/logyard/config/"
 
 type DrainManager struct {
-	mux       sync.Mutex       // mutex to protect Start/Stop
-	running   map[string]Drain // map of drain instance name to drain
-	stopCh    chan bool
-	doozerRev int64
+	mux     sync.Mutex       // mutex to protect Start/Stop
+	running map[string]Drain // map of drain instance name to drain
+	stopCh  chan bool
 }
 
 func NewDrainManager() *DrainManager {
@@ -123,7 +122,7 @@ func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 			if !proceed {
 				return
 			}
-			if _, ok := logyard.Config.Drains[name]; ok {
+			if _, ok := logyard.GetConfig().Drains[name]; ok {
 				manager.StartDrain(name, uri, retry)
 			} else {
 				log.Infof("[drain:%s] Not restarting because the drain was deleted recently", name)
