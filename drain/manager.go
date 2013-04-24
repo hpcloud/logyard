@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/ActiveState/log"
 	"logyard"
+	"logyard/util/mapdiff"
 	"logyard/util/retry"
 	"strings"
 	"sync"
@@ -172,7 +173,7 @@ func (manager *DrainManager) Run() {
 			}
 			log.Info("Config changed; checking drains.")
 			newDrains := logyard.GetConfig().Drains
-			for _, c := range MapDiff(drains, newDrains) {
+			for _, c := range mapdiff.MapDiff(drains, newDrains) {
 				if c.Deleted {
 					manager.StopDrain(c.Key)
 				} else {
