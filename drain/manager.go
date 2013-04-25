@@ -34,8 +34,9 @@ func NewDrainManager() *DrainManager {
 func (manager *DrainManager) Stop() {
 	manager.mux.Lock()
 	defer manager.mux.Unlock()
-	for name, _ := range manager.running {
-		manager.stopDrain(name)
+	for _, drainStm := range manager.stmMap {
+		drainStm.ActionCh <- state.STOP
+		// TODO: remove from stmMap once actually stopped.
 	}
 	// Sending on stopCh could block if DrainManager:Run().select{ ...
 	// } is blocking on a mutex (via Start/Stop). A better solution
@@ -191,7 +192,7 @@ func (manager *DrainManager) Run() {
 	drains := logyard.GetConfig().Drains
 	log.Infof("Found %d drains to start\n", len(drains))
 	for name, uri := range drains {
-		manager.StartDrain(name, uri, NewRetryerForDrain(name))
+		manager.StartDrain1(name, uri, NewRetryerForDrain(name))
 	}
 
 	// Watch for config changes in redis.
@@ -209,6 +210,7 @@ func (manager *DrainManager) Run() {
 				} else {
 					manager.StopDrain1(c.Key)
 					manager.StartDrain1(
+
 						c.Key,
 						c.NewValue,
 						NewRetryerForDrain(c.Key))
