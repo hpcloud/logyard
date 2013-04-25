@@ -14,7 +14,7 @@ type IPConnDrain struct {
 	tomb.Tomb
 }
 
-func NewIPConnDrain(name string) Drain {
+func NewIPConnDrain(name string) DrainType {
 	rd := &IPConnDrain{name, tomb.Tomb{}}
 	return rd
 }

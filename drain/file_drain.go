@@ -13,7 +13,7 @@ type FileDrain struct {
 	tomb.Tomb
 }
 
-func NewFileDrain(name string) Drain {
+func NewFileDrain(name string) DrainType {
 	rd := &FileDrain{}
 	rd.name = name
 	return rd

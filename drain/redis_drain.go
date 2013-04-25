@@ -17,7 +17,7 @@ type RedisDrain struct {
 	tomb.Tomb
 }
 
-func NewRedisDrain(name string) Drain {
+func NewRedisDrain(name string) DrainType {
 	rd := &RedisDrain{}
 	rd.name = name
 	return rd

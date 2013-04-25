@@ -1,38 +1,37 @@
 package state
 
-// states
+// States
 const (
 	STOPPED = iota
 	CRASHED
-	FATAL // retry fail
+	// TODO: FATAL state requires a reason attribute. implement
+	// attributes.
+	FATAL // retry fail, or other reasons.
 	RETRYING
 	RUNNING
 )
 
-// actions
+// Actions
 const (
-	START = iota
+	START = iota << 2
 	STOP
 )
 
-func RetryingState(m *StateMachine, action int, rev int64) stateFn {
+func RetryingState(m *StateMachine, action int, rev int64) State {
 	switch action {
 	case START:
 		// future retry will automatically be cancelled as we are starting.
-		start(m, rev)
-		return RunningState
+		return start(m, rev)
 	case STOP:
-		stop(m, rev)
-		return StoppedState
+		return stop(m, rev)
 	}
 	panic("unreachable")
 }
 
-func StoppedState(m *StateMachine, action int, rev int64) stateFn {
+func StoppedState(m *StateMachine, action int, rev int64) State {
 	switch action {
 	case START:
-		start(m, rev)
-		return RunningState
+		return start(m, rev)
 	case STOP:
 		// ignore; already stopped
 		return StoppedState
@@ -40,27 +39,25 @@ func StoppedState(m *StateMachine, action int, rev int64) stateFn {
 	panic("unreachable")
 }
 
-func CrashedState(m *StateMachine, action int, rev int64) stateFn {
+func CrashedState(m *StateMachine, action int, rev int64) State {
 	return StoppedState(m, action, rev)
 }
 
-func RunningState(m *StateMachine, action int, rev int64) stateFn {
+func RunningState(m *StateMachine, action int, rev int64) State {
 	switch action {
 	case START:
 		// ignore; already running
 		return RunningState
 	case STOP:
-		stop(m, rev)
-		return StoppedState
+		return stop(m, rev)
 	}
 	panic("unreachable")
 }
 
-func FatalState(m *StateMachine, action int, rev int64) stateFn {
+func FatalState(m *StateMachine, action int, rev int64) State {
 	switch action {
 	case START:
-		start(m, rev)
-		return RunningState
+		return start(m, rev)
 	case STOP:
 		return StoppedState
 	}

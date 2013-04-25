@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/ActiveState/log"
 	"logyard"
+	"logyard/drain/state"
 	"logyard/util/mapdiff"
 	"logyard/util/retry"
 	"strings"
@@ -14,15 +15,18 @@ import (
 const configKey = "/proc/logyard/config/"
 
 type DrainManager struct {
-	mux     sync.Mutex       // mutex to protect Start/Stop
-	running map[string]Drain // map of drain instance name to drain
+	mux     sync.Mutex           // mutex to protect Start/Stop
+	running map[string]DrainType // map of drain instance name to drain
 	stopCh  chan bool
+
+	stmMap map[string]*state.StateMachine
 }
 
 func NewDrainManager() *DrainManager {
 	manager := new(DrainManager)
-	manager.running = make(map[string]Drain)
+	manager.running = make(map[string]DrainType)
 	manager.stopCh = make(chan bool)
+	manager.stmMap = make(map[string]*state.StateMachine)
 	return manager
 }
 
@@ -84,6 +88,33 @@ func (manager *DrainManager) stopDrain(drainName string) {
 	}
 }
 
+func (manager *DrainManager) StopDrain1(drainName string) {
+	manager.mux.Lock()
+	defer manager.mux.Unlock()
+	if drainStm, ok := manager.stmMap[drainName]; ok {
+		drainStm.ActionCh <- state.STOP
+		// TODO: delete from manager.stmMap once stopped.
+	}
+}
+
+func (manager *DrainManager) StartDrain1(name, uri string, retry retry.Retryer) {
+	manager.mux.Lock()
+	defer manager.mux.Unlock()
+
+	drainStm, ok := manager.stmMap[name]
+	if !ok {
+		process, err := NewDrainProcess(name, uri)
+		if err != nil {
+			log.Error(err)
+			return
+		}
+		drainStm = state.New(process, retry)
+		manager.stmMap[name] = drainStm
+	}
+
+	drainStm.ActionCh <- state.START
+}
+
 // StartDrain starts the drain and waits for it exit.
 func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 	manager.mux.Lock()
@@ -100,7 +131,7 @@ func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 		return
 	}
 
-	var drain Drain
+	var drain DrainType
 
 	if constructor, ok := DRAINS[cfg.Type]; ok && constructor != nil {
 		drain = constructor(name)
@@ -174,10 +205,10 @@ func (manager *DrainManager) Run() {
 			newDrains := logyard.GetConfig().Drains
 			for _, c := range mapdiff.MapDiff(drains, newDrains) {
 				if c.Deleted {
-					manager.StopDrain(c.Key)
+					manager.StopDrain1(c.Key)
 				} else {
-					manager.StopDrain(c.Key)
-					manager.StartDrain(
+					manager.StopDrain1(c.Key)
+					manager.StartDrain1(
 						c.Key,
 						c.NewValue,
 						NewRetryerForDrain(c.Key))
