@@ -10,7 +10,7 @@ func (s Stopped) Transition(action int, rev int64) State {
 		return s.start(rev)
 	case STOP:
 		// ignore; already stopped
-		return Stopped{s.StateMachine}
+		return s
 	}
 	panic("unreachable")
 

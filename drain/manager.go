@@ -120,6 +120,7 @@ func (manager *DrainManager) StartDrain1(name, uri string, retry retry.Retryer) 
 	drainStm := state.NewStateMachine(process, retry)
 	manager.stmMap[name] = drainStm
 
+	log.Infof("[drain:%s] Going to <- state.START ..", name)
 	drainStm.ActionCh <- state.START
 }
 

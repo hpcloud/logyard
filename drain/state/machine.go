@@ -2,6 +2,7 @@ package state
 
 import (
 	"fmt"
+	"github.com/ActiveState/log"
 	"logyard/util/retry"
 	"sync"
 )
@@ -32,19 +33,23 @@ func (m *StateMachine) Run() {
 	for {
 		select {
 		case action := <-m.ActionCh:
+			log.Infof("Incoming state change request: %v", action)
 			func() {
 				m.mux.Lock()
 				defer m.mux.Unlock()
 				oldState := m.state
+				log.Infof("About to state change [%s]: %s -[%v]-> ?? (%d)\n",
+					m.process.String(), oldState, action, m.rev)
 				m.state = m.state.Transition(action, m.rev)
 				m.rev += 1
-				fmt.Printf("State change [%s]: %s => %s (%d)\n",
+				log.Infof("State change [%s]: %s => %s (%d)\n",
 					m.process.String(), oldState, m.state, m.rev)
 			}()
 		case <-m.stopCh:
 			// XXX: not sure if this will be run even if m.ActionCh
 			// has backlog.
-			break
+			log.Infof("Exiting state machine loop")
+			return
 		}
 	}
 }
@@ -59,11 +64,20 @@ func (m *StateMachine) GetState() (State, int64) {
 }
 
 func (m *StateMachine) Stop() {
+	log.Info("Stopping STM...")
 	m.stopCh <- true
 	m.mux.Lock()
 	defer m.mux.Unlock()
+
+	// reset fields to prevent (buggy) future use
 	close(m.ActionCh)
-	m.ActionCh = nil // sentinal to indicate the stopped state.
+	m.process = nil
+	m.state = nil
+	m.rev = -10
+
+	// sentinal to indicate the stopped state.
+	m.ActionCh = nil
+	log.Info("Stopped STM.")
 }
 
 func (m *StateMachine) IsStopped() bool {
@@ -108,6 +122,7 @@ func (s *StateMachine) stop(rev int64) State {
 
 func (s *StateMachine) start(rev int64) State {
 	// start it
+	log.Infof("[drain:%s] STM starting process", s.process.String())
 	err := s.process.Start()
 	if err != nil {
 		return Fatal{s}
@@ -121,8 +136,12 @@ func (s *StateMachine) start(rev int64) State {
 
 func (s *StateMachine) monitor(rev int64) {
 	err := s.process.Wait()
+	log.Infof("[drain:%s] Process exited with %v",
+		s.process.String(), err)
 	if err == nil {
-		s.SetState(rev, Stopped{s})
+		// If a process exited cleanly (no errors), then just mark it
+		// as STOPPED without retrying.
+		s.SetState(rev, Stopped{s}) // rev confict here is normal.
 	} else {
 		s.SetStateCustom(rev, func() State {
 			rev = rev + 1 // account for setting of RetryingState
@@ -135,14 +154,17 @@ func (s *StateMachine) monitor(rev int64) {
 func (s *StateMachine) doretry(rev int64, err error) {
 	// This could block.
 	if s.retryer.Wait(
-		fmt.Sprintf("[drain:???] Drain exited abruptly -- %v", err)) {
+		fmt.Sprintf("[drain:%s] Drain exited abruptly -- %v",
+			s.process.String(), err)) {
+		log.Infof("[drain:%s] Retrying now.", s.process.String())
 		// TODO: move 'drain' specific message (above) out of the
 		// state package.
 		s.SetStateCustom(rev, func() State {
-			fmt.Println("starting ???")
 			return s.start(rev)
 		})
 	} else {
+		log.Infof("[drain:%s] retried too long; marking as FATAL",
+			s.process.String())
 		s.SetState(rev, Fatal{s})
 	}
 }
