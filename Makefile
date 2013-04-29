@@ -28,7 +28,7 @@ COMMON_REPO=git://gitolite.activestate.com/stackato-common.git
 
 UPDATE=.stackato-pkg/update
 COMMON_DIR=$(UPDATE)/stackato-common
-TMPDIR=$(COMMON_DIR)/go
+PKGTMPDIR=$(COMMON_DIR)/go
 
 INSTALLHOME=/home/stackato
 INSTALLROOT=$(INSTALLHOME)/stackato
@@ -52,7 +52,7 @@ all:	repos compile
 repos:	$(COMMON_DIR)
 	mkdir -p $(BUILDGOPATH)/src/$(NAME)
 	git archive HEAD | tar -x -C $(BUILDGOPATH)/src/$(NAME)
-	GOPATH=$(BUILDGOPATH) $(TMPDIR)/goget $(TMPDIR)/goget.manifest
+	GOPATH=$(BUILDGOPATH) $(PKGTMPDIR)/goget $(PKGTMPDIR)/goget.manifest
 
 $(COMMON_DIR):	update
 
