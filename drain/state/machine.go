@@ -75,13 +75,13 @@ func (m *StateMachine) Stop() {
 
 	// reset fields to prevent (buggy) future use
 	close(m.ActionCh)
+	m.Log("Stopped STM.")
 	m.process = nil
 	m.state = nil
 	m.rev = -10
 
 	// sentinal to indicate the stopped state.
 	m.ActionCh = nil
-	m.Log("Stopped STM.")
 }
 
 func (m *StateMachine) IsStopped() bool {
