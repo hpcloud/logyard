@@ -92,9 +92,14 @@ func (manager *DrainManager) stopDrain(drainName string) {
 func (manager *DrainManager) StopDrain1(drainName string) {
 	manager.mux.Lock()
 	defer manager.mux.Unlock()
+	manager.stopDrain1(drainName)
+}
+
+func (manager *DrainManager) stopDrain1(drainName string) {
 	if drainStm, ok := manager.stmMap[drainName]; ok {
 		drainStm.ActionCh <- state.STOP
-		// TODO: delete from manager.stmMap once stopped.
+		drainStm.Stop()
+		delete(manager.stmMap, drainName)
 	}
 }
 
@@ -102,16 +107,18 @@ func (manager *DrainManager) StartDrain1(name, uri string, retry retry.Retryer) 
 	manager.mux.Lock()
 	defer manager.mux.Unlock()
 
-	drainStm, ok := manager.stmMap[name]
-	if !ok {
-		process, err := NewDrainProcess(name, uri)
-		if err != nil {
-			log.Error(err)
-			return
-		}
-		drainStm = state.NewStateMachine(process, retry)
-		manager.stmMap[name] = drainStm
+	_, ok := manager.stmMap[name]
+	if ok {
+		// Stop the running drain first.
+		manager.stopDrain1(name)
 	}
+	process, err := NewDrainProcess(name, uri)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	drainStm := state.NewStateMachine(process, retry)
+	manager.stmMap[name] = drainStm
 
 	drainStm.ActionCh <- state.START
 }
@@ -202,12 +209,14 @@ func (manager *DrainManager) Run() {
 			if err != nil {
 				log.Fatalf("Error re-loading config: %v", err)
 			}
-			log.Info("Config changed; checking drains.")
+			log.Info("Config changed; checking drains...")
 			newDrains := logyard.GetConfig().Drains
 			for _, c := range mapdiff.MapDiff(drains, newDrains) {
 				if c.Deleted {
+					log.Infof("[Config change] Drain %s was deleted.", c.Key)
 					manager.StopDrain1(c.Key)
 				} else {
+					log.Infof("[Config change] Drain %s was added.", c.Key)
 					manager.StopDrain1(c.Key)
 					manager.StartDrain1(
 
@@ -216,6 +225,7 @@ func (manager *DrainManager) Run() {
 						NewRetryerForDrain(c.Key))
 				}
 			}
+			log.Info("[Config change] Done checking drains.")
 		case <-manager.stopCh:
 			break
 		}

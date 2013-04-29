@@ -8,6 +8,7 @@ import (
 
 type StateMachine struct {
 	ActionCh chan int
+	stopCh   chan bool
 	process  Process
 	retryer  retry.Retryer
 	state    State
@@ -22,20 +23,28 @@ func NewStateMachine(process Process, retryer retry.Retryer) *StateMachine {
 	m.state = Stopped{m}
 	m.rev = 1
 	m.ActionCh = make(chan int)
+	m.stopCh = make(chan bool)
 	go m.Run()
 	return m
 }
 
 func (m *StateMachine) Run() {
-	for action := range m.ActionCh {
-		func() {
-			m.mux.Lock()
-			defer m.mux.Unlock()
-			m.state = m.state.Transition(action, m.rev)
-			m.rev += 1
-			fmt.Printf("state change for '%s' => %s (%d)\n",
-				m.process.String(), m.state, m.rev)
-		}()
+	for {
+		select {
+		case action := <-m.ActionCh:
+			func() {
+				m.mux.Lock()
+				defer m.mux.Unlock()
+				m.state = m.state.Transition(action, m.rev)
+				m.rev += 1
+				fmt.Printf("state change for '%s' => %s (%d)\n",
+					m.process.String(), m.state, m.rev)
+			}()
+		case <-m.stopCh:
+			// XXX: not sure if this will be run even if m.ActionCh
+			// has backlog.
+			break
+		}
 	}
 }
 
@@ -49,6 +58,7 @@ func (m *StateMachine) GetState() (State, int64) {
 }
 
 func (m *StateMachine) Stop() {
+	m.stopCh <- true
 	m.mux.Lock()
 	defer m.mux.Unlock()
 	close(m.ActionCh)
