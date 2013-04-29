@@ -81,7 +81,7 @@ update:
 
 # For developer use.
 
-dev-setup:
+dev-setup:	update
 	cd .stackato-pkg/update/stackato-common/go && ./goget
 
 dev-install:	fmt dev-installall
