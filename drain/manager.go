@@ -109,7 +109,7 @@ func (manager *DrainManager) StartDrain1(name, uri string, retry retry.Retryer) 
 			log.Error(err)
 			return
 		}
-		drainStm = state.New(process, retry)
+		drainStm = state.NewStateMachine(process, retry)
 		manager.stmMap[name] = drainStm
 	}
 

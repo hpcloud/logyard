@@ -23,9 +23,9 @@ var DRAINS = map[string]DrainConstructor{
 }
 
 type DrainProcess struct {
-	drain DrainType
-	name string
-	cfg   *DrainConfig
+	drain       DrainType
+	name        string
+	cfg         *DrainConfig
 	constructor DrainConstructor
 }
 
