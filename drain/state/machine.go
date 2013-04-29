@@ -35,10 +35,11 @@ func (m *StateMachine) Run() {
 			func() {
 				m.mux.Lock()
 				defer m.mux.Unlock()
+				oldState := m.state
 				m.state = m.state.Transition(action, m.rev)
 				m.rev += 1
-				fmt.Printf("state change for '%s' => %s (%d)\n",
-					m.process.String(), m.state, m.rev)
+				fmt.Printf("State change [%s]: %s => %s (%d)\n",
+					m.process.String(), oldState, m.state, m.rev)
 			}()
 		case <-m.stopCh:
 			// XXX: not sure if this will be run even if m.ActionCh
@@ -76,16 +77,17 @@ func (m *StateMachine) SetStateCustom(rev int64, fn func() State) int64 {
 	m.mux.Lock()
 	defer m.mux.Unlock()
 	if !m.IsStopped() && rev == m.rev {
+		oldState := m.state
 		m.state = fn()
 		if m.state == nil {
 			panic("nil state")
 		}
 		m.rev += 1
-		fmt.Printf("custom state change for '%s' => %s (%d)\n",
-			m.process.String(), m.state, m.rev)
+		fmt.Printf("Custom state change [%s]: %s => %s (%d)\n",
+			m.process.String(), oldState, m.state, m.rev)
 		return m.rev
 	}
-	fmt.Printf("can't set state; rev changed (expected %d, has %d) or stopped (%v)",
+	fmt.Printf("Can't set state; rev changed (expected %d, has %d) or stopped (%v)\n",
 		rev, m.rev, m.IsStopped())
 	return -1
 }

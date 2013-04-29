@@ -215,14 +215,15 @@ func (manager *DrainManager) Run() {
 				if c.Deleted {
 					log.Infof("[Config change] Drain %s was deleted.", c.Key)
 					manager.StopDrain1(c.Key)
+					delete(drains, c.Key)
 				} else {
 					log.Infof("[Config change] Drain %s was added.", c.Key)
 					manager.StopDrain1(c.Key)
 					manager.StartDrain1(
-
 						c.Key,
 						c.NewValue,
 						NewRetryerForDrain(c.Key))
+					drains[c.Key] = c.NewValue
 				}
 			}
 			log.Info("[Config change] Done checking drains.")
