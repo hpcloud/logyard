@@ -29,29 +29,33 @@ func NewStateMachine(process Process, retryer retry.Retryer) *StateMachine {
 	return m
 }
 
+func (m *StateMachine) Log(msg string, v ...interface{}) {
+	log.Infof(m.process.Logf(msg, v...))
+}
+
 func (m *StateMachine) Run() {
 	for {
 		select {
 		case action := <-m.ActionCh:
-			log.Infof("Incoming state change request: %v", action)
+			m.Log("Incoming state change request: %v", action)
 			func() {
 				m.mux.Lock()
 				defer m.mux.Unlock()
 				oldState := m.state
-				log.Infof("About to state change [%s]: %s -[%v]-> ?? (%d)\n",
-					m.process.String(), oldState, action, m.rev)
+				m.Log("About to state change: %s -[%v]-> ?? (%d)\n",
+					oldState, action, m.rev)
 				m.state = m.state.Transition(action, m.rev)
 				m.rev += 1
-				log.Infof("State change [%s]: %s => %s (%d)\n",
-					m.process.String(), oldState, m.state, m.rev)
+				m.Log("State change: %s => %s (%d)\n",
+					oldState, m.state, m.rev)
 			}()
 		case <-m.stopCh:
 			// XXX: not sure if this will be run even if m.ActionCh
 			// has backlog.
-			log.Infof("Exiting state machine loop")
 			return
 		}
 	}
+	m.Log("Exiting state machine loop")
 }
 
 func (m *StateMachine) GetState() (State, int64) {
@@ -64,7 +68,7 @@ func (m *StateMachine) GetState() (State, int64) {
 }
 
 func (m *StateMachine) Stop() {
-	log.Info("Stopping STM...")
+	m.Log("Stopping STM...")
 	m.stopCh <- true
 	m.mux.Lock()
 	defer m.mux.Unlock()
@@ -77,7 +81,7 @@ func (m *StateMachine) Stop() {
 
 	// sentinal to indicate the stopped state.
 	m.ActionCh = nil
-	log.Info("Stopped STM.")
+	m.Log("Stopped STM.")
 }
 
 func (m *StateMachine) IsStopped() bool {
@@ -122,7 +126,7 @@ func (s *StateMachine) stop(rev int64) State {
 
 func (s *StateMachine) start(rev int64) State {
 	// start it
-	log.Infof("[drain:%s] STM starting process", s.process.String())
+	s.Log("STM starting process")
 	err := s.process.Start()
 	if err != nil {
 		return Fatal{s}
@@ -136,8 +140,7 @@ func (s *StateMachine) start(rev int64) State {
 
 func (s *StateMachine) monitor(rev int64) {
 	err := s.process.Wait()
-	log.Infof("[drain:%s] Process exited with %v",
-		s.process.String(), err)
+	s.Log("Process exited with %v", err)
 	if err == nil {
 		// If a process exited cleanly (no errors), then just mark it
 		// as STOPPED without retrying.
@@ -154,17 +157,16 @@ func (s *StateMachine) monitor(rev int64) {
 func (s *StateMachine) doretry(rev int64, err error) {
 	// This could block.
 	if s.retryer.Wait(
-		fmt.Sprintf("[drain:%s] Drain exited abruptly -- %v",
-			s.process.String(), err)) {
-		log.Infof("[drain:%s] Retrying now.", s.process.String())
+		fmt.Sprintf(s.process.Logf(
+			"Drain exited abruptly -- %v", err))) {
+		s.Log("Retrying now.")
 		// TODO: move 'drain' specific message (above) out of the
 		// state package.
 		s.SetStateCustom(rev, func() State {
 			return s.start(rev)
 		})
 	} else {
-		log.Infof("[drain:%s] retried too long; marking as FATAL",
-			s.process.String())
+		s.Log("retried too long; marking as FATAL")
 		s.SetState(rev, Fatal{s})
 	}
 }

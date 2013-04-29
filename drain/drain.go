@@ -68,3 +68,8 @@ func (p *DrainProcess) Wait() error {
 func (p *DrainProcess) String() string {
 	return fmt.Sprintf("drain:%s", p.name)
 }
+
+func (p *DrainProcess) Logf(msg string, v ...interface{}) string {
+	v = append([]interface{}{p.String()}, v...)
+	return fmt.Sprintf("[%s] "+msg, v...)
+}

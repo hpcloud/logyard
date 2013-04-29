@@ -12,4 +12,7 @@ type Process interface {
 	// String returns a short printable string representation of the
 	// process.
 	String() string
+	// Logf returns a loggable message pertaining to the given action
+	// and this process.
+	Logf(msg string, v ...interface{}) string
 }
