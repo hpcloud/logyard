@@ -63,7 +63,7 @@ func (m *StateMachine) Stop() {
 	m.rev = -10
 }
 
-func (m *StateMachine) SetStateCustom(rev int64, fn func() State) int64 {
+func (m *StateMachine) setStateCustom(rev int64, fn func() State) int64 {
 	m.mux.Lock()
 	defer m.mux.Unlock()
 	if m.running && rev == m.rev {
@@ -82,8 +82,8 @@ func (m *StateMachine) SetStateCustom(rev int64, fn func() State) int64 {
 	return -1
 }
 
-func (m *StateMachine) SetState(rev int64, state State) int64 {
-	return m.SetStateCustom(rev, func() State {
+func (m *StateMachine) setState(rev int64, state State) int64 {
+	return m.setStateCustom(rev, func() State {
 		return state
 	})
 }
@@ -117,9 +117,9 @@ func (s *StateMachine) monitor(rev int64) {
 	if err == nil {
 		// If a process exited cleanly (no errors), then just mark it
 		// as STOPPED without retrying.
-		s.SetState(rev, Stopped{s}) // rev confict here is normal.
+		s.setState(rev, Stopped{s}) // rev confict here is normal.
 	} else {
-		s.SetStateCustom(rev, func() State {
+		s.setStateCustom(rev, func() State {
 			rev = rev + 1 // account for setting of RetryingState
 			go s.doretry(rev, err)
 			return Retrying{err, s}
@@ -133,12 +133,12 @@ func (s *StateMachine) doretry(rev int64, err error) {
 		fmt.Sprintf(s.process.Logf(
 			"%s exited abruptly -- %v", s.title, err))) {
 		s.Log("Retrying now.")
-		s.SetStateCustom(rev, func() State {
+		s.setStateCustom(rev, func() State {
 			return s.start(rev)
 		})
 	} else {
-		err := fmt.Errorf("retried too long")
+		err := fmt.Errorf("retried too long; last error: %v", err)
 		s.Log("%v; marking as FATAL", err)
-		s.SetState(rev, Fatal{err, s})
+		s.setState(rev, Fatal{err, s})
 	}
 }
