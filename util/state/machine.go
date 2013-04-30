@@ -48,6 +48,12 @@ func (m *StateMachine) SendAction(action int) error {
 	return nil
 }
 
+func (m *StateMachine) GetState() State {
+	m.mux.Lock()
+	defer m.mux.Unlock()
+	return m.state
+}
+
 func (m *StateMachine) Stop() {
 	m.Log("Stopping STM...")
 	m.mux.Lock()
