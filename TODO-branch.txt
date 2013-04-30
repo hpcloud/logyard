@@ -1,5 +1,16 @@
-* SendAction(STOP) .. error reporting? (in `logyard-cli status`)
+
 * thorough testing. unit tests?
+
+# feature
+
+* `logyard-cli status`
+
+  * FATAL|RETRYING.Error
+
+* `s drain status`?
+
+  * store per-node status in redis?
+  * over-kill? just tell to use `logyard-cli status`?
 
 # bugs
 

@@ -71,8 +71,8 @@ func (m *StateMachine) SetStateCustom(rev int64, fn func() State) int64 {
 			panic("nil state")
 		}
 		m.rev += 1
-		fmt.Printf("Custom state change [%s]: %s => %s (%d)\n",
-			m.process.String(), oldState, m.state, m.rev)
+		m.Log("Custom state change: %s => %s (%d)\n",
+			oldState, m.state, m.rev)
 		return m.rev
 	}
 	m.Log("Skipping state change; rev changed (expected %d, have %d) or stopped (%v)\n",
@@ -90,7 +90,7 @@ func (s *StateMachine) stop(rev int64) State {
 	err := s.process.Stop()
 	if err != nil {
 		// Error reporting?
-		return Fatal{s}
+		return Fatal{err, s}
 	}
 	return Stopped{s}
 }
@@ -100,7 +100,7 @@ func (s *StateMachine) start(rev int64) State {
 	s.Log("STM starting process")
 	err := s.process.Start()
 	if err != nil {
-		return Fatal{s}
+		return Fatal{err, s}
 	} else {
 		rev = rev + 1 // account for settig of RunningState
 		go s.monitor(rev)
@@ -120,7 +120,7 @@ func (s *StateMachine) monitor(rev int64) {
 		s.SetStateCustom(rev, func() State {
 			rev = rev + 1 // account for setting of RetryingState
 			go s.doretry(rev, err)
-			return Retrying{s}
+			return Retrying{err, s}
 		})
 	}
 }
@@ -137,7 +137,8 @@ func (s *StateMachine) doretry(rev int64, err error) {
 			return s.start(rev)
 		})
 	} else {
-		s.Log("retried too long; marking as FATAL")
-		s.SetState(rev, Fatal{s})
+		err := fmt.Errorf("retried too long")
+		s.Log("%v; marking as FATAL", err)
+		s.SetState(rev, Fatal{err, s})
 	}
 }

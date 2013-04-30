@@ -1,6 +1,7 @@
 package state
 
 type Fatal struct {
+	Error error
 	*StateMachine
 }
 

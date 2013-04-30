@@ -1,6 +1,7 @@
 package state
 
 type Retrying struct {
+	Error error
 	*StateMachine
 }
 
