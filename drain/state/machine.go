@@ -9,6 +9,7 @@ import (
 
 type StateMachine struct {
 	running bool
+	title   string
 	process Process
 	retryer retry.Retryer
 	state   State
@@ -16,8 +17,9 @@ type StateMachine struct {
 	mux     sync.Mutex
 }
 
-func NewStateMachine(process Process, retryer retry.Retryer) *StateMachine {
+func NewStateMachine(title string, process Process, retryer retry.Retryer) *StateMachine {
 	m := &StateMachine{}
+	m.title = title
 	m.process = process
 	m.retryer = retryer
 	m.state = Stopped{m}
@@ -111,7 +113,7 @@ func (s *StateMachine) start(rev int64) State {
 
 func (s *StateMachine) monitor(rev int64) {
 	err := s.process.Wait()
-	s.Log("Process exited with %v", err)
+	s.Log("%s exited with %v", s.title, err)
 	if err == nil {
 		// If a process exited cleanly (no errors), then just mark it
 		// as STOPPED without retrying.
@@ -129,10 +131,8 @@ func (s *StateMachine) doretry(rev int64, err error) {
 	// This could block.
 	if s.retryer.Wait(
 		fmt.Sprintf(s.process.Logf(
-			"Drain exited abruptly -- %v", err))) {
+			"%s exited abruptly -- %v", s.title, err))) {
 		s.Log("Retrying now.")
-		// TODO: move 'drain' specific message (above) out of the
-		// state package.
 		s.SetStateCustom(rev, func() State {
 			return s.start(rev)
 		})

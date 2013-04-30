@@ -75,7 +75,7 @@ func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 		log.Error(process.Logf("Couldn't start drain: %v", err))
 		return
 	}
-	drainStm := state.NewStateMachine(process, retry)
+	drainStm := state.NewStateMachine("Drain", process, retry)
 	manager.stmMap[name] = drainStm
 
 	log.Infof(process.Logf("Going to <- state.START .."))
