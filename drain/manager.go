@@ -3,9 +3,9 @@ package drain
 import (
 	"github.com/ActiveState/log"
 	"logyard"
-	"logyard/drain/state"
 	"logyard/util/mapdiff"
 	"logyard/util/retry"
+	"logyard/util/state"
 	"strings"
 	"sync"
 	"time"
