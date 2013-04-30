@@ -1,5 +1,4 @@
-* ActionCh <- Stop; how to sychronously wait for it? before removin
-  from stm? how to get 'error'?
+* SendAction(STOP) .. error reporting? (in `logyard-cli status`)
 * thorough testing. unit tests?
 
 # bugs

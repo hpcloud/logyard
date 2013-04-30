@@ -47,7 +47,9 @@ func (manager *DrainManager) StopDrain(drainName string) {
 
 func (manager *DrainManager) stopDrain(drainName string) {
 	if drainStm, ok := manager.stmMap[drainName]; ok {
-		drainStm.ActionCh <- state.STOP
+		if err := drainStm.SendAction(state.STOP); err != nil {
+			log.Fatalf("Failed to stop drain %s; %v", drainName, err)
+		}
 		drainStm.Stop()
 		delete(manager.stmMap, drainName)
 	}
@@ -77,7 +79,9 @@ func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 	manager.stmMap[name] = drainStm
 
 	log.Infof(process.Logf("Going to <- state.START .."))
-	drainStm.ActionCh <- state.START
+	if err = drainStm.SendAction(state.START); err != nil {
+		log.Fatalf("Failed to start drain %s; %v", name, err)
+	}
 }
 
 // NewRetryerForDrain chooses 

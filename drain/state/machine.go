@@ -8,13 +8,12 @@ import (
 )
 
 type StateMachine struct {
-	ActionCh chan int
-	stopCh   chan bool
-	process  Process
-	retryer  retry.Retryer
-	state    State
-	rev      int64
-	mux      sync.Mutex
+	running bool
+	process Process
+	retryer retry.Retryer
+	state   State
+	rev     int64
+	mux     sync.Mutex
 }
 
 func NewStateMachine(process Process, retryer retry.Retryer) *StateMachine {
@@ -23,9 +22,7 @@ func NewStateMachine(process Process, retryer retry.Retryer) *StateMachine {
 	m.retryer = retryer
 	m.state = Stopped{m}
 	m.rev = 1
-	m.ActionCh = make(chan int)
-	m.stopCh = make(chan bool)
-	go m.Run()
+	m.running = true
 	return m
 }
 
@@ -33,71 +30,41 @@ func (m *StateMachine) Log(msg string, v ...interface{}) {
 	log.Infof(m.process.Logf(msg, v...))
 }
 
-func (m *StateMachine) Run() {
-	for {
-		select {
-		case action := <-m.ActionCh:
-			m.Log("Incoming state change request: %v", action)
-			func() {
-				m.mux.Lock()
-				defer m.mux.Unlock()
-				oldState := m.state
-				m.Log("About to state change: %s -[%v]-> ?? (%d)\n",
-					oldState, action, m.rev)
-				m.state = m.state.Transition(action, m.rev)
-				m.rev += 1
-				m.Log("State change: %s => %s (%d)\n",
-					oldState, m.state, m.rev)
-			}()
-		case <-m.stopCh:
-			// FIXME: relieve the backlog on ActionCh (and blocking
-			// sender goroutines)!
-			return
-		}
-	}
-	m.Log("Exiting state machine loop")
-}
-
-func (m *StateMachine) GetState() (State, int64) {
+func (m *StateMachine) SendAction(action int) error {
 	m.mux.Lock()
 	defer m.mux.Unlock()
-	if m.IsStopped() {
-		panic("stopped")
+	if !m.running {
+		return fmt.Errorf("StateMachine is stopped")
 	}
-	return m.state, m.rev
+	oldState := m.state
+	m.Log("About to state change: %s -[%v]-> ?? (%d)\n",
+		oldState, action, m.rev)
+	m.state = m.state.Transition(action, m.rev)
+	m.rev += 1
+	m.Log("State change: %s => %s (%d)\n",
+		oldState, m.state, m.rev)
+	return nil
 }
 
 func (m *StateMachine) Stop() {
 	m.Log("Stopping STM...")
-	m.stopCh <- true
 	m.mux.Lock()
 	defer m.mux.Unlock()
 
-	// FIXME: WARNING, senders will panic when sending on closed
-	// channel.
-	close(m.ActionCh)
+	m.running = false
+
 	m.Log("Stopped STM.")
 
 	// reset fields to prevent (buggy) future use
 	m.process = nil
 	m.state = nil
 	m.rev = -10
-
-	// sentinal to indicate the stopped state.
-	m.ActionCh = nil
-}
-
-func (m *StateMachine) IsStopped() bool {
-	// XXX: ideally we should use locking here, but don't want to
-	// introduce a deadlock when called from `SetStateCustom` which
-	// also uses locking.
-	return m.ActionCh == nil
 }
 
 func (m *StateMachine) SetStateCustom(rev int64, fn func() State) int64 {
 	m.mux.Lock()
 	defer m.mux.Unlock()
-	if !m.IsStopped() && rev == m.rev {
+	if m.running && rev == m.rev {
 		oldState := m.state
 		m.state = fn()
 		if m.state == nil {
@@ -108,8 +75,8 @@ func (m *StateMachine) SetStateCustom(rev int64, fn func() State) int64 {
 			m.process.String(), oldState, m.state, m.rev)
 		return m.rev
 	}
-	fmt.Printf("Can't set state; rev changed (expected %d, has %d) or stopped (%v)\n",
-		rev, m.rev, m.IsStopped())
+	m.Log("Skipping state change; rev changed (expected %d, have %d) or stopped (%v)\n",
+		rev, m.rev, !m.running)
 	return -1
 }
 
@@ -122,6 +89,7 @@ func (m *StateMachine) SetState(rev int64, state State) int64 {
 func (s *StateMachine) stop(rev int64) State {
 	err := s.process.Stop()
 	if err != nil {
+		// Error reporting?
 		return Fatal{s}
 	}
 	return Stopped{s}
