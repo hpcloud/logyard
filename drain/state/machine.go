@@ -50,8 +50,8 @@ func (m *StateMachine) Run() {
 					oldState, m.state, m.rev)
 			}()
 		case <-m.stopCh:
-			// XXX: not sure if this will be run even if m.ActionCh
-			// has backlog.
+			// FIXME: relieve the backlog on ActionCh (and blocking
+			// sender goroutines)!
 			return
 		}
 	}
@@ -73,9 +73,12 @@ func (m *StateMachine) Stop() {
 	m.mux.Lock()
 	defer m.mux.Unlock()
 
-	// reset fields to prevent (buggy) future use
+	// FIXME: WARNING, senders will panic when sending on closed
+	// channel.
 	close(m.ActionCh)
 	m.Log("Stopped STM.")
+
+	// reset fields to prevent (buggy) future use
 	m.process = nil
 	m.state = nil
 	m.rev = -10

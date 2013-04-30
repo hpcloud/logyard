@@ -1,9 +1,6 @@
 * ActionCh <- Stop; how to sychronously wait for it? before removin
   from stm? how to get 'error'?
-* logging: per-drain messages.
 * thorough testing. unit tests?
-* don't use functions for 'state'; because we can't get function name
-  for debug printing
 
 # bugs
 
