@@ -18,18 +18,38 @@ func TestSimple(t *testing.T) {
 		SeqState("FATAL"),
 	})
 
-	st := seq.Test(
+	seq.Test(
 		t,
 		state.NewStateMachine(
-			"Drain",
+			"DummyProcess",
 			&MockProcess{
 				"simple",
 				time.Duration(100 * time.Millisecond),
 				fmt.Errorf("error after 100 milliseconds"),
 				nil},
 			&NoopRetryer{}))
-
-	fmt.Printf(
-		"as expected, exited with error:- '%v'\n",
-		st.(state.Fatal).Error)
 }
+
+// Test stopping of a running process.
+func TestStop(t *testing.T) {
+	seq := Sequence([]interface{}{
+		SeqAction(state.START),
+		SeqDelay(20 * time.Millisecond),
+		SeqState("RUNNING"),
+		SeqAction(state.STOP),
+		SeqDelay(20 * time.Millisecond),
+		SeqState("STOPPED"),
+	})
+
+	seq.Test(
+		t,
+		state.NewStateMachine(
+			"DummyProcess",
+			&MockProcess{
+				"stop",
+				time.Duration(0),
+				nil,
+				nil},
+			&NoopRetryer{}))
+}
+

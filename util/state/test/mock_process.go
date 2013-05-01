@@ -16,7 +16,9 @@ func (p *MockProcess) Start() error {
 	if p.delayCh != nil {
 		return fmt.Errorf("delayCh is already set")
 	}
-	p.delayCh = time.After(p.exitAfter)
+	if p.exitAfter > time.Duration(0) {
+		p.delayCh = time.After(p.exitAfter)
+	}
 	return nil
 }
 
@@ -26,8 +28,13 @@ func (p *MockProcess) Stop() error {
 }
 
 func (p *MockProcess) Wait() error {
-	<-p.delayCh
-	p.delayCh = nil
+	if p.exitAfter > time.Duration(0) {
+		<-p.delayCh
+		p.delayCh = nil
+	} else {
+		// Block forever
+		<-make(chan bool)
+	}
 	return p.exitError
 }
 

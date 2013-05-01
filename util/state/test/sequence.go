@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"logyard/util/state"
 	"testing"
 	"time"
@@ -18,7 +19,7 @@ type Sequence []interface{}
 
 // Test runs the sequence performing the necessary state equality.
 func (s Sequence) Test(t *testing.T, m *state.StateMachine) state.State {
-	for _, e := range s {
+	for idx, e := range s {
 		switch element := e.(type) {
 		case SeqAction:
 			if err := m.SendAction(int(element)); err != nil {
@@ -27,7 +28,8 @@ func (s Sequence) Test(t *testing.T, m *state.StateMachine) state.State {
 		case SeqState:
 			st := m.GetState()
 			if st.String() != string(element) {
-				t.Fatalf("not %s yet; %v", element, st)
+				t.Fatalf("[%d/%d] expected %s; but %v",
+					idx+1, len(s), element, st)
 			}
 		case SeqDelay:
 			time.Sleep(time.Duration(element))
@@ -35,5 +37,15 @@ func (s Sequence) Test(t *testing.T, m *state.StateMachine) state.State {
 	}
 	// Return the final state which might not be the same as the
 	// resultant state of the final step in the sequence.
-	return m.GetState()
+	st := m.GetState()
+
+	switch st2 := st.(type) {
+	case state.Fatal:
+		fmt.Printf(
+			"Final sequence state: FATAL <%v>\n",
+			st2.Error)
+	default:
+		fmt.Printf("Final sequence state: %s\n", st2)
+	}
+	return st
 }
