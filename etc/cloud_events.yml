@@ -92,9 +92,9 @@ events:
     app_exited:
       substring: "INSTANCE_EXITED"
       regex: "EVENT -- INSTANCE_EXITED (.+)$"
-      sample: "D"
+      sample: 'EVENT -- INSTANCE_EXITED {"app_id":6,"app_name":"converter","instance":0,"uptime":231,"exitcode":0}'
       handlertype: json
-      format: 'Application "{{.app_name}}" exited on DEA {{.dea_id}} with exit code {{.exitcode}}'
+      format: 'Application "{{.app_name}}" exited on DEA {{.dea_id}} with exit code {{.exitcode}} after uptime {{.uptime}}'
   __all__:
     error:
       substring: ERROR
