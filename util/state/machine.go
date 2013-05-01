@@ -39,12 +39,12 @@ func (m *StateMachine) SendAction(action int) error {
 		return fmt.Errorf("StateMachine is stopped")
 	}
 	oldState := m.state
-	m.Log("About to state change: %s -[%v]-> ?? (%d)\n",
-		oldState, action, m.rev)
+	m.Log("[STM] Received action %s on state %s (%d)\n",
+		getActionString(action), oldState, m.rev)
 	m.state = m.state.Transition(action, m.rev)
 	m.rev += 1
-	m.Log("State change: %s => %s (%d)\n",
-		oldState, m.state, m.rev)
+	m.Log("[STM] State change: %s (%d) => %s (%d)\n",
+		oldState, m.rev-1, m.state, m.rev)
 	return nil
 }
 
@@ -79,13 +79,21 @@ func (m *StateMachine) setStateCustom(rev int64, fn func() State) int64 {
 			panic("nil state")
 		}
 		m.rev += 1
-		m.Log("Custom state change: %s => %s (%d)\n",
-			oldState, m.state, m.rev)
+		m.Log("[STM] State change (custom): %s (%d) => %s (%d)\n",
+			oldState, m.rev-1, m.state, m.rev)
 		return m.rev
+	} else {
+		var msg string
+		if m.running {
+			msg = fmt.Sprintf("rev changed (expected %d, have %d)",
+				rev, m.rev)
+		} else {
+			msg = "STM is stopped"
+		}
+		m.Log("[STM] Skipping state change; %s\n", msg)
+		return -1
 	}
-	m.Log("Skipping state change; rev changed (expected %d, have %d) or stopped (%v)\n",
-		rev, m.rev, !m.running)
-	return -1
+	panic("unreachable")
 }
 
 func (m *StateMachine) setState(rev int64, state State) int64 {
@@ -95,6 +103,7 @@ func (m *StateMachine) setState(rev int64, state State) int64 {
 }
 
 func (s *StateMachine) stop(rev int64) State {
+	s.Log("[STM] Stopping %s", s.title)
 	err := s.process.Stop()
 	if err != nil {
 		// Error reporting?
@@ -104,8 +113,7 @@ func (s *StateMachine) stop(rev int64) State {
 }
 
 func (s *StateMachine) start(rev int64) State {
-	// start it
-	s.Log("STM starting process")
+	s.Log("[STM] Starting %s", s.title)
 	err := s.process.Start()
 	if err != nil {
 		return Fatal{err, s}
@@ -119,7 +127,7 @@ func (s *StateMachine) start(rev int64) State {
 
 func (s *StateMachine) monitor(rev int64) {
 	err := s.process.Wait()
-	s.Log("%s exited with %v", s.title, err)
+	s.Log("[STM] %s exited -- %v", s.title, err)
 	if err == nil {
 		// If a process exited cleanly (no errors), then just mark it
 		// as STOPPED without retrying.
@@ -137,14 +145,13 @@ func (s *StateMachine) doretry(rev int64, err error) {
 	// This could block.
 	if s.retryer.Wait(
 		fmt.Sprintf(s.process.Logf(
-			"%s exited abruptly -- %v", s.title, err))) {
-		s.Log("Retrying now.")
+			"[STM] %s exited abruptly -- %v", s.title, err))) {
 		s.setStateCustom(rev, func() State {
 			return s.start(rev)
 		})
 	} else {
 		err := fmt.Errorf("retried too long; last error: %v", err)
-		s.Log("%v; marking as FATAL", err)
+		s.Log("[STM] %v; marking as FATAL", err)
 		s.setState(rev, Fatal{err, s})
 	}
 }

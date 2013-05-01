@@ -1,6 +1,7 @@
 package drain
 
 import (
+	"fmt"
 	"github.com/ActiveState/log"
 	"logyard"
 	"logyard/util/mapdiff"
@@ -78,7 +79,6 @@ func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 	drainStm := state.NewStateMachine("Drain", process, retry)
 	manager.stmMap[name] = drainStm
 
-	log.Infof(process.Logf("Going to <- state.START .."))
 	if err = drainStm.SendAction(state.START); err != nil {
 		log.Fatalf("Failed to start drain %s; %v", name, err)
 	}
@@ -110,6 +110,7 @@ func NewRetryerForDrain(name string) retry.Retryer {
 }
 
 func (manager *DrainManager) Run() {
+	iteration := 0
 	drains := logyard.GetConfig().Drains
 	log.Infof("Found %d drains to start\n", len(drains))
 	for name, uri := range drains {
@@ -118,20 +119,25 @@ func (manager *DrainManager) Run() {
 
 	// Watch for config changes in redis.
 	for {
+		iteration += 1
+		prefix := fmt.Sprintf("CONFIG.%d", iteration)
+
 		select {
 		case err := <-logyard.GetConfigChanges():
 			if err != nil {
 				log.Fatalf("Error re-loading config: %v", err)
 			}
-			log.Info("Config changed; checking drains...")
+			log.Infof(
+				"[%s] checking drains after a config change...",
+				prefix)
 			newDrains := logyard.GetConfig().Drains
 			for _, c := range mapdiff.MapDiff(drains, newDrains) {
 				if c.Deleted {
-					log.Infof("[Config change] Drain %s was deleted.", c.Key)
+					log.Infof("[%s] Drain %s was deleted.", prefix, c.Key)
 					manager.StopDrain(c.Key)
 					delete(drains, c.Key)
 				} else {
-					log.Infof("[Config change] Drain %s was added.", c.Key)
+					log.Infof("[%s] Drain %s was added.", prefix, c.Key)
 					manager.StopDrain(c.Key)
 					manager.StartDrain(
 						c.Key,
@@ -140,7 +146,7 @@ func (manager *DrainManager) Run() {
 					drains[c.Key] = c.NewValue
 				}
 			}
-			log.Info("[Config change] Done checking drains.")
+			log.Infof("[%s] Done checking drains.", prefix)
 		case <-manager.stopCh:
 			break
 		}

@@ -1,9 +1,9 @@
 package test
 
 import (
-	"strings"
 	"fmt"
 	"logyard/util/state"
+	"strings"
 	"testing"
 	"time"
 )

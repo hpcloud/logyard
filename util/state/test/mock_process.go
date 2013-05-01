@@ -39,7 +39,7 @@ func (p *MockProcess) Wait() error {
 }
 
 func (p *MockProcess) String() string {
-	return fmt.Sprintf("dummy:%s", p.name)
+	return fmt.Sprintf("mock:%s", p.name)
 }
 
 func (p *MockProcess) Logf(msg string, v ...interface{}) string {
