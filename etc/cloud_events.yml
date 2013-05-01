@@ -36,6 +36,13 @@ events:
       sample: '23:29:20 [error] 8474#0: *163529 connect() failed(111: Connection refused)'
       severity: ERROR
       format: "nginx error: $1"
+  kernel:
+    oom_killer:
+      substring: "oom-killer"
+      regex: '(\w+ invoked oom\-killer)'
+      sample: '[21510.516563] uwsgi invoked oom-killer: gfp_mask=0x50'
+      severity: WARNING
+      format: "OOM action: $1"
   cloud_controller:
     cc_waiting_for_dea:
       substring: "No resources available to"
