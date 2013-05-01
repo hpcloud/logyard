@@ -5,14 +5,14 @@ import (
 	"time"
 )
 
-type DummyProcess struct {
+type MockProcess struct {
 	name      string
 	exitAfter time.Duration
 	exitError error
 	delayCh   <-chan time.Time
 }
 
-func (p *DummyProcess) Start() error {
+func (p *MockProcess) Start() error {
 	if p.delayCh != nil {
 		return fmt.Errorf("delayCh is already set")
 	}
@@ -20,22 +20,22 @@ func (p *DummyProcess) Start() error {
 	return nil
 }
 
-func (p *DummyProcess) Stop() error {
+func (p *MockProcess) Stop() error {
 	p.delayCh = nil
 	return p.exitError
 }
 
-func (p *DummyProcess) Wait() error {
+func (p *MockProcess) Wait() error {
 	<-p.delayCh
 	p.delayCh = nil
 	return p.exitError
 }
 
-func (p *DummyProcess) String() string {
+func (p *MockProcess) String() string {
 	return fmt.Sprintf("dummy:%s", p.name)
 }
 
-func (p *DummyProcess) Logf(msg string, v ...interface{}) string {
+func (p *MockProcess) Logf(msg string, v ...interface{}) string {
 	v = append([]interface{}{p.String()}, v...)
 	return fmt.Sprintf("[%s] "+msg, v...)
 }
