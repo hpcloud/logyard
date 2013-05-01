@@ -89,6 +89,12 @@ events:
       sample: 'EVENT -- INSTANCE_READY {"app_id":6,"app_name":"env","instance":0}'
       handlertype: json
       format: 'Application "{{.app_name}}" is now running on DEA {{.dea_id}}'
+    app_exited:
+      substring: "INSTANCE_EXITED"
+      regex: "EVENT -- INSTANCE_EXITED (.+)$"
+      sample: "D"
+      handlertype: json
+      format: 'Application "{{.app_name}}" exited on DEA {{.dea_id}} with exit code {{.exitcode}}'
   __all__:
     error:
       substring: ERROR
