@@ -53,3 +53,24 @@ func TestStop(t *testing.T) {
 			&NoopRetryer{}))
 }
 
+func TestRetry(t *testing.T) {
+	seq := Sequence([]interface{}{
+		SeqAction(state.START),
+		SeqDelay(20 * time.Millisecond),
+		SeqState("RUNNING|RETRYING"),
+		// Give it 50ms total (>40ms)
+		SeqDelay(30 * time.Millisecond),
+		SeqState("FATAL"),
+	})
+
+	seq.Test(
+		t,
+		state.NewStateMachine(
+			"DummyProcess",
+			&MockProcess{
+				"retry",
+				time.Duration(10 * time.Millisecond),
+				fmt.Errorf("exiting after 10ms"),
+				nil},
+			&ThriceRetryer{}))
+}

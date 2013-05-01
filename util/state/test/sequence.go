@@ -1,6 +1,7 @@
 package test
 
 import (
+	"strings"
 	"fmt"
 	"logyard/util/state"
 	"testing"
@@ -27,7 +28,14 @@ func (s Sequence) Test(t *testing.T, m *state.StateMachine) state.State {
 			}
 		case SeqState:
 			st := m.GetState()
-			if st.String() != string(element) {
+			matched := false
+			for _, expected := range strings.Split(string(element), "|") {
+				if st.String() == expected {
+					matched = true
+					break
+				}
+			}
+			if !matched {
 				t.Fatalf("[%d/%d] expected %s; but %v",
 					idx+1, len(s), element, st)
 			}
