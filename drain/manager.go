@@ -7,6 +7,8 @@ import (
 	"logyard/util/mapdiff"
 	"logyard/util/retry"
 	"logyard/util/state"
+	"logyard/util/statecache"
+	"stackato/server"
 	"strings"
 	"sync"
 	"time"
@@ -15,16 +17,20 @@ import (
 const configKey = "/proc/logyard/config/"
 
 type DrainManager struct {
-	mux    sync.Mutex // mutex to protect Start/Stop
-	stopCh chan bool
-
-	stmMap map[string]*state.StateMachine
+	mux        sync.Mutex // mutex to protect Start/Stop
+	stopCh     chan bool
+	stmMap     map[string]*state.StateMachine
+	stateCache *statecache.StateCache
 }
 
 func NewDrainManager() *DrainManager {
 	manager := new(DrainManager)
 	manager.stopCh = make(chan bool)
 	manager.stmMap = make(map[string]*state.StateMachine)
+	manager.stateCache = &statecache.StateCache{
+		"logyard:status:",
+		server.LocalIPMust(),
+		logyard.NewRedisClientMust(server.Config.CoreIP+":6464", 0)}
 	return manager
 }
 
@@ -35,9 +41,6 @@ func (manager *DrainManager) Stop() {
 	for name, _ := range manager.stmMap {
 		manager.stopDrain(name)
 	}
-	go func() {
-
-	}()
 }
 
 func (manager *DrainManager) StopDrain(drainName string) {
@@ -66,17 +69,24 @@ func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 	manager.mux.Lock()
 	defer manager.mux.Unlock()
 
-	_, ok := manager.stmMap[name]
-	if ok {
+	var stateChangeFn state.StateChangedFn
+
+	_, exists := manager.stmMap[name]
+	if exists {
 		// Stop the running drain first.
 		manager.stopDrain(name)
+	} else {
+		stateChangeFn = func(name string, state state.State, rev int64) {
+			manager.stateCache.SetState(name, state, rev)
+		}
 	}
+
 	process, err := NewDrainProcess(name, uri)
 	if err != nil {
-		log.Error(process.Logf("Couldn't start drain: %v", err))
+		log.Error(process.Logf("Couldn't create drain: %v", err))
 		return
 	}
-	drainStm := state.NewStateMachine("Drain", process, retry)
+	drainStm := state.NewStateMachine("Drain", process, retry, stateChangeFn)
 	manager.stmMap[name] = drainStm
 
 	if err = drainStm.SendAction(state.START); err != nil {

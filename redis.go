@@ -1,6 +1,7 @@
 package logyard
 
 import (
+	"github.com/ActiveState/log"
 	"github.com/vmihailenco/redis"
 	"net"
 )
@@ -17,4 +18,12 @@ func NewRedisClient(addr string, database int64) (*redis.Client, error) {
 	conn.Close()
 
 	return redis.NewTCPClient(addr, "", database), nil
+}
+
+func NewRedisClientMust(addr string, database int64) *redis.Client {
+	client, err := NewRedisClient(addr, database)
+	if err != nil {
+		log.Fatalf("Unable to connect to redis; %v", err)
+	}
+	return client
 }

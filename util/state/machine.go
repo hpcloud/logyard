@@ -7,6 +7,8 @@ import (
 	"sync"
 )
 
+type StateChangedFn func(string, State, int64)
+
 type StateMachine struct {
 	running bool
 	title   string
@@ -14,18 +16,28 @@ type StateMachine struct {
 	retryer retry.Retryer
 	state   State
 	rev     int64
+	fn      StateChangedFn
 	mux     sync.Mutex
 }
 
-func NewStateMachine(title string, process Process, retryer retry.Retryer) *StateMachine {
+func NewStateMachine(title string, process Process, retryer retry.Retryer, fn StateChangedFn) *StateMachine {
 	m := &StateMachine{}
 	m.title = title
 	m.process = process
 	m.retryer = retryer
-	m.state = Stopped{m}
-	m.rev = 1
+	m.fn = fn
 	m.running = true
+
+	m.transition(Stopped{m}, 1)
 	return m
+}
+
+func (m *StateMachine) transition(state State, rev int64) {
+	m.state = state
+	m.rev = rev
+	if m.fn != nil {
+		m.fn(m.process.String(), m.state, m.rev)
+	}
 }
 
 func (m *StateMachine) Log(msg string, v ...interface{}) {
@@ -41,8 +53,7 @@ func (m *StateMachine) SendAction(action int) error {
 	oldState := m.state
 	m.Log("Received action %s on state %s (%d)\n",
 		getActionString(action), oldState, m.rev)
-	m.state = m.state.Transition(action, m.rev)
-	m.rev += 1
+	m.transition(m.state.Transition(action, m.rev), m.rev+1)
 	m.Log("State change: %s (%d) => %s (%d)\n",
 		oldState, m.rev-1, m.state, m.rev)
 	return nil
@@ -73,11 +84,10 @@ func (m *StateMachine) setStateCustom(rev int64, fn func() State) int64 {
 	defer m.mux.Unlock()
 	if m.running && rev == m.rev {
 		oldState := m.state
-		m.state = fn()
+		m.transition(fn(), m.rev+1)
 		if m.state == nil {
 			panic("nil state")
 		}
-		m.rev += 1
 		m.Log("State change (custom): %s (%d) => %s (%d)\n",
 			oldState, m.rev-1, m.state, m.rev)
 		return m.rev
