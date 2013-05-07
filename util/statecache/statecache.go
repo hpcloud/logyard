@@ -3,6 +3,8 @@
 package statecache
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/ActiveState/log"
 	"github.com/vmihailenco/redis"
 	"logyard/util/state"
@@ -14,9 +16,18 @@ type StateCache struct {
 	Client *redis.Client
 }
 
+type StateInfo map[string]string
+
 // SetState caches the given state of a process in redis.
 func (s *StateCache) SetState(
 	name string, state state.State, rev int64) {
+	info := StateInfo(state.Info())
+	info["rev"] = fmt.Sprintf("%d", rev)
+	data, err := json.Marshal(info)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	allKey, thisKey := s.getKeys(name)
 
 	log.Infof("[statecache] Caching state of %s", name)
@@ -26,7 +37,7 @@ func (s *StateCache) SetState(
 			name, err)
 		return
 	}
-	reply2 := s.Client.Set(thisKey, state.String())
+	reply2 := s.Client.Set(thisKey, string(data))
 	if err := reply2.Err(); err != nil {
 		log.Errorf("Unable to cache state of %s in redis; %v",
 			name, err)
@@ -56,9 +67,9 @@ func (s *StateCache) Clear(name string) {
 
 // GetState retrieves the cached state for the given process on all
 // nodes.
-func (s *StateCache) GetState(name string) (map[string]string, error) {
+func (s *StateCache) GetState(name string) (map[string]StateInfo, error) {
 	allKey, _ := s.getKeys(name)
-	states := map[string]string{}
+	states := map[string]StateInfo{}
 
 	reply := s.Client.SMembers(allKey)
 	if err := reply.Err(); err != nil {
@@ -69,8 +80,12 @@ func (s *StateCache) GetState(name string) (map[string]string, error) {
 		if err := reply2.Err(); err != nil {
 			return nil, err
 		}
-		state := reply2.Val()
-		states[nodeip] = state
+		stateInfoJson := reply2.Val()
+		var stateInfo StateInfo
+		if err := json.Unmarshal([]byte(stateInfoJson), &stateInfo); err != nil {
+			log.Fatal(err)
+		}
+		states[nodeip] = stateInfo
 	}
 	return states, nil
 }

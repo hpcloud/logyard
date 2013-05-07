@@ -18,3 +18,8 @@ func (s Running) Transition(action int, rev int64) State {
 func (s Running) String() string {
 	return "RUNNING"
 }
+
+func (s Running) Info() map[string]string {
+	return map[string]string{
+		"name": "RUNNING"}
+}

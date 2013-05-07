@@ -3,9 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/wsxiaoys/terminal/color"
 	"logyard"
 	"logyard/util/statecache"
+	"sort"
 	"stackato/server"
+	"strconv"
 )
 
 type status struct {
@@ -30,7 +33,7 @@ func (cmd *status) Run(args []string) error {
 		drains = args
 	} else {
 		config := logyard.GetConfig()
-		drains = sortedKeys(config.Drains)
+		drains = sortedKeysStringMap(config.Drains)
 	}
 
 	for _, name := range drains {
@@ -38,9 +41,36 @@ func (cmd *status) Run(args []string) error {
 		if err != nil {
 			return fmt.Errorf("Unable to retrieve cached state: %v", err)
 		}
-		for _, nodeip := range sortedKeys(states) {
-			fmt.Printf("%-20s\t%s\t%s\n", name, nodeip, states[nodeip])
+		for _, nodeip := range sortedKeysStateMap(states) {
+			printStatus(name, nodeip, states[nodeip])
+
 		}
 	}
 	return nil
+}
+
+func printStatus(name, nodeip string, info statecache.StateInfo) error {
+	rev, err := strconv.Atoi(info["rev"])
+	if err != nil {
+		return fmt.Errorf("Corrupt drain status: %v", err)
+	}
+	state := info["name"]
+
+	fmt.Printf("%-20s\t%s\t%s[%d]", name, nodeip, state, rev)
+	if error, ok := info["error"]; ok {
+		color.Printf("\t@r%s@|", error)
+	}
+	fmt.Println()
+	return nil
+}
+
+func sortedKeysStateMap(m map[string]statecache.StateInfo) []string {
+	keys := make([]string, len(m))
+	idx := 0
+	for key, _ := range m {
+		keys[idx] = key
+		idx++
+	}
+	sort.Strings(keys)
+	return keys
 }

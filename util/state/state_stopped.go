@@ -19,3 +19,8 @@ func (s Stopped) Transition(action int, rev int64) State {
 func (s Stopped) String() string {
 	return "STOPPED"
 }
+
+func (s Stopped) Info() map[string]string {
+	return map[string]string{
+		"name": "STOPPED"}
+}

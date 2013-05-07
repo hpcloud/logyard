@@ -1,5 +1,9 @@
 package state
 
+import (
+	"fmt"
+)
+
 type Fatal struct {
 	Error error
 	*StateMachine
@@ -17,4 +21,10 @@ func (s Fatal) Transition(action int, rev int64) State {
 
 func (s Fatal) String() string {
 	return "FATAL"
+}
+
+func (s Fatal) Info() map[string]string {
+	return map[string]string{
+		"name":  "FATAL",
+		"error": fmt.Sprintf("%v", s.Error)}
 }

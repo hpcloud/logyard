@@ -1,7 +1,11 @@
 package state
 
+import (
+	"fmt"
+)
+
 type Retrying struct {
-	Error error
+	Error error // Retrying on this error
 	*StateMachine
 }
 
@@ -18,4 +22,10 @@ func (s Retrying) Transition(action int, rev int64) State {
 
 func (s Retrying) String() string {
 	return "RETRYING"
+}
+
+func (s Retrying) Info() map[string]string {
+	return map[string]string{
+		"name":  "RETRYING",
+		"error": fmt.Sprintf("%v", s.Error)}
 }
