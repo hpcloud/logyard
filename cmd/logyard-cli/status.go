@@ -19,17 +19,21 @@ func (cmd *status) DefineFlags(fs *flag.FlagSet) {
 }
 
 func (cmd *status) Run(args []string) error {
-	if len(args) > 0 {
-		return fmt.Errorf("not supported yet")
-	}
 	Init("status")
 	cache := &statecache.StateCache{
 		"logyard:drainstatus:",
 		server.LocalIPMust(),
 		logyard.NewRedisClientMust(server.Config.CoreIP+":6464", 0)}
 
-	config := logyard.GetConfig()
-	for _, name := range sortedKeys(config.Drains) {
+	var drains []string
+	if len(args) > 0 {
+		drains = args
+	} else {
+		config := logyard.GetConfig()
+		drains = sortedKeys(config.Drains)
+	}
+
+	for _, name := range drains {
 		states, err := cache.GetState(name)
 		if err != nil {
 			return fmt.Errorf("Unable to retrieve cached state: %v", err)

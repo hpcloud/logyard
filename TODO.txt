@@ -1,0 +1,7 @@
+* retrying, and fatal should have args in 'status'
+  eg: retrying<5m>, fatal<error-msg-here>
+
+* retrying drains more often come up as "running", due to delay in
+  'connecting' stage (with tcp://google.com). do we need a "starting"
+  state?
+
