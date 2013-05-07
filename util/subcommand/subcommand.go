@@ -30,7 +30,7 @@ func Parse(commands ...subCommand) {
 	flag.Usage = func() {
 		oldUsage()
 		for name, sc := range scp {
-			fmt.Fprintf(os.Stderr, "\n# %s %s\n", os.Args[0], name)
+			fmt.Fprintf(os.Stderr, "\n# %s %s", os.Args[0], name)
 			sc.fs.PrintDefaults()
 			fmt.Fprintf(os.Stderr, "\n")
 		}

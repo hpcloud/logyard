@@ -14,6 +14,7 @@ type StateCache struct {
 	Client *redis.Client
 }
 
+// SetState caches the given state of a process in redis.
 func (s *StateCache) SetState(
 	name string, state state.State, rev int64) {
 	allKey, thisKey := s.getKeys(name)
@@ -32,6 +33,8 @@ func (s *StateCache) SetState(
 	}
 }
 
+// Clear clears the cache associated with the given process and
+// current host.
 func (s *StateCache) Clear(name string) {
 	log.Infof("[statecache] Clearing state of %s", name)
 	allKey, thisKey := s.getKeys(name)
@@ -51,8 +54,33 @@ func (s *StateCache) Clear(name string) {
 	}
 }
 
+// GetState retrieves the cached state for the given process on all
+// nodes.
+func (s *StateCache) GetState(name string) (map[string]string, error) {
+	allKey, _ := s.getKeys(name)
+	states := map[string]string{}
+
+	reply := s.Client.SMembers(allKey)
+	if err := reply.Err(); err != nil {
+		return nil, err
+	}
+	for _, nodeip := range reply.Val() {
+		reply2 := s.Client.Get(s.getKeyFor(name, nodeip))
+		if err := reply2.Err(); err != nil {
+			return nil, err
+		}
+		state := reply2.Val()
+		states[nodeip] = state
+	}
+	return states, nil
+}
+
 func (s *StateCache) getKeys(name string) (string, string) {
 	allKey := s.Prefix + name
 	thisKey := allKey + ":" + s.Host
 	return allKey, thisKey
+}
+
+func (s *StateCache) getKeyFor(name, node string) string {
+	return s.Prefix + name + ":" + s.Host
 }

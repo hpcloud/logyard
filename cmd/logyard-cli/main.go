@@ -15,5 +15,6 @@ func main() {
 		new(stream),
 		new(list),
 		new(add),
-		new(delete))
+		new(delete),
+		new(status))
 }
