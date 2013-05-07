@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-type StateChangedFn func(string, State, int64)
+type StateChangedFn func(State, int64)
 
 type StateMachine struct {
 	running bool
@@ -36,7 +36,7 @@ func (m *StateMachine) transition(state State, rev int64) {
 	m.state = state
 	m.rev = rev
 	if m.fn != nil {
-		m.fn(m.process.String(), m.state, m.rev)
+		m.fn(m.state, m.rev)
 	}
 }
 

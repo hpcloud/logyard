@@ -16,9 +16,9 @@ type StateCache struct {
 
 func (s *StateCache) SetState(
 	name string, state state.State, rev int64) {
-	allKey := s.Prefix + name
-	thisKey := allKey + ":" + s.Host
+	allKey, thisKey := s.getKeys(name)
 
+	log.Infof("[statecache] Caching state of %s", name)
 	reply := s.Client.SAdd(allKey, s.Host)
 	if err := reply.Err(); err != nil {
 		log.Errorf("Unable to cache state of %s in redis; %v",
@@ -30,4 +30,29 @@ func (s *StateCache) SetState(
 		log.Errorf("Unable to cache state of %s in redis; %v",
 			name, err)
 	}
+}
+
+func (s *StateCache) Clear(name string) {
+	log.Infof("[statecache] Clearing state of %s", name)
+	allKey, thisKey := s.getKeys(name)
+
+	// Note that redis automatically deletes the SET if it will be
+	// empty after an SREM.
+	reply := s.Client.SRem(allKey, s.Host)
+	if err := reply.Err(); err != nil {
+		log.Errorf("Unable to clear state cache of %s in redis; %v",
+			name, err)
+	}
+
+	reply2 := s.Client.Del(thisKey)
+	if err := reply2.Err(); err != nil {
+		log.Errorf("Unable to clear state cache of %s in redis; %v",
+			name, err)
+	}
+}
+
+func (s *StateCache) getKeys(name string) (string, string) {
+	allKey := s.Prefix + name
+	thisKey := allKey + ":" + s.Host
+	return allKey, thisKey
 }

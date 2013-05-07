@@ -28,7 +28,7 @@ func NewDrainManager() *DrainManager {
 	manager.stopCh = make(chan bool)
 	manager.stmMap = make(map[string]*state.StateMachine)
 	manager.stateCache = &statecache.StateCache{
-		"logyard:status:",
+		"logyard:drainstatus:",
 		server.LocalIPMust(),
 		logyard.NewRedisClientMust(server.Config.CoreIP+":6464", 0)}
 	return manager
@@ -39,23 +39,27 @@ func (manager *DrainManager) Stop() {
 	manager.mux.Lock()
 	defer manager.mux.Unlock()
 	for name, _ := range manager.stmMap {
-		manager.stopDrain(name)
+		manager.stopDrain(name, true)
 	}
 }
 
-func (manager *DrainManager) StopDrain(drainName string) {
+func (manager *DrainManager) StopDrain(drainName string, clearStateCache bool) {
 	manager.mux.Lock()
 	defer manager.mux.Unlock()
-	manager.stopDrain(drainName)
+	manager.stopDrain(drainName, clearStateCache)
 }
 
-func (manager *DrainManager) stopDrain(drainName string) {
+// stopDrain should only be called inside a mutex.
+func (manager *DrainManager) stopDrain(drainName string, clearStateCache bool) {
 	if drainStm, ok := manager.stmMap[drainName]; ok {
 		if err := drainStm.SendAction(state.STOP); err != nil {
 			log.Fatalf("Failed to stop drain %s; %v", drainName, err)
 		}
 		drainStm.Stop()
 		delete(manager.stmMap, drainName)
+		if clearStateCache {
+			manager.stateCache.Clear(drainName)
+		}
 	}
 	// Sending on stopCh could block if DrainManager.Run().select
 	// {...} is blocking on a mutex (via Start/Stop). Ideally, get rid
@@ -74,9 +78,9 @@ func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 	_, exists := manager.stmMap[name]
 	if exists {
 		// Stop the running drain first.
-		manager.stopDrain(name)
+		manager.stopDrain(name, false)
 	} else {
-		stateChangeFn = func(name string, state state.State, rev int64) {
+		stateChangeFn = func(state state.State, rev int64) {
 			manager.stateCache.SetState(name, state, rev)
 		}
 	}
@@ -144,11 +148,11 @@ func (manager *DrainManager) Run() {
 			for _, c := range mapdiff.MapDiff(drains, newDrains) {
 				if c.Deleted {
 					log.Infof("[%s] Drain %s was deleted.", prefix, c.Key)
-					manager.StopDrain(c.Key)
+					manager.StopDrain(c.Key, true)
 					delete(drains, c.Key)
 				} else {
 					log.Infof("[%s] Drain %s was added.", prefix, c.Key)
-					manager.StopDrain(c.Key)
+					manager.StopDrain(c.Key, false)
 					manager.StartDrain(
 						c.Key,
 						c.NewValue,
