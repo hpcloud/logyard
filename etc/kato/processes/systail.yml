@@ -1,0 +1,6 @@
+# Installed by package stackato-logyard.
+---
+name: systail
+doozer_ephemeral: true
+roles:
+  - base

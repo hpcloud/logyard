@@ -1,0 +1,7 @@
+# Installed by package stackato-logyard.
+---
+name: apptail
+doozer_ephemeral: true
+roles:
+  - stager
+  - dea

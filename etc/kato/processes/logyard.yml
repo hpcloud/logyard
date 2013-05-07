@@ -1,0 +1,6 @@
+# Installed by package stackato-logyard.
+---
+name: logyard
+config_origin: /s/go/src/logyard/config.yml
+roles:
+  - base
