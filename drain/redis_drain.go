@@ -6,7 +6,6 @@ import (
 	"github.com/vmihailenco/redis"
 	"launchpad.net/tomb"
 	"logyard"
-	"net"
 	"stackato/server"
 	"strings"
 )
@@ -91,18 +90,15 @@ func (d *RedisDrain) connect(addr string, database int64) error {
 	log.Infof("[drain:%s] Attempting to connect to redis %s[#%d] ...",
 		d.name, addr, database)
 
-	// Bug #97459 -- is the redis client library faking connection for
-	// the down server?
-	conn, err := net.Dial("tcp", addr)
-	if err != nil {
+	if client, err := logyard.NewRedisClient(addr, database); err != nil {
 		return err
+	} else {
+		d.client = client
+		log.Infof("[drain:%s] Successfully connected to redis %s[#%d].",
+			d.name, addr, database)
+		return nil
 	}
-	conn.Close()
-
-	d.client = redis.NewTCPClient(addr, "", database)
-	log.Infof("[drain:%s] Successfully connected to redis %s[#%d].",
-		d.name, addr, database)
-	return nil
+	panic("unreachable")
 }
 
 func (d *RedisDrain) disconnect() {
