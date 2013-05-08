@@ -127,14 +127,19 @@ func (s *StateMachine) start(rev int64) State {
 	if err != nil {
 		return Fatal{err, s}
 	} else {
-		rev = rev + 1 // account for settig of RunningState
+		rev = rev + 1 // account for setting of RunningState
 		go s.monitor(rev)
-		return Running{s}
+		return Starting{s}
 	}
 	panic("unreachable")
 }
 
 func (s *StateMachine) monitor(rev int64) {
+	s.Log("Waiting for drain to start ...")
+	s.process.WaitRunning()
+	s.Log("Now running.")
+	rev = s.setState(rev, Running{s})
+
 	err := s.process.Wait()
 
 	s.Log("%s exited -- %v", s.title, err)

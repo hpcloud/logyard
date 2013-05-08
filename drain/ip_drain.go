@@ -10,13 +10,16 @@ import (
 
 // IPConnDrain is a drain based on net.IPConn
 type IPConnDrain struct {
-	name string
+	name   string
+	initCh chan bool
 	tomb.Tomb
 }
 
 func NewIPConnDrain(name string) DrainType {
-	rd := &IPConnDrain{name, tomb.Tomb{}}
-	return rd
+	var d IPConnDrain
+	d.name = name
+	d.initCh = make(chan bool)
+	return &d
 }
 
 func (d *IPConnDrain) Start(config *DrainConfig) {
@@ -41,6 +44,10 @@ func (d *IPConnDrain) Start(config *DrainConfig) {
 	sub := logyard.Broker.Subscribe(config.Filters...)
 	defer sub.Stop()
 
+	go func() {
+		d.initCh <- true
+	}()
+
 	for {
 		select {
 		case msg := <-sub.Ch:
@@ -58,6 +65,10 @@ func (d *IPConnDrain) Start(config *DrainConfig) {
 			return
 		}
 	}
+}
+
+func (d *IPConnDrain) WaitRunning() {
+	<-d.initCh
 }
 
 func (d *IPConnDrain) Stop() error {

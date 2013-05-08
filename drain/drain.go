@@ -9,6 +9,7 @@ type DrainType interface {
 	Start(*DrainConfig)
 	Stop() error
 	Wait() error
+	WaitRunning()
 }
 
 // DrainConstructor is a function that returns a new drain instance
@@ -55,6 +56,11 @@ func (p *DrainProcess) Start() error {
 	p.drain = p.constructor(p.name)
 	go p.drain.Start(p.cfg)
 	return nil
+}
+
+// WaitRunning waits until the drain is running
+func (p *DrainProcess) WaitRunning() {
+	p.drain.WaitRunning()
 }
 
 func (p *DrainProcess) Stop() error {

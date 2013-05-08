@@ -2,3 +2,4 @@
   'connecting' stage (with tcp://google.com). do we need a "starting"
   state?
 
+* fix 'starting' to account for errors raised during the starting stage.

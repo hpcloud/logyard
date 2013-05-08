@@ -9,14 +9,16 @@ import (
 
 // File drain is used to write to local files
 type FileDrain struct {
-	name string
+	name   string
+	initCh chan bool
 	tomb.Tomb
 }
 
 func NewFileDrain(name string) DrainType {
-	rd := &FileDrain{}
-	rd.name = name
-	return rd
+	var d FileDrain
+	d.name = name
+	d.initCh = make(chan bool)
+	return &d
 }
 
 func (d *FileDrain) Start(config *DrainConfig) {
@@ -47,6 +49,10 @@ func (d *FileDrain) Start(config *DrainConfig) {
 	sub := logyard.Broker.Subscribe(config.Filters...)
 	defer sub.Stop()
 
+	go func() {
+		d.initCh <- true
+	}()
+
 	for {
 		select {
 		case msg := <-sub.Ch:
@@ -64,6 +70,10 @@ func (d *FileDrain) Start(config *DrainConfig) {
 			return
 		}
 	}
+}
+
+func (d *FileDrain) WaitRunning() {
+	<-d.initCh
 }
 
 func (d *FileDrain) Stop() error {

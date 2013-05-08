@@ -13,13 +13,15 @@ import (
 type RedisDrain struct {
 	client *redis.Client
 	name   string
+	initCh chan bool
 	tomb.Tomb
 }
 
 func NewRedisDrain(name string) DrainType {
-	rd := &RedisDrain{}
-	rd.name = name
-	return rd
+	var d RedisDrain
+	d.name = name
+	d.initCh = make(chan bool)
+	return &d
 }
 
 func (d *RedisDrain) Start(config *DrainConfig) {
@@ -58,6 +60,10 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 	sub := logyard.Broker.Subscribe(config.Filters...)
 	defer sub.Stop()
 
+	go func() {
+		d.initCh <- true
+	}()
+
 	for {
 		select {
 		case msg := <-sub.Ch:
@@ -79,6 +85,10 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 			return
 		}
 	}
+}
+
+func (d *RedisDrain) WaitRunning() {
+	<-d.initCh
 }
 
 func (d *RedisDrain) Stop() error {

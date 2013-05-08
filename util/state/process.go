@@ -7,6 +7,8 @@ type Process interface {
 	Start() error
 	// Stop stop the process.
 	Stop() error
+	// WaitRunning waits until the Start'ed process is fully running.
+	WaitRunning()
 	// Wait waits for the process to exit, returning an error if any.
 	Wait() error
 	// String returns a short printable string representation of the
