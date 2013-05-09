@@ -34,12 +34,14 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 	limit, err := config.GetParamInt("limit", 1500)
 	if err != nil {
 		d.Killf("limit key from `params` is not a number -- %s", err)
+		go d.finishedStarting(false)
 		return
 	}
 
 	database, err := config.GetParamInt("database", 0)
 	if err != nil {
 		d.Killf("invalid database specified: %s", err)
+		go d.finishedStarting(false)
 		return
 	}
 
@@ -53,6 +55,7 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 
 	if err = d.connect(config.Host, int64(database)); err != nil {
 		d.Kill(err)
+		go d.finishedStarting(false)
 		return
 	}
 	defer d.disconnect()
@@ -60,9 +63,7 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 	sub := logyard.Broker.Subscribe(config.Filters...)
 	defer sub.Stop()
 
-	go func() {
-		d.initCh <- true
-	}()
+	go d.finishedStarting(true)
 
 	for {
 		select {
@@ -87,8 +88,12 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 	}
 }
 
-func (d *RedisDrain) WaitRunning() {
-	<-d.initCh
+func (d *RedisDrain) finishedStarting(success bool) {
+	d.initCh <- success
+}
+
+func (d *RedisDrain) WaitRunning() bool {
+	return <-d.initCh
 }
 
 func (d *RedisDrain) Stop() error {

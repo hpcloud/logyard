@@ -27,6 +27,7 @@ func (d *FileDrain) Start(config *DrainConfig) {
 	overwrite, err := config.GetParamBool("overwrite", false)
 	if err != nil {
 		d.Kill(err)
+		go d.finishedStarting(false)
 		return
 	}
 
@@ -41,6 +42,7 @@ func (d *FileDrain) Start(config *DrainConfig) {
 	f, err := os.OpenFile(config.Path, mode, 0600)
 	if err != nil {
 		d.Kill(err)
+		go d.finishedStarting(false)
 		return
 	}
 	log.Infof("[drain:%s] Successfully opened %s.", d.name, config.Path)
@@ -49,9 +51,7 @@ func (d *FileDrain) Start(config *DrainConfig) {
 	sub := logyard.Broker.Subscribe(config.Filters...)
 	defer sub.Stop()
 
-	go func() {
-		d.initCh <- true
-	}()
+	go d.finishedStarting(true)
 
 	for {
 		select {
@@ -72,8 +72,12 @@ func (d *FileDrain) Start(config *DrainConfig) {
 	}
 }
 
-func (d *FileDrain) WaitRunning() {
-	<-d.initCh
+func (d *FileDrain) finishedStarting(success bool) {
+	d.initCh <- success
+}
+
+func (d *FileDrain) WaitRunning() bool {
+	return <-d.initCh
 }
 
 func (d *FileDrain) Stop() error {

@@ -27,6 +27,7 @@ func (d *IPConnDrain) Start(config *DrainConfig) {
 
 	if !(config.Scheme == "udp" || config.Scheme == "tcp") {
 		d.Killf("Invalid scheme: %s", config.Scheme)
+		go d.finishedStarting(false)
 		return
 	}
 
@@ -35,6 +36,7 @@ func (d *IPConnDrain) Start(config *DrainConfig) {
 	conn, err := net.DialTimeout(config.Scheme, config.Host, 10*time.Second)
 	if err != nil {
 		d.Kill(err)
+		go d.finishedStarting(false)
 		return
 	}
 	defer conn.Close()
@@ -44,9 +46,7 @@ func (d *IPConnDrain) Start(config *DrainConfig) {
 	sub := logyard.Broker.Subscribe(config.Filters...)
 	defer sub.Stop()
 
-	go func() {
-		d.initCh <- true
-	}()
+	go d.finishedStarting(true)
 
 	for {
 		select {
@@ -67,8 +67,12 @@ func (d *IPConnDrain) Start(config *DrainConfig) {
 	}
 }
 
-func (d *IPConnDrain) WaitRunning() {
-	<-d.initCh
+func (d *IPConnDrain) finishedStarting(success bool) {
+	d.initCh <- success
+}
+
+func (d *IPConnDrain) WaitRunning() bool {
+	return <-d.initCh
 }
 
 func (d *IPConnDrain) Stop() error {

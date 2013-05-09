@@ -1,5 +1,8 @@
-* retrying drains more often come up as "running", due to delay in
-  'connecting' stage (with tcp://google.com). do we need a "starting"
-  state?
+starting
+========
+retrying drains more often come up as "running", due to delay in
+'connecting' stage (with tcp://google.com). do we need a "starting"
+state?
 
-* fix 'starting' to account for errors raised during the starting stage.
+* oops. if a drain is starting too long, it can't be stopped! eg:
+  google.com tcp conns. had discussion in #go-nuts
