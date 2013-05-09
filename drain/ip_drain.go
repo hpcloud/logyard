@@ -33,13 +33,31 @@ func (d *IPConnDrain) Start(config *DrainConfig) {
 
 	log.Infof("[drain:%s] Attempting to connect to %s://%s ...",
 		d.name, config.Scheme, config.Host)
-	conn, err := net.DialTimeout(config.Scheme, config.Host, 10*time.Second)
-	if err != nil {
-		d.Kill(err)
-		go d.finishedStarting(false)
+
+	var conn net.Conn
+	dialer := NewNetDialer(config.Scheme, config.Host, 10*time.Second)
+
+	select {
+	case conn = <-dialer.Ch:
+		if dialer.Error != nil {
+			d.Kill(dialer.Error)
+			go d.finishedStarting(false)
+			return
+		}
+	case <-d.Dying():
+		// Close the connection returned, in future, by the dialer.
+		log.Infof("[drain:%s] Stop request; deferring close of connection",
+			d.name)
+		go func() {
+			conn = <-dialer.Ch
+			if dialer.Error == nil {
+				conn.Close()
+			}
+		}()
 		return
 	}
 	defer conn.Close()
+
 	log.Infof("[drain:%s] Successfully connected to %s://%s.",
 		d.name, config.Scheme, config.Host)
 

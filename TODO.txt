@@ -1,8 +1,0 @@
-starting
-========
-retrying drains more often come up as "running", due to delay in
-'connecting' stage (with tcp://google.com). do we need a "starting"
-state?
-
-* oops. if a drain is starting too long, it can't be stopped! eg:
-  google.com tcp conns. had discussion in #go-nuts
