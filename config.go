@@ -30,7 +30,6 @@ func MonitorConfig(c *confdis.ConfDis) {
 		if err != nil {
 			log.Fatalf("Error re-loading config: %v", err)
 		}
-		log.Info("Config changed.")
 	}
 }
 

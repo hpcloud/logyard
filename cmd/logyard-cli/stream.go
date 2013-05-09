@@ -60,9 +60,9 @@ func (cmd *stream) Run(args []string) error {
 	name := fmt.Sprintf("tmp.logyard-cli.%s-%d", ipaddr, port)
 
 	Init("stream")
-	uri, err := drain.ConstructDrainURI(name, "tcp://"+addr, args, map[string]string{
-		"format": "raw",
-	})
+
+	uri, err := drain.ConstructDrainURI(
+		name, "tcp://"+addr, args, map[string]string{"format": "raw"})
 	if err != nil {
 		return err
 	}

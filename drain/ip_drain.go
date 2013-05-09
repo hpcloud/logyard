@@ -48,12 +48,7 @@ func (d *IPConnDrain) Start(config *DrainConfig) {
 		// Close the connection returned, in future, by the dialer.
 		log.Infof("[drain:%s] Stop request; deferring close of connection",
 			d.name)
-		go func() {
-			conn = <-dialer.Ch
-			if dialer.Error == nil {
-				conn.Close()
-			}
-		}()
+		go dialer.WaitAndClose()
 		return
 	}
 	defer conn.Close()

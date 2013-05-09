@@ -25,3 +25,12 @@ func (d *NetDialer) dial(scheme, host string, timeout time.Duration) {
 	}
 	d.Ch <- conn
 }
+
+// WaitAndClose waits for the connection to return and closes it
+// immediately.
+func (d *NetDialer) WaitAndClose() {
+	conn := <-d.Ch
+	if d.Error == nil {
+		conn.Close()
+	}
+}
