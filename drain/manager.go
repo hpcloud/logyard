@@ -98,7 +98,7 @@ func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 	}
 }
 
-// NewRetryerForDrain chooses 
+// NewRetryerForDrain chooses
 func NewRetryerForDrain(name string) retry.Retryer {
 	var retryLimit time.Duration
 	var err error

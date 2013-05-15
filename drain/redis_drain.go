@@ -121,7 +121,7 @@ func (d *RedisDrain) disconnect() {
 }
 
 // Lpushcircular works like LPUSH, but trims the right most element if length
-// exceeds maxlen. Returns the list length before trim.  
+// exceeds maxlen. Returns the list length before trim.
 func (d *RedisDrain) Lpushcircular(
 	key string, item string, maxlen int64) (int64, error) {
 	reply := d.client.LPush(key, item)

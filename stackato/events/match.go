@@ -9,7 +9,7 @@ import (
 )
 
 // MultiRegexpMatch allows matching a string against multiple regular
-// expressions along with substrings for a fast fail-early matching. 
+// expressions along with substrings for a fast fail-early matching.
 type MultiRegexpMatcher struct {
 	substrings       map[string]string         // substring to name
 	regexps          map[string]*regexp.Regexp // name to regexp
@@ -45,7 +45,7 @@ func (m *MultiRegexpMatcher) Build() {
 }
 
 // Match tries to match the text against one of the substring/regexp
-// as efficiently as possible. 
+// as efficiently as possible.
 func (m *MultiRegexpMatcher) Match(text string) (string, []string) {
 	// TODO: use aho-corasick instead of regexp to match the substrings.
 	substring := m.substringsRegexp.FindString(text)
