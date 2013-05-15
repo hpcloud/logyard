@@ -9,4 +9,4 @@ bin
 
 # packaging artifacts
 .gopath
-
+.goroot
