@@ -27,7 +27,8 @@ func TestSimple(t *testing.T) {
 				time.Duration(100 * time.Millisecond),
 				fmt.Errorf("error after 100 milliseconds"),
 				nil},
-			&NoopRetryer{}))
+			&NoopRetryer{},
+			nil))
 }
 
 // Test stopping of a running process.
@@ -50,14 +51,15 @@ func TestStop(t *testing.T) {
 				time.Duration(0),
 				nil,
 				nil},
-			&NoopRetryer{}))
+			&NoopRetryer{},
+			nil))
 }
 
 func TestRetry(t *testing.T) {
 	seq := Sequence([]interface{}{
 		SeqAction(state.START),
 		SeqDelay(20 * time.Millisecond),
-		SeqState("RUNNING|RETRYING"),
+		SeqState("RUNNING|RETRYING|STARTING"),
 		// Give it 50ms total (>40ms)
 		SeqDelay(30 * time.Millisecond),
 		SeqState("FATAL"),
@@ -72,5 +74,6 @@ func TestRetry(t *testing.T) {
 				time.Duration(10 * time.Millisecond),
 				fmt.Errorf("exiting after 10ms"),
 				nil},
-			&ThriceRetryer{}))
+			&ThriceRetryer{},
+			nil))
 }

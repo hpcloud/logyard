@@ -27,6 +27,11 @@ func (p *MockProcess) Stop() error {
 	return p.exitError
 }
 
+func (p *MockProcess) WaitRunning() bool {
+	// Return immediately.
+	return true
+}
+
 func (p *MockProcess) Wait() error {
 	if p.exitAfter > time.Duration(0) {
 		<-p.delayCh
