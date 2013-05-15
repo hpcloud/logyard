@@ -33,7 +33,6 @@ COMMON_REPO=git://gitolite.activestate.com/stackato-common.git
 UPDATE=.stackato-pkg/update
 COMMON_DIR=$(UPDATE)/stackato-common
 PKGTMPDIR=$(COMMON_DIR)/go
-BUILDGOROOT=$$PWD/.goroot
 
 INSTALLHOME=/home/stackato
 INSTALLROOT=$(INSTALLHOME)/stackato
@@ -52,17 +51,7 @@ ifdef STACKATO_PKG_BRANCH
     BRANCH_OPT=-b $(STACKATO_PKG_BRANCH)
 endif
 
-all:	installgo repos compile
-
-installgo:	$(BUILDGOROOT)
-
-# Manually download and install the Go binary until Ubuntu updates its
-# Go version.
-$(BUILDGOROOT):
-	wget -c https://go.googlecode.com/files/go1.1.linux-amd64.tar.gz
-	tar zxf *.tar.gz
-	mv go .goroot
-	rm -f go*tar.gz
+all:	repos compile
 
 repos:	$(COMMON_DIR)
 	mkdir -p $(BUILDGOPATH)/src/$(NAME)
@@ -72,9 +61,9 @@ repos:	$(COMMON_DIR)
 $(COMMON_DIR):	update
 
 compile:	$(BUILDGOROOT)
-	GOPATH=$(BUILDGOPATH) GOROOT=$(BUILDGOROOT) $(BUILDGOROOT)/bin/go install -tags zmq_3_x -v $(NAME)/...
-	GOPATH=$(BUILDGOPATH) GOROOT=$(BUILDGOROOT) $(BUILDGOROOT)/bin/go install -v github.com/ActiveState/tail/cmd/gotail
-	GOPATH=$(BUILDGOPATH) GOROOT=$(BUILDGOROOT) $(BUILDGOROOT)/bin/go test -v logyard/... confdis/go/confdis/...
+	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go /usr/local/go/bin/go install -tags zmq_3_x -v $(NAME)/...
+	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go /usr/local/go/bin/go install -v github.com/ActiveState/tail/cmd/gotail
+	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go /usr/local/go/bin/go test -v logyard/... confdis/go/confdis/...
 
 install:	
 	mkdir -p $(INSTGOPATH)/$(SRCDIR)
@@ -86,7 +75,7 @@ install:
 	chown -Rh stackato.stackato $(INSTHOMEDIR)
 
 clean:	$(BUILDGOROOT)
-	GOPATH=$(BUILDGOPATH) $(BUILDGOROOT)/bin/go clean
+	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go /usr/local/go/bin/go clean
 
 # For manual use.
 
