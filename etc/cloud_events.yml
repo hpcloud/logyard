@@ -8,7 +8,7 @@ events:
   supervisord:
     process_start:
       substring: "entered RUNNING state"
-      regex: !!str (\w+) entered RUNNING
+      regex: '(\w+) entered RUNNING'
       sample: "INFO success: memcached_node entered RUNNING state, process has ..."
       format: "Process '$1' started on a node"
     process_stop:
