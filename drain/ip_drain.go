@@ -45,7 +45,7 @@ func (d *IPConnDrain) Start(config *DrainConfig) {
 			return
 		}
 	case <-d.Dying():
-		// Close the connection returned, in future, by the dialer.
+		// Close the connection returned in future by the dialer.
 		log.Infof("[drain:%s] Stop request; deferring close of connection",
 			d.name)
 		go dialer.WaitAndClose()

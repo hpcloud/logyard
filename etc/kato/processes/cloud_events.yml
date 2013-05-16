@@ -1,0 +1,6 @@
+# Installed by package stackato-logyard.
+---
+name: cloud_events
+doozer_ephemeral: false
+roles:
+  - base
