@@ -12,7 +12,18 @@ import (
 	"unicode/utf8"
 )
 
-func tailLogFile(name string, filepath string, nodeid string) (*tail.Tail, error) {
+// SystailLogMessage is a struct corresponding to an entry in the
+// systail log stream. Generally a subset of the fields in
+// `AppLogMessage`.
+type SystailLogMessage struct {
+	Text     string
+	Name     string // Component name (eg: dea)
+	UnixTime int64
+	NodeID   string
+}
+
+func tailLogFile(
+	name string, filepath string, nodeid string) (*tail.Tail, error) {
 	if filepath == "" {
 		filepath = fmt.Sprintf("/s/logs/%s.log", name)
 	}
@@ -41,11 +52,12 @@ func tailLogFile(name string, filepath string, nodeid string) (*tail.Tail, error
 			if !utf8.ValidString(line.Text) {
 				line.Text = string([]rune(line.Text))
 			}
-			data, err := json.Marshal(map[string]interface{}{
-				"UnixTime": line.Time.Unix(),
-				"Text":     line.Text,
-				"Name":     name,
-				"NodeID":   nodeid})
+			data, err := json.Marshal(SystailLogMessage{
+				Text:     line.Text,
+				Name:     name,
+				UnixTime: line.Time.Unix(),
+				NodeID:   nodeid,
+			})
 			if err != nil {
 				tail.Killf("Failed to encode to JSON: %v", err)
 				break
