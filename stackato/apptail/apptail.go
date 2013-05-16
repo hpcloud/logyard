@@ -86,7 +86,7 @@ func AppInstanceStarted(instance *AppInstance, nodeid string) {
 					Text:          line.Text,
 					LogFilename:   filepath.Base(filename),
 					UnixTime:      line.Time.Unix(),
-					HumanTime:     line.Time.Format("2006-01-02T15:04:05-07:00"), // heroku-format
+					HumanTime:     ToHerokuTime(line.Time),
 					Source:        instance.Type,
 					InstanceIndex: instance.Index,
 					AppID:         instance.AppID,

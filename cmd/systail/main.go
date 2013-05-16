@@ -7,6 +7,7 @@ import (
 	"github.com/ActiveState/tail"
 	"github.com/alecthomas/gozmq"
 	"logyard"
+	"logyard/stackato/apptail"
 	"os"
 	"stackato/server"
 	"unicode/utf8"
@@ -16,10 +17,11 @@ import (
 // systail log stream. Generally a subset of the fields in
 // `AppLogMessage`.
 type SystailLogMessage struct {
-	Text     string
-	Name     string // Component name (eg: dea)
-	UnixTime int64
-	NodeID   string
+	Text      string
+	Name      string // Component name (eg: dea)
+	UnixTime  int64
+	HumanTime string
+	NodeID    string
 }
 
 func tailLogFile(
@@ -53,10 +55,11 @@ func tailLogFile(
 				line.Text = string([]rune(line.Text))
 			}
 			data, err := json.Marshal(SystailLogMessage{
-				Text:     line.Text,
-				Name:     name,
-				UnixTime: line.Time.Unix(),
-				NodeID:   nodeid,
+				Text:      line.Text,
+				Name:      name,
+				UnixTime:  line.Time.Unix(),
+				HumanTime: apptail.ToHerokuTime(line.Time),
+				NodeID:    nodeid,
 			})
 			if err != nil {
 				tail.Killf("Failed to encode to JSON: %v", err)
