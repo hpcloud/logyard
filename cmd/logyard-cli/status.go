@@ -9,9 +9,11 @@ import (
 	"sort"
 	"stackato/server"
 	"strconv"
+	"strings"
 )
 
 type status struct {
+	notrunning *bool
 }
 
 func (cmd *status) Name() string {
@@ -19,6 +21,8 @@ func (cmd *status) Name() string {
 }
 
 func (cmd *status) DefineFlags(fs *flag.FlagSet) {
+	cmd.notrunning = fs.Bool(
+		"notrunning", false, "show all drains, including running ones")
 }
 
 func (cmd *status) Run(args []string) error {
@@ -26,6 +30,7 @@ func (cmd *status) Run(args []string) error {
 	cache := &statecache.StateCache{
 		"logyard:drainstatus:",
 		server.LocalIPMust(),
+
 		logyard.NewRedisClientMust(server.Config.CoreIP+":6464", 0)}
 
 	var drains []string
@@ -42,8 +47,11 @@ func (cmd *status) Run(args []string) error {
 			return fmt.Errorf("Unable to retrieve cached state: %v", err)
 		}
 		for _, nodeip := range sortedKeysStateMap(states) {
+			running := strings.Contains(states[nodeip]["name"], "RUNNING")
+			if *cmd.notrunning && running {
+				continue
+			}
 			printStatus(name, nodeip, states[nodeip])
-
 		}
 	}
 	return nil
