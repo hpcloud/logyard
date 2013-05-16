@@ -2,6 +2,7 @@
 ---
 name: apptail
 doozer_ephemeral: true
+config_origin: /s/go/src/logyard/etc/apptail.yml
 roles:
   - stager
   - dea

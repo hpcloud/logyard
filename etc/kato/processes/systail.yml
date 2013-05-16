@@ -2,5 +2,6 @@
 ---
 name: systail
 doozer_ephemeral: true
+config_origin: /s/go/src/logyard/etc/systail.yml
 roles:
   - base
