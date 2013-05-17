@@ -18,7 +18,6 @@ func (cmd *list) DefineFlags(fs *flag.FlagSet) {
 }
 
 func (cmd *list) Run(args []string) error {
-	Init("list")
 	config := logyard.GetConfig()
 	for _, name := range sortedKeysStringMap(config.Drains) {
 		uri := config.Drains[name]

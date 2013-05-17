@@ -18,7 +18,6 @@ func (cmd *delete) DefineFlags(fs *flag.FlagSet) {
 }
 
 func (cmd *delete) Run(args []string) error {
-	Init("delete")
 	if len(args) == 0 {
 		return fmt.Errorf("need at least one positional argument")
 	}

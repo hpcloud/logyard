@@ -9,17 +9,15 @@ type Config struct {
 	MaxRecordSize int `json:"max_record_size"`
 }
 
-var c *server.GroupConfig
+var c *server.Config
 
 func GetConfig() *Config {
 	return c.Config.(*Config)
 }
 
 func LoadConfig() {
-	server.Init()
-
 	var err error
-	c, err = server.NewGroupConfig("apptail", Config{})
+	c, err = server.NewConfig("apptail", Config{})
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -10,7 +10,7 @@ type Config struct {
 	LogFiles      map[string]string `json:"log_files"`
 }
 
-var c *server.GroupConfig
+var c *server.Config
 
 func getConfig() *Config {
 	return c.Config.(*Config)
@@ -18,7 +18,7 @@ func getConfig() *Config {
 
 func LoadConfig() {
 	var err error
-	c, err = server.NewGroupConfig("systail", Config{})
+	c, err = server.NewConfig("systail", Config{})
 	if err != nil {
 		log.Fatal(err)
 	}

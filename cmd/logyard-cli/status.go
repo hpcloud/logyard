@@ -26,7 +26,6 @@ func (cmd *status) DefineFlags(fs *flag.FlagSet) {
 }
 
 func (cmd *status) Run(args []string) error {
-	Init("status")
 	cache := &statecache.StateCache{
 		"logyard:drainstatus:",
 		server.LocalIPMust(),

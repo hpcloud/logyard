@@ -70,8 +70,6 @@ func (cmd *add) Run(args []string) error {
 	name := args[0]
 	uri := cmd.uri
 
-	Init("add")
-
 	uri, err := drain.ConstructDrainURI(name, cmd.uri, cmd.filters, cmd.params)
 	if err != nil {
 		return err

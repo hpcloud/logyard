@@ -14,8 +14,6 @@ func main() {
 	major, minor, patch := gozmq.Version()
 	log.Infof("Starting logyard (zeromq %d.%d.%d)", major, minor, patch)
 
-	logyard.Init("logyard")
-
 	m := drain.NewDrainManager()
 	log.Info("Starting drain manager")
 	go m.Run()

@@ -1,13 +1,8 @@
 package main
 
 import (
-	"logyard"
 	"logyard/util/subcommand"
 )
-
-func Init(name string) {
-	logyard.Init("logyard-cli:" + name)
-}
 
 func main() {
 	subcommand.Parse(

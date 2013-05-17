@@ -10,7 +10,7 @@ type Config struct {
 	Events map[string]map[string]events.EventParserSpec `json:"events"`
 }
 
-var c *server.GroupConfig
+var c *server.Config
 
 func getConfig() *Config {
 	return c.Config.(*Config)
@@ -18,7 +18,7 @@ func getConfig() *Config {
 
 func LoadConfig() {
 	var err error
-	c, err = server.NewGroupConfig("cloud_events", Config{})
+	c, err = server.NewConfig("cloud_events", Config{})
 	if err != nil {
 		log.Fatal(err)
 	}
