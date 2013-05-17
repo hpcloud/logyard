@@ -6,7 +6,7 @@ import (
 )
 
 func Init(name string) {
-	logyard.Init("logyard-cli:"+name, true)
+	logyard.Init("logyard-cli:" + name)
 }
 
 func main() {

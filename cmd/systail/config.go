@@ -1,9 +1,7 @@
 package main
 
 import (
-	"confdis/go/confdis"
 	"github.com/ActiveState/log"
-	"logyard"
 	"stackato/server"
 )
 
@@ -12,20 +10,16 @@ type Config struct {
 	LogFiles      map[string]string `json:"log_files"`
 }
 
-var c *confdis.ConfDis
+var c *server.GroupConfig
 
 func getConfig() *Config {
 	return c.Config.(*Config)
 }
 
 func LoadConfig() {
-	conn, headRev, err := server.NewDoozerClient("systail")
+	var err error
+	c, err = server.NewGroupConfig("systail", Config{})
 	if err != nil {
 		log.Fatal(err)
 	}
-	server.Init(conn, headRev)
-	if c, err = confdis.New(server.Config.CoreIP+":5454", "config:systail", Config{}); err != nil {
-		log.Fatal(err)
-	}
-	go logyard.MonitorConfig(c)
 }

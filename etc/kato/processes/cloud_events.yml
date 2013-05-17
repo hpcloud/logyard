@@ -1,7 +1,6 @@
 # Installed by package stackato-logyard.
 ---
 name: cloud_events
-doozer_ephemeral: true
 config_origin: /s/go/src/logyard/etc/cloud_events.yml
 roles:
   - base

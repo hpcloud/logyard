@@ -30,7 +30,9 @@ func NewDrainManager() *DrainManager {
 	manager.stateCache = &statecache.StateCache{
 		"logyard:drainstatus:",
 		server.LocalIPMust(),
-		logyard.NewRedisClientMust(server.Config.CoreIP+":6464", 0)}
+		logyard.NewRedisClientMust(
+			server.GetClusterConfig().MbusIp+":6464",
+			0)}
 	return manager
 }
 
