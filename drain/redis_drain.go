@@ -106,7 +106,8 @@ func (d *RedisDrain) connect(addr string, database int64) error {
 	log.Infof("[drain:%s] Attempting to connect to redis %s[#%d] ...",
 		d.name, addr, database)
 
-	if client, err := logyard.NewRedisClient(addr, database); err != nil {
+	if client, err := server.NewRedisClient(
+		addr, "", database); err != nil {
 		return err
 	} else {
 		d.client = client

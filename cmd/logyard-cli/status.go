@@ -29,8 +29,9 @@ func (cmd *status) Run(args []string) error {
 	cache := &statecache.StateCache{
 		"logyard:drainstatus:",
 		server.LocalIPMust(),
-		logyard.NewRedisClientMust(
+		server.NewRedisClientMust(
 			server.GetClusterConfig().MbusIp+":6464",
+			"",
 			0)}
 
 	var drains []string
