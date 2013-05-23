@@ -3,7 +3,8 @@ package state
 // Process is a start-able/stop-able entity not unlike an OS process
 // or thread.
 type Process interface {
-	// Start starts the process.
+	// Start starts the process, and returns immediately without
+	// blocking.
 	Start() error
 	// Stop stop the process.
 	Stop() error

@@ -6,6 +6,8 @@ import (
 )
 
 type DrainType interface {
+	// Start starts the drain, and returns immediately without
+	// blocking.
 	Start(*DrainConfig)
 	Stop() error
 	Wait() error
