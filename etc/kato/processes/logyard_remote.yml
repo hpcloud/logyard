@@ -1,0 +1,5 @@
+# Installed by package stackato-logyard.
+---
+name: logyard_remote
+roles:
+  - base

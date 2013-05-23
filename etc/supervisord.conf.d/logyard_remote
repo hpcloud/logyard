@@ -1,8 +1,8 @@
-[program:cloud_events]
-command=/s/go/bin/cloud_events
+[program:logyard_remote]
+command=/s/go/bin/logyard_remote
 priority=5
 redirect_stderr=true
-stdout_logfile=/s/logs/cloud_events.log
+stdout_logfile=/s/logs/logyard_remote.log
 stdout_logfile_maxbytes=1MB
 stdout_logfile_backups=3
 autostart=false
