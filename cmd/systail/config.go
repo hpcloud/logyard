@@ -13,7 +13,7 @@ type Config struct {
 var c *server.Config
 
 func getConfig() *Config {
-	return c.Config.(*Config)
+	return c.GetConfig().(*Config)
 }
 
 func LoadConfig() {

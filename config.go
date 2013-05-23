@@ -17,7 +17,7 @@ var config *server.Config
 // GetConfig returns the latest logyard configuration.
 func GetConfig() *logyardConfig {
 	once.Do(createLogyardConfig)
-	return config.Config.(*logyardConfig)
+	return config.GetConfig().(*logyardConfig)
 }
 
 func GetConfigChanges() chan error {
