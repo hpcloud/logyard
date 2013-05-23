@@ -47,6 +47,10 @@ INSTBINDIR=$(INSTDIR)$(INSTALLHOME)/bin
 
 BUILDGOPATH=$$PWD/.gopath
 
+GOARGS=-v
+
+GOARGS_TEST=-race
+
 ifdef STACKATO_PKG_BRANCH
     BRANCH_OPT=-b $(STACKATO_PKG_BRANCH)
 endif
@@ -61,9 +65,9 @@ repos:	$(COMMON_DIR)
 $(COMMON_DIR):	update
 
 compile:	$(BUILDGOROOT)
-	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go /usr/local/go/bin/go install -tags zmq_3_x -v $(NAME)/...
-	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go /usr/local/go/bin/go install -v github.com/ActiveState/tail/cmd/gotail
-	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go /usr/local/go/bin/go test -v logyard/... confdis/go/confdis/...
+	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go /usr/local/go/bin/go install $(GOARGS) -tags zmq_3_x $(NAME)/...
+	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go /usr/local/go/bin/go install $(GOARGS) github.com/ActiveState/tail/cmd/gotail
+	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go /usr/local/go/bin/go test $(GOARGS) $(GOARGS_TEST) logyard/... confdis/go/confdis/...
 
 install:	
 	mkdir -p $(INSTGOPATH)/$(SRCDIR)
@@ -91,11 +95,11 @@ dev-setup:	update
 dev-install:	fmt dev-installall
 
 dev-installall:
-	go install -tags zmq_3_x -v logyard/... github.com/ActiveState/tail/cmd/gotail
+	go install $(GOARGS) -tags zmq_3_x logyard/... github.com/ActiveState/tail/cmd/gotail
 
 fmt:
 	rm -rf .goroot
 	gofmt -w .
 
 dev-test:
-	go test -tags zmq_3_x logyard/... confdis/go/confdis/...
+	go test $(GOARGS) $(GOARGS_TEST) -tags zmq_3_x logyard/... confdis/go/confdis/...
