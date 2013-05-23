@@ -47,7 +47,7 @@ INSTBINDIR=$(INSTDIR)$(INSTALLHOME)/bin
 
 BUILDGOPATH=$$PWD/.gopath
 
-GOARGS=-v
+GOARGS=-v -tags zmq_3_x
 
 GOARGS_TEST=-race
 
@@ -65,7 +65,7 @@ repos:	$(COMMON_DIR)
 $(COMMON_DIR):	update
 
 compile:	$(BUILDGOROOT)
-	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go /usr/local/go/bin/go install $(GOARGS) -tags zmq_3_x $(NAME)/...
+	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go /usr/local/go/bin/go install $(GOARGS) $(NAME)/...
 	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go /usr/local/go/bin/go install $(GOARGS) github.com/ActiveState/tail/cmd/gotail
 	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go /usr/local/go/bin/go test $(GOARGS) $(GOARGS_TEST) logyard/... confdis/go/confdis/...
 
@@ -95,7 +95,7 @@ dev-setup:	update
 dev-install:	fmt dev-installall
 
 dev-installall:
-	go install $(GOARGS) -tags zmq_3_x logyard/... github.com/ActiveState/tail/cmd/gotail
+	go install $(GOARGS) logyard/... github.com/ActiveState/tail/cmd/gotail
 
 fmt:
 	rm -rf .goroot
