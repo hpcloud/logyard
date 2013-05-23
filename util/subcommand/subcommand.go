@@ -7,22 +7,22 @@ import (
 	"os"
 )
 
-type subCommand interface {
+type SubCommand interface {
 	Name() string
 	DefineFlags(*flag.FlagSet)
 	Run([]string) error
 }
 
-type subCommandParser struct {
-	cmd subCommand
+type SubCommandParser struct {
+	cmd SubCommand
 	fs  *flag.FlagSet
 }
 
-func Parse(commands ...subCommand) {
-	scp := make(map[string]*subCommandParser, len(commands))
+func Parse(commands ...SubCommand) {
+	scp := make(map[string]*SubCommandParser, len(commands))
 	for _, cmd := range commands {
 		name := cmd.Name()
-		scp[name] = &subCommandParser{cmd, flag.NewFlagSet(name, flag.ExitOnError)}
+		scp[name] = &SubCommandParser{cmd, flag.NewFlagSet(name, flag.ExitOnError)}
 		cmd.DefineFlags(scp[name].fs)
 	}
 
