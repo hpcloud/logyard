@@ -32,6 +32,9 @@ func (srv SubCommandServer) Handler(w http.ResponseWriter, r *http.Request) {
 
 	l.Info("%+v", r)
 
+	// TODO: replace http.Error, specifically err.Error(), with JSON
+	// wrapped response writer.
+
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		l.Error(err)
@@ -48,23 +51,13 @@ func (srv SubCommandServer) Handler(w http.ResponseWriter, r *http.Request) {
 
 	for _, sc := range srv.Commands {
 		if sc.Name() == params.SubCommandName {
-			// TODO: make subcommand.Parse extensible enough to use
-			// here. i.e.,
-			// * allow parsing of single sub-command and custom args
-			// * not use stdout/stderr, but json.
-
-			// TODO: have the subcommand return, instead of printing
-			// to console.
-
-			// TODO: add --json for all subcommands.
-
-			if output, err := sc.Run(params.Arguments); err != nil {
+			fs := subcommand.NewSubCommandFlagSet(sc)
+			output, err := fs.ParseAndRun(params.Arguments)
+			if err != nil {
 				l.Error(err)
 				http.Error(w, err.Error(), 500)
 			} else {
-				// TODO: return response from subcommand
-				response := []byte(output)
-				if _, err := w.Write(response); err != nil {
+				if _, err := w.Write([]byte(output)); err != nil {
 					l.Error(err)
 				}
 			}
