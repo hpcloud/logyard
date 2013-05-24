@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"logyard"
@@ -47,6 +48,7 @@ func (o *Options) Set(value string) error {
 // Example:
 //  .. add -uri redis://core -filter systail.kato -o limit=200 -o key=kato_history kato_history
 type add struct {
+	json    bool
 	uri     string
 	filters Filters
 	params  Options
@@ -57,27 +59,34 @@ func (cmd *add) Name() string {
 }
 
 func (cmd *add) DefineFlags(fs *flag.FlagSet) {
+	fs.BoolVar(&cmd.json, "json", false, "Output result as JSON")
 	fs.StringVar(&cmd.uri, "uri", "", "Drain URI (eg: udp://logs.loggly.com:12345)")
 	fs.Var(&cmd.filters, "filter", "Message filter")
 	cmd.params = make(map[string]string)
 	fs.Var(&cmd.params, "o", "Drain options (eg: -o 'limit=100' or -o 'format={{.Text}}'")
 }
 
-func (cmd *add) Run(args []string) error {
+func (cmd *add) Run(args []string) (string, error) {
 	if len(args) != 1 {
-		return fmt.Errorf("need exactly one positional argument")
+		return "", fmt.Errorf("need exactly one positional argument")
 	}
 	name := args[0]
 	uri := cmd.uri
 
 	uri, err := drain.ConstructDrainURI(name, cmd.uri, cmd.filters, cmd.params)
 	if err != nil {
-		return err
+		return "", err
 	}
 	if err = logyard.AddDrain(name, uri); err != nil {
-		return err
+		return "", err
 	}
 
-	fmt.Printf("Added drain %s: %s\n", name, uri)
-	return nil
+	if cmd.json {
+		data, err := json.Marshal(map[string]string{
+			"name": name,
+			"uri":  uri})
+		return string(data), err
+	} else {
+		return fmt.Sprintf("Added drain %s: %s\n", name, uri), nil
+	}
 }

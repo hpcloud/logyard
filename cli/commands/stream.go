@@ -16,11 +16,11 @@ import (
 )
 
 type stream struct {
+	json    bool
 	raw     bool
 	time    bool
 	nocolor bool
 	nodeid  string
-	json    bool
 }
 
 func (cmd *stream) Name() string {
@@ -28,6 +28,7 @@ func (cmd *stream) Name() string {
 }
 
 func (cmd *stream) DefineFlags(fs *flag.FlagSet) {
+	fs.BoolVar(&cmd.json, "json", false, "(Unsupported)")
 	fs.BoolVar(&cmd.raw, "raw", false,
 		"Show unformatted logs, including logyard INFO records (skipped by default)")
 	fs.BoolVar(&cmd.time, "time", false,
@@ -36,14 +37,16 @@ func (cmd *stream) DefineFlags(fs *flag.FlagSet) {
 		"Output with no colors")
 	fs.StringVar(&cmd.nodeid, "nodeid", "",
 		"Filter by this node IP address")
-	fs.BoolVar(&cmd.json, "json", false,
-		"Show raw JSON")
 }
 
-func (cmd *stream) Run(args []string) error {
+func (cmd *stream) Run(args []string) (string, error) {
+	if cmd.json {
+		return "", fmt.Errorf("--json not supported by this subcommand")
+	}
+
 	ipaddr, err := server.LocalIP()
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	rand.Seed(time.Now().UnixNano())
@@ -52,7 +55,7 @@ func (cmd *stream) Run(args []string) error {
 
 	srv, err := cli.NewLineServer("tcp", addr)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	go srv.Start()
@@ -62,10 +65,10 @@ func (cmd *stream) Run(args []string) error {
 	uri, err := drain.ConstructDrainURI(
 		name, "tcp://"+addr, args, map[string]string{"format": "raw"})
 	if err != nil {
-		return err
+		return "", err
 	}
 	if err = logyard.AddDrain(name, uri); err != nil {
-		return err
+		return "", err
 	}
 	log.Infof("Added drain %s", uri)
 
@@ -86,7 +89,7 @@ func (cmd *stream) Run(args []string) error {
 	cli_stream.Stream(srv.Ch, cli_stream.MessagePrinterOptions{
 		cmd.raw, cmd.time, cmd.nocolor, cmd.nodeid, cmd.json})
 
-	return nil
+	return "", nil
 }
 
 func handleKeyboardInterrupt(cleanupFn func()) {

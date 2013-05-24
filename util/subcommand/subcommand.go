@@ -10,7 +10,10 @@ import (
 type SubCommand interface {
 	Name() string
 	DefineFlags(*flag.FlagSet)
-	Run([]string) error
+	// Run runs the subcommand with the given arguments and returns
+	// the string to be printed and an error if any. If there is an
+	// error, the string will (should) always be empty.
+	Run([]string) (string, error)
 }
 
 type SubCommandParser struct {
@@ -46,11 +49,12 @@ func Parse(commands ...SubCommand) {
 	cmdname := flag.Arg(0)
 	if sc, ok := scp[cmdname]; ok {
 		sc.fs.Parse(flag.Args()[1:])
-		err := sc.cmd.Run(sc.fs.Args())
-		if err != nil {
+		if output, err := sc.cmd.Run(sc.fs.Args()); err != nil {
 			fmt.Fprintf(os.Stderr, "command error: %s\n", err)
 			sc.fs.PrintDefaults()
 			os.Exit(1)
+		} else {
+			fmt.Printf(output)
 		}
 	} else {
 		fmt.Fprintf(os.Stderr, "error: %s is not a valid command\n", cmdname)

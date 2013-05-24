@@ -11,6 +11,11 @@ import (
 	"net/http"
 )
 
+type Params struct {
+	SubCommandName string   `json:"subcommand"`
+	Arguments      []string `json:"arguments"`
+}
+
 type SubCommandServer struct {
 	Commands []subcommand.SubCommand
 }
@@ -30,15 +35,44 @@ func (srv SubCommandServer) Handler(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		l.Error(err)
+		http.Error(w, err.Error(), 500)
 		return
 	}
 
-	var request map[string]string
-	if err := json.Unmarshal(body, &request); err != nil {
+	var params Params
+	if err := json.Unmarshal(body, &params); err != nil {
 		l.Errorf("Failed to decode JSON body in POST request (%s). Original body was: %s", err, string(body))
+		http.Error(w, err.Error(), 500)
 		return
 	}
 
-	// TODO: invoke the subcommand based on json params.
-	fmt.Fprintf(w, "%+v", request)
+	for _, sc := range srv.Commands {
+		if sc.Name() == params.SubCommandName {
+			// TODO: make subcommand.Parse extensible enough to use
+			// here. i.e.,
+			// * allow parsing of single sub-command and custom args
+			// * not use stdout/stderr, but json.
+
+			// TODO: have the subcommand return, instead of printing
+			// to console.
+
+			// TODO: add --json for all subcommands.
+
+			if output, err := sc.Run(params.Arguments); err != nil {
+				l.Error(err)
+				http.Error(w, err.Error(), 500)
+			} else {
+				// TODO: return response from subcommand
+				response := []byte(output)
+				if _, err := w.Write(response); err != nil {
+					l.Error(err)
+				}
+			}
+			return
+		}
+	}
+
+	err = fmt.Errorf("Invalid subcommand '%s'", params.SubCommandName)
+	l.Error(err)
+	http.Error(w, err.Error(), 400)
 }

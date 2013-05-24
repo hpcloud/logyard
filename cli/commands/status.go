@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/wsxiaoys/terminal/color"
@@ -13,7 +14,8 @@ import (
 )
 
 type status struct {
-	notrunning *bool
+	json       bool
+	notrunning bool
 }
 
 func (cmd *status) Name() string {
@@ -21,11 +23,12 @@ func (cmd *status) Name() string {
 }
 
 func (cmd *status) DefineFlags(fs *flag.FlagSet) {
-	cmd.notrunning = fs.Bool(
-		"notrunning", false, "show all drains, including running ones")
+	fs.BoolVar(&cmd.json, "json", false, "Output result as JSON")
+	fs.BoolVar(&cmd.notrunning, "notrunning", false,
+		"show all drains, including running ones")
 }
 
-func (cmd *status) Run(args []string) error {
+func (cmd *status) Run(args []string) (string, error) {
 	cache := &statecache.StateCache{
 		"logyard:drainstatus:",
 		server.LocalIPMust(),
@@ -42,20 +45,31 @@ func (cmd *status) Run(args []string) error {
 		drains = sortedKeysStringMap(config.Drains)
 	}
 
+	data := make(map[string]map[string]statecache.StateInfo)
+
 	for _, name := range drains {
 		states, err := cache.GetState(name)
 		if err != nil {
-			return fmt.Errorf("Unable to retrieve cached state: %v", err)
+			return "", fmt.Errorf("Unable to retrieve cached state: %v", err)
 		}
-		for _, nodeip := range sortedKeysStateMap(states) {
-			running := strings.Contains(states[nodeip]["name"], "RUNNING")
-			if *cmd.notrunning && running {
-				continue
-			}
-			printStatus(name, nodeip, states[nodeip])
-		}
+		data[name] = states
 	}
-	return nil
+
+	if cmd.json {
+		b, err := json.Marshal(data)
+		return string(b), err
+	} else {
+		for name, states := range data {
+			for _, nodeip := range sortedKeysStateMap(states) {
+				running := strings.Contains(states[nodeip]["name"], "RUNNING")
+				if cmd.notrunning && running {
+					continue
+				}
+				printStatus(name, nodeip, states[nodeip])
+			}
+		}
+		return "", nil
+	}
 }
 
 func printStatus(name, nodeip string, info statecache.StateInfo) error {

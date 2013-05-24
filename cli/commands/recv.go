@@ -8,8 +8,9 @@ import (
 )
 
 type recv struct {
-	hideprefix *bool
-	filter     *string
+	json       bool
+	hideprefix bool
+	filter     string
 }
 
 func (cmd *recv) Name() string {
@@ -17,14 +18,18 @@ func (cmd *recv) Name() string {
 }
 
 func (cmd *recv) DefineFlags(fs *flag.FlagSet) {
-	cmd.hideprefix = fs.Bool("hideprefix", false, "hide message prefix")
-	cmd.filter = fs.String("filter", "", "filter by message key pattern")
+	fs.BoolVar(&cmd.json, "json", false, "Output result as JSON")
+	fs.BoolVar(&cmd.hideprefix, "hideprefix", false, "hide message prefix")
+	fs.StringVar(&cmd.filter, "filter", "", "filter by message key pattern")
 }
 
-func (cmd *recv) Run(args []string) error {
-	sub := logyard.Broker.Subscribe(*cmd.filter)
+func (cmd *recv) Run(args []string) (string, error) {
+	if cmd.json {
+		return "", fmt.Errorf("--json not supported by this subcommand")
+	}
+	sub := logyard.Broker.Subscribe(cmd.filter)
 	for msg := range sub.Ch {
-		if *cmd.hideprefix {
+		if cmd.hideprefix {
 			fmt.Println(msg.Value)
 		} else {
 			fmt.Println(msg.Key, msg.Value)
@@ -34,5 +39,5 @@ func (cmd *recv) Run(args []string) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return nil
+	return "", nil
 }

@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"logyard"
@@ -8,6 +9,7 @@ import (
 )
 
 type list struct {
+	json bool
 }
 
 func (cmd *list) Name() string {
@@ -15,15 +17,21 @@ func (cmd *list) Name() string {
 }
 
 func (cmd *list) DefineFlags(fs *flag.FlagSet) {
+	fs.BoolVar(&cmd.json, "json", false, "Output result as JSON")
 }
 
-func (cmd *list) Run(args []string) error {
+func (cmd *list) Run(args []string) (string, error) {
 	config := logyard.GetConfig()
-	for _, name := range sortedKeysStringMap(config.Drains) {
-		uri := config.Drains[name]
-		fmt.Printf("%-20s\t%s\n", name, uri)
+	if cmd.json {
+		data, err := json.Marshal(config.Drains)
+		return string(data), err
+	} else {
+		for _, name := range sortedKeysStringMap(config.Drains) {
+			uri := config.Drains[name]
+			fmt.Printf("%-20s\t%s\n", name, uri)
+		}
+		return "", nil
 	}
-	return nil
 }
 
 func sortedKeysStringMap(m map[string]string) []string {
