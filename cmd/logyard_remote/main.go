@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/ActiveState/log"
 	"logyard/cli/commands"
 	"logyard/util/subcommand_server"
 )
@@ -8,5 +9,5 @@ import (
 func main() {
 	srv := subcommand_server.SubCommandServer{
 		commands.GetAll()}
-	srv.Start(8891)
+	log.Fatal(srv.Start("127.0.0.1:8891"))
 }

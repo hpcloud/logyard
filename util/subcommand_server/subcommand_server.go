@@ -16,14 +16,32 @@ type Params struct {
 	Arguments      []string `json:"arguments"`
 }
 
+func NewParams(postBody []byte) (*Params, error) {
+	params := new(Params)
+	if err := json.Unmarshal(postBody, params); err != nil {
+		return nil, fmt.Errorf("Invalid JSON in POST (%s)", err)
+	}
+
+	// User must not pass -json
+	for _, arg := range params.Arguments {
+		if arg == "-json" {
+			return nil, fmt.Errorf("Cannot pass -json")
+		}
+	}
+
+	// Prepend -json to Arguments
+	params.Arguments = append([]string{"-json"}, params.Arguments...)
+
+	return params, nil
+}
+
 type SubCommandServer struct {
 	Commands []subcommand.SubCommand
 }
 
-func (srv SubCommandServer) Start(port int) {
+func (srv SubCommandServer) Start(addr string) error {
 	http.HandleFunc("/", srv.Handler)
-	log.Fatal(
-		http.ListenAndServe(fmt.Sprintf("127.0.0.1:%d", port), nil))
+	return http.ListenAndServe(addr, nil)
 }
 
 func (srv SubCommandServer) Handler(w http.ResponseWriter, r *http.Request) {
@@ -42,12 +60,14 @@ func (srv SubCommandServer) Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var params Params
-	if err := json.Unmarshal(body, &params); err != nil {
-		l.Errorf("Failed to decode JSON body in POST request (%s). Original body was: %s", err, string(body))
-		http.Error(w, err.Error(), 500)
+	params, err := NewParams(body)
+	if err != nil {
+		l.Error(err)
+		http.Error(w, err.Error(), 400)
 		return
 	}
+
+	l.Infof("Invoking: %s %+v", params.SubCommandName, params.Arguments)
 
 	for _, sc := range srv.Commands {
 		if sc.Name() == params.SubCommandName {
