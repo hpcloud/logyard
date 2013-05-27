@@ -28,7 +28,8 @@ func Stream(ch chan []byte, options MessagePrinterOptions) {
 		}
 		msg := pubsub.Message{parts[0], parts[1]}
 		if err := printer.Print(msg); err != nil {
-			log.Fatalf("Error -- %s -- printing message %v", err, msg)
+			log.Fatalf("Error -- %s -- printing message %s:%s",
+				err, msg.Key, msg.Value)
 		}
 	}
 }
