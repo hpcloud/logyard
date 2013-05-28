@@ -53,4 +53,7 @@ func createLogyardConfig() {
 		log.Fatal(err)
 	}
 	config = g
+	if config.GetConfig().(*logyardConfig).Drains == nil {
+		log.Fatal("Logyard configuration is missing")
+	}
 }
