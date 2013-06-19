@@ -15,6 +15,7 @@ import (
 
 type status struct {
 	json       bool
+	prefix     bool
 	notrunning bool
 }
 
@@ -23,9 +24,38 @@ func (cmd *status) Name() string {
 }
 
 func (cmd *status) DefineFlags(fs *flag.FlagSet) {
-	fs.BoolVar(&cmd.json, "json", false, "Output result as JSON")
+	fs.BoolVar(&cmd.json, "json", false,
+		"Output result as JSON")
+	fs.BoolVar(&cmd.prefix, "prefix", false,
+		"Treat drain names as prefix")
 	fs.BoolVar(&cmd.notrunning, "notrunning", false,
-		"show all drains, including running ones")
+		"show only drains not running")
+}
+
+func (cmd *status) GetDrains(args []string) ([]string, error) {
+	var drains []string
+
+	config := logyard.GetConfig()
+
+	if cmd.prefix {
+		// Return drains matching the given prefix (args[0])
+		if len(args) != 1 {
+			return nil, fmt.Errorf("Need exactly 1 position arg")
+		}
+		prefix := args[0]
+		for name, _ := range config.Drains {
+			if strings.HasPrefix(name, prefix) {
+				drains = append(drains, name)
+			}
+		}
+	} else if len(args) > 0 {
+		drains = args
+	} else {
+		// Return all drains
+		drains = sortedKeysStringMap(config.Drains)
+	}
+
+	return drains, nil
 }
 
 func (cmd *status) Run(args []string) (string, error) {
@@ -37,14 +67,10 @@ func (cmd *status) Run(args []string) (string, error) {
 			"",
 			0)}
 
-	var drains []string
-	if len(args) > 0 {
-		drains = args
-	} else {
-		config := logyard.GetConfig()
-		drains = sortedKeysStringMap(config.Drains)
+	drains, err := cmd.GetDrains(args)
+	if err != nil {
+		return "", err
 	}
-
 	data := make(map[string]map[string]statecache.StateInfo)
 
 	for _, name := range drains {
