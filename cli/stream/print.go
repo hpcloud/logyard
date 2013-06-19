@@ -13,11 +13,12 @@ import (
 
 // REFACTOR: remove coupling between color printer and options.
 type MessagePrinterOptions struct {
-	Raw      bool
-	ShowTime bool
-	NoColor  bool
-	NodeID   string
-	JSON     bool
+	Raw            bool
+	LogyardVerbose bool
+	ShowTime       bool
+	NoColor        bool
+	NodeID         string
+	JSON           bool
 }
 
 // FilterFn is a function to filter incoming messages

@@ -60,6 +60,19 @@ func (cmd *stream) Run(args []string) (string, error) {
 
 	go srv.Start()
 
+	// Debug mode allows one to debug just the logyard related logs,
+	// without any magical stripping.
+	debugMode := false
+	if len(args) == 1 && args[0] == "debug" {
+		debugMode = true
+		args = []string{
+			"systail.logyard",
+			"systail.apptail",
+			"systail.cloud_events",
+			"systail.systail",
+		}
+	}
+
 	name := fmt.Sprintf("tmp.logyard-cli.%s-%d", ipaddr, port)
 
 	uri, err := drain.ConstructDrainURI(
@@ -87,7 +100,7 @@ func (cmd *stream) Run(args []string) (string, error) {
 	})
 
 	cli_stream.Stream(srv.Ch, cli_stream.MessagePrinterOptions{
-		cmd.raw, cmd.time, cmd.nocolor, cmd.nodeid, cmd.json})
+		cmd.raw, cmd.raw || debugMode, cmd.time, cmd.nocolor, cmd.nodeid, cmd.json})
 
 	return "", nil
 }

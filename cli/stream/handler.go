@@ -34,7 +34,7 @@ func handleSystail(record map[string]interface{}, options MessagePrinterOptions)
 		return false
 	}
 
-	if !options.Raw && process == "logyard" && strings.Contains(text, "INFO") {
+	if !options.LogyardVerbose && process == "logyard" && strings.Contains(text, "INFO") {
 		return false
 	}
 
