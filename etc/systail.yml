@@ -30,6 +30,7 @@ log_files:
   cc_nginx: ""
   cloud_controller: ""
   cloud_events: ""
+  config_redis: ""
   dea: ""
   aok: ""
   fence: ""
