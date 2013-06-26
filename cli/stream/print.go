@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/wsxiaoys/terminal/color"
 	"logyard/util/pubsub"
+	"logyard/util/xtermcolor"
 	"strings"
 	"text/template"
 	"time"
@@ -48,10 +48,6 @@ func (p MessagePrinter) AddFormat(keypart1 string, format string) {
 	if _, ok := p.templates[keypart1]; ok {
 		panic("already added")
 	}
-	if p.options.NoColor {
-		format = stripColor(format)
-		fmt.Printf("Added format: %s\n", format)
-	}
 	p.templates[keypart1] = template.Must(
 		template.New("print-" + keypart1).Parse(format))
 }
@@ -63,11 +59,11 @@ func (p *MessagePrinter) SetPrePrintHook(fn FilterFn) {
 // Print a message from logyard streams
 func (p MessagePrinter) Print(msg pubsub.Message) error {
 	if p.options.JSON {
-		if p.options.NoColor {
-			fmt.Printf("%s %s\n", msg.Key, msg.Value)
-		} else {
-			color.Printf("@y%s@| %s\n", msg.Key, msg.Value)
+		key, value := msg.Key, msg.Value
+		if !p.options.NoColor {
+			key = xtermcolor.Colorize(msg.Key, xtermcolor.RGB(0, 4, 4), -1)
 		}
+		fmt.Printf("%s %s\n", key, value)
 		return nil
 	}
 
@@ -85,8 +81,6 @@ func (p MessagePrinter) Print(msg pubsub.Message) error {
 	if tmpl, ok := p.templates[key]; ok {
 		var buf bytes.Buffer
 
-		escapeSpecialColorChars(record)
-
 		if p.filterFn(key, record, p.options) {
 			if err := tmpl.Execute(&buf, record); err != nil {
 				return err
@@ -95,40 +89,9 @@ func (p MessagePrinter) Print(msg pubsub.Message) error {
 			if p.options.ShowTime {
 				s = fmt.Sprintf("%s %s", time.Now(), s)
 			}
-			color.Println(s)
+			fmt.Println(s)
 		}
 		return nil
 	}
 	return fmt.Errorf("no format added for key: %s", key)
-}
-
-// escapeSpecialColorChars escapes special color chars from the string
-// values in the map.
-func escapeSpecialColorChars(m map[string]interface{}) {
-	for key, value := range m {
-		if s, ok := value.(string); ok {
-			m[key] = strings.Replace(s, "@", "@@", -1)
-		}
-	}
-}
-
-func stripColor(s string) string {
-	var buf bytes.Buffer
-	mode := false
-	for _, c := range s {
-		switch {
-		case mode && c == '@':
-			buf.WriteString("@@") // handle @
-			mode = false
-		case mode && c != '@':
-			mode = false
-			continue // ignore the special char
-		case c == '@' && !mode:
-			mode = true // ignore unescaped @
-		default:
-			buf.WriteRune(c)
-			mode = false
-		}
-	}
-	return buf.String()
 }

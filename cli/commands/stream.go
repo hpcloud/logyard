@@ -40,10 +40,6 @@ func (cmd *stream) DefineFlags(fs *flag.FlagSet) {
 }
 
 func (cmd *stream) Run(args []string) (string, error) {
-	if cmd.json {
-		return "", fmt.Errorf("--json not supported by this subcommand")
-	}
-
 	// the vbox console terminal type doesn't properly support
 	// xterm-256 color codes.
 	if os.Getenv("TERM") == "linux" {

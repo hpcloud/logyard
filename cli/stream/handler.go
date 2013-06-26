@@ -80,6 +80,7 @@ func handleSystail(record map[string]interface{}, options MessagePrinterOptions)
 	}
 
 	if !options.NoColor {
+		record["NodeID"] = xtermcolor.Colorize(node, xtermcolor.RGB(0, 3, 3), -1)
 		switch severity {
 		case "ERROR":
 			record["Text"] = xtermcolor.Colorize(text, xtermcolor.RGB(5, 0, 0), -1)
@@ -106,6 +107,7 @@ func handleEvent(record map[string]interface{}, options MessagePrinterOptions) b
 	}
 
 	if !options.NoColor {
+		record["NodeID"] = xtermcolor.Colorize(node, xtermcolor.RGB(0, 3, 3), -1)
 		switch severity {
 		case "ERROR":
 			record["Desc"] = xtermcolor.Colorize(desc, -1, xtermcolor.RGB(5, 0, 0))
@@ -113,6 +115,21 @@ func handleEvent(record map[string]interface{}, options MessagePrinterOptions) b
 			record["Desc"] = xtermcolor.Colorize(desc, 0, xtermcolor.RGB(5, 5, 0))
 		default:
 		}
+	}
+	return true
+}
+
+func handleApptail(record map[string]interface{}, options MessagePrinterOptions) bool {
+	appname := record["AppName"].(string)
+	node := record["NodeID"].(string)
+
+	if len(options.NodeID) > 0 && node != options.NodeID {
+		return false
+	}
+
+	if !options.NoColor {
+		record["NodeID"] = xtermcolor.Colorize(node, xtermcolor.RGB(0, 3, 3), -1)
+		record["AppName"] = xtermcolor.Colorize(appname, xtermcolor.RGB(0, 0, 5), -1)
 	}
 	return true
 }
@@ -126,6 +143,8 @@ func streamHandler(
 		return handleSystail(record, options)
 	} else if keypart1 == "event" {
 		return handleEvent(record, options)
+	} else if keypart1 == "apptail" {
+		return handleApptail(record, options)
 	}
 
 	return true
@@ -133,8 +152,8 @@ func streamHandler(
 
 // Return the given string colorized to an unique value.
 func colorizeString(s string) string {
-	maxColor := 211  // prevent whitish colors; use prime number for mod.
-	minColor := 17 // avoid 16 colors, including the black.
+	maxColor := 211 // prevent whitish colors; use prime number for mod.
+	minColor := 17  // avoid 16 colors, including the black.
 	fg := minColor + stringId(s, maxColor-minColor+1)
 	return xtermcolor.Colorize(s, fg, -1)
 }

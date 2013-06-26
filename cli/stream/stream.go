@@ -11,12 +11,13 @@ func Stream(ch chan []byte, options MessagePrinterOptions) {
 	// provide abstraction over color formatting; most other things
 	// (formatting, skipping) happen in handler.go.
 	printer := NewMessagePrinter(options)
+
 	printer.AddFormat("systail",
-		"{{.Name}}@|@@@c{{.NodeID}}@|: {{.Text}}")
+		"{{.Name}}@{{.NodeID}}: {{.Text}}")
 	printer.AddFormat("event",
-		"@g{{.Type}}@|[@m{{.Process}}@|]@@@c{{.NodeID}}@|: {{.Desc}}")
+		"{{.Type}}[{{.Process}}]@{{.NodeID}}: {{.Desc}}")
 	printer.AddFormat("apptail",
-		"@b{{.AppName}}[{{.Source}}]@|@@@c{{.NodeID}}@|: {{.Text}}")
+		"{{.AppName}}[{{.Source}}]@{{.NodeID}}: {{.Text}}")
 
 	printer.SetPrePrintHook(streamHandler)
 
