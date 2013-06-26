@@ -101,6 +101,8 @@ func handleEvent(record map[string]interface{}, options MessagePrinterOptions) b
 	desc := record["Desc"].(string)
 	severity := record["Severity"].(string)
 	node := record["NodeID"].(string)
+	typ := record["Type"].(string)
+	process := record["Process"].(string)
 
 	if len(options.NodeID) > 0 && node != options.NodeID {
 		return false
@@ -108,6 +110,8 @@ func handleEvent(record map[string]interface{}, options MessagePrinterOptions) b
 
 	if !options.NoColor {
 		record["NodeID"] = golor.Colorize(node, golor.CYAN, -1)
+		record["Type"] = golor.Colorize(typ, golor.MAGENTA, -1)
+		record["Process"] = golor.Colorize(process, golor.BLUE, -1)
 		switch severity {
 		case "ERROR":
 			record["Desc"] = golor.Colorize(desc, -1, golor.RED)
