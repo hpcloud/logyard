@@ -5,15 +5,22 @@ import (
 	"fmt"
 )
 
-func Colorize(s string, fg int) string {
-	if fg < 0 || fg > 255 {
+func Colorize(s string, fg int, bg int) string {
+	if fg > 255 || bg > 255 {
 		panic("invalid color index")
 	}
-	escape := fmt.Sprintf("\033[%sm", colorCode(fg))
-	escape += fmt.Sprintf("%s\033[0m", s)
-	return escape
+	color := ""
+	if fg > -1 {
+		color += fmt.Sprintf("\033[38;5;%dm", fg)
+	}
+	if bg > -1 {
+		color += fmt.Sprintf("\033[48;5;%dm", bg)
+	}
+	reset := "\033[0m"
+	return color + s + reset
 }
 
-func colorCode(index int) string {
-	return fmt.Sprintf("38;05;%d", index)
+// RGB returns the color code corresponding a RGB value set.
+func RGB(red, green, blue int) int {
+	return 16 + (red * 36) + (green * 6) + blue
 }

@@ -1,6 +1,8 @@
 package stream
 
 import (
+	"crypto/sha1"
+	"logyard/util/xtermcolor"
 	"regexp"
 	"strings"
 )
@@ -80,9 +82,10 @@ func handleSystail(record map[string]interface{}, options MessagePrinterOptions)
 	if !options.NoColor {
 		switch severity {
 		case "ERROR":
-			record["Text"] = colorize(text, "r")
+			record["Text"] = xtermcolor.Colorize(text, xtermcolor.RGB(5, 0, 0), -1)
 		case "WARN":
-			record["Text"] = colorize(text, "y")
+			// yellow
+			record["Text"] = xtermcolor.Colorize(text, xtermcolor.RGB(5, 5, 0), -1)
 		default:
 			record["Text"] = text
 		}
@@ -105,9 +108,9 @@ func handleEvent(record map[string]interface{}, options MessagePrinterOptions) b
 	if !options.NoColor {
 		switch severity {
 		case "ERROR":
-			record["Desc"] = colorize(desc, "R")
+			record["Desc"] = xtermcolor.Colorize(desc, -1, xtermcolor.RGB(5, 0, 0))
 		case "WARNING":
-			record["Desc"] = colorize(desc, "Y")
+			record["Desc"] = xtermcolor.Colorize(desc, 0, xtermcolor.RGB(5, 5, 0))
 		default:
 		}
 	}
@@ -126,4 +129,22 @@ func streamHandler(
 	}
 
 	return true
+}
+
+// Return the given string colorized to an unique value.
+func colorizeString(s string) string {
+	maxColor := 211  // prevent whitish colors; use prime number for mod.
+	minColor := 17 // avoid 16 colors, including the black.
+	fg := minColor + stringId(s, maxColor-minColor+1)
+	return xtermcolor.Colorize(s, fg, -1)
+}
+
+func stringId(s string, mod int) int {
+	h := sha1.New()
+	h.Write([]byte(s))
+	sum := 0
+	for _, n := range h.Sum(nil) {
+		sum += int(n)
+	}
+	return sum % mod
 }
