@@ -5,8 +5,8 @@ import (
 	"flag"
 	"fmt"
 	"logyard"
+	"logyard/util/golor"
 	"logyard/util/statecache"
-	"logyard/util/xtermcolor"
 	"sort"
 	"stackato/server"
 	"strconv"
@@ -107,7 +107,7 @@ func printStatus(name, nodeip string, info statecache.StateInfo) error {
 
 	fmt.Printf("%-20s\t%s\t%s[%d]", name, nodeip, state, rev)
 	if error, ok := info["error"]; ok {
-		fmt.Printf("\t%s", xtermcolor.Colorize(error, xtermcolor.RGB(5, 0, 0), -1))
+		fmt.Printf("\t%s", golor.Colorize(error, golor.RGB(5, 0, 0), -1))
 	}
 	fmt.Println()
 	return nil

@@ -1,5 +1,5 @@
 // 256 color terminal printing in Go.
-package xtermcolor
+package golor
 
 import (
 	"fmt"

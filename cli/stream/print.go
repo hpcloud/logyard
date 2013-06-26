@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"logyard/util/golor"
 	"logyard/util/pubsub"
-	"logyard/util/xtermcolor"
 	"strings"
 	"text/template"
 	"time"
@@ -61,7 +61,7 @@ func (p MessagePrinter) Print(msg pubsub.Message) error {
 	if p.options.JSON {
 		key, value := msg.Key, msg.Value
 		if !p.options.NoColor {
-			key = xtermcolor.Colorize(msg.Key, xtermcolor.RGB(0, 4, 4), -1)
+			key = golor.Colorize(msg.Key, golor.RGB(0, 4, 4), -1)
 		}
 		fmt.Printf("%s %s\n", key, value)
 		return nil
