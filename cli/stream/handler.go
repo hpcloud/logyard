@@ -1,7 +1,6 @@
 package stream
 
 import (
-	"crypto/sha1"
 	"logyard/util/golor"
 	"regexp"
 	"strings"
@@ -92,7 +91,7 @@ func handleSystail(record map[string]interface{}, options MessagePrinterOptions)
 		}
 
 		// Assign an unique color to the process name
-		record["Name"] = colorizeString(process)
+		record["Name"] = golor.Colorize(process, golor.AssignColor(process), -1)
 	}
 	return true
 }
@@ -152,22 +151,4 @@ func streamHandler(
 	}
 
 	return true
-}
-
-// Return the given string colorized to an unique value.
-func colorizeString(s string) string {
-	maxColor := 211 // prevent whitish colors; use prime number for mod.
-	minColor := 17  // avoid 16 colors, including the black.
-	fg := minColor + stringId(s, maxColor-minColor+1)
-	return golor.Colorize(s, fg, -1)
-}
-
-func stringId(s string, mod int) int {
-	h := sha1.New()
-	h.Write([]byte(s))
-	sum := 0
-	for _, n := range h.Sum(nil) {
-		sum += int(n)
-	}
-	return sum % mod
 }
