@@ -15,8 +15,12 @@ make dev-test  # optional
 
 ```
 make dev-install
-$GOPATH/bin/systail &
-$GOPATH/bin/apptail &
-$GOPATH/bin/cloudevents &
 $GOPATH/bin/logyard
+# $GOPATH/bin/systail &
+# $GOPATH/bin/apptail &
+# $GOPATH/bin/cloudevents &
 ```
+
+note: it is best to run these on the VM in a proper stackato
+requirement.
+
