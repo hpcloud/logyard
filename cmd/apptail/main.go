@@ -25,7 +25,7 @@ func main() {
 
 	uid := getUID()
 
-	natsclient := server.NewNatsClient()
+	natsclient := server.NewNatsClient(3)
 
 	natsclient.Subscribe("logyard."+uid+".newinstance", func(instance *apptail.AppInstance) {
 		apptail.AppInstanceStarted(instance, nodeid)
