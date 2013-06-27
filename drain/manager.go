@@ -27,13 +27,18 @@ func NewDrainManager() *DrainManager {
 	manager := new(DrainManager)
 	manager.stopCh = make(chan bool)
 	manager.stmMap = make(map[string]*state.StateMachine)
+	client, err := server.NewRedisClientRetry(
+		server.GetClusterConfig().MbusIp+":6464",
+		"",
+		0,
+		3)
+	if err != nil {
+		log.Fatal(err)
+	}
 	manager.stateCache = &statecache.StateCache{
 		"logyard:drainstatus:",
 		server.LocalIPMust(),
-		server.NewRedisClientMust(
-			server.GetClusterConfig().MbusIp+":6464",
-			"",
-			0)}
+		client}
 	return manager
 }
 
