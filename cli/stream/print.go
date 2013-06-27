@@ -70,7 +70,16 @@ func (p MessagePrinter) Print(msg pubsub.Message) error {
 	var record map[string]interface{}
 
 	if err := json.Unmarshal([]byte(msg.Value), &record); err != nil {
-		return err
+		errmsg := fmt.Sprintf(
+			"ERROR decoding json from a message with key '%v'" + 
+			" and the following value: %v",
+			msg.Key, msg.Value)
+		if p.options.NoColor {
+			fmt.Println(errmsg)
+		} else {
+			fmt.Println(golor.Colorize(errmsg, golor.WHITE, golor.RED))
+		}
+		return nil
 	}
 
 	key := msg.Key

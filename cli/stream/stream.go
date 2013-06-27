@@ -25,7 +25,7 @@ func Stream(ch chan []byte, options MessagePrinterOptions) {
 	for line := range ch {
 		parts := strings.SplitN(string(line), " ", 2)
 		if len(parts) != 2 {
-			log.Fatal("received invalid message: %s", string(line))
+			log.Fatalf("received invalid message: %s", string(line))
 		}
 		msg := pubsub.Message{parts[0], parts[1]}
 		if err := printer.Print(msg); err != nil {
