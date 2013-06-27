@@ -56,6 +56,14 @@ func (p *MessagePrinter) SetPrePrintHook(fn FilterFn) {
 	p.filterFn = fn
 }
 
+func (p MessagePrinter) PrintInternalError(errmsg string) {
+	if p.options.NoColor {
+		fmt.Println(errmsg)
+	} else {
+		fmt.Println(golor.Colorize(errmsg, golor.WHITE, golor.RED))
+	}
+}
+
 // Print a message from logyard streams
 func (p MessagePrinter) Print(msg pubsub.Message) error {
 	if p.options.JSON {
@@ -70,15 +78,10 @@ func (p MessagePrinter) Print(msg pubsub.Message) error {
 	var record map[string]interface{}
 
 	if err := json.Unmarshal([]byte(msg.Value), &record); err != nil {
-		errmsg := fmt.Sprintf(
-			"ERROR decoding json from a message with key '%v'" + 
-			" and the following value: %v",
-			msg.Key, msg.Value)
-		if p.options.NoColor {
-			fmt.Println(errmsg)
-		} else {
-			fmt.Println(golor.Colorize(errmsg, golor.WHITE, golor.RED))
-		}
+		p.PrintInternalError(fmt.Sprintf(
+			"ERROR decoding json from a message with key '%v'"+
+				" and the following value: %v",
+			msg.Key, msg.Value))
 		return nil
 	}
 
