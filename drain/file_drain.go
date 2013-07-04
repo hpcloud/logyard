@@ -9,14 +9,16 @@ import (
 
 // File drain is used to write to local files
 type FileDrain struct {
-	name string
+	name   string
+	initCh chan bool
 	tomb.Tomb
 }
 
-func NewFileDrain(name string) Drain {
-	rd := &FileDrain{}
-	rd.name = name
-	return rd
+func NewFileDrain(name string) DrainType {
+	var d FileDrain
+	d.name = name
+	d.initCh = make(chan bool)
+	return &d
 }
 
 func (d *FileDrain) Start(config *DrainConfig) {
@@ -25,6 +27,7 @@ func (d *FileDrain) Start(config *DrainConfig) {
 	overwrite, err := config.GetParamBool("overwrite", false)
 	if err != nil {
 		d.Kill(err)
+		go d.finishedStarting(false)
 		return
 	}
 
@@ -39,6 +42,7 @@ func (d *FileDrain) Start(config *DrainConfig) {
 	f, err := os.OpenFile(config.Path, mode, 0600)
 	if err != nil {
 		d.Kill(err)
+		go d.finishedStarting(false)
 		return
 	}
 	log.Infof("[drain:%s] Successfully opened %s.", d.name, config.Path)
@@ -46,6 +50,8 @@ func (d *FileDrain) Start(config *DrainConfig) {
 
 	sub := logyard.Broker.Subscribe(config.Filters...)
 	defer sub.Stop()
+
+	go d.finishedStarting(true)
 
 	for {
 		select {
@@ -64,6 +70,14 @@ func (d *FileDrain) Start(config *DrainConfig) {
 			return
 		}
 	}
+}
+
+func (d *FileDrain) finishedStarting(success bool) {
+	d.initCh <- success
+}
+
+func (d *FileDrain) WaitRunning() bool {
+	return <-d.initCh
 }
 
 func (d *FileDrain) Stop() error {

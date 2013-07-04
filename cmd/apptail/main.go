@@ -15,6 +15,7 @@ func main() {
 	log.Infof("Starting apptail (zeromq %d.%d.%d)", major, minor, patch)
 
 	apptail.LoadConfig()
+	log.Infof("Config: %+v\n", apptail.GetConfig())
 
 	nodeid, err := server.LocalIP()
 	if err != nil {
@@ -24,7 +25,7 @@ func main() {
 
 	uid := getUID()
 
-	natsclient := server.NewNatsClient()
+	natsclient := server.NewNatsClient(3)
 
 	natsclient.Subscribe("logyard."+uid+".newinstance", func(instance *apptail.AppInstance) {
 		apptail.AppInstanceStarted(instance, nodeid)

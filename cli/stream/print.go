@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/wsxiaoys/terminal/color"
+	"logyard/util/golor"
 	"logyard/util/pubsub"
 	"strings"
 	"text/template"
@@ -13,11 +13,12 @@ import (
 
 // REFACTOR: remove coupling between color printer and options.
 type MessagePrinterOptions struct {
-	Raw      bool
-	ShowTime bool
-	NoColor  bool
-	NodeID   string
-	JSON     bool
+	Raw            bool
+	LogyardVerbose bool
+	ShowTime       bool
+	NoColor        bool
+	NodeID         string
+	JSON           bool
 }
 
 // FilterFn is a function to filter incoming messages
@@ -47,10 +48,6 @@ func (p MessagePrinter) AddFormat(keypart1 string, format string) {
 	if _, ok := p.templates[keypart1]; ok {
 		panic("already added")
 	}
-	if p.options.NoColor {
-		format = stripColor(format)
-		fmt.Printf("Added format: %s\n", format)
-	}
 	p.templates[keypart1] = template.Must(
 		template.New("print-" + keypart1).Parse(format))
 }
@@ -59,21 +56,33 @@ func (p *MessagePrinter) SetPrePrintHook(fn FilterFn) {
 	p.filterFn = fn
 }
 
+func (p MessagePrinter) PrintInternalError(errmsg string) {
+	if p.options.NoColor {
+		fmt.Println(errmsg)
+	} else {
+		fmt.Println(golor.Colorize(errmsg, golor.WHITE, golor.RED))
+	}
+}
+
 // Print a message from logyard streams
 func (p MessagePrinter) Print(msg pubsub.Message) error {
 	if p.options.JSON {
-		if p.options.NoColor {
-			fmt.Printf("%s %s\n", msg.Key, msg.Value)
-		} else {
-			color.Printf("@y%s@| %s\n", msg.Key, msg.Value)
+		key, value := msg.Key, msg.Value
+		if !p.options.NoColor {
+			key = golor.Colorize(msg.Key, golor.RGB(0, 4, 4), -1)
 		}
+		fmt.Printf("%s %s\n", key, value)
 		return nil
 	}
 
 	var record map[string]interface{}
 
 	if err := json.Unmarshal([]byte(msg.Value), &record); err != nil {
-		return err
+		p.PrintInternalError(fmt.Sprintf(
+			"ERROR decoding json from a message with key '%v'"+
+				" and the following value: %v",
+			msg.Key, msg.Value))
+		return nil
 	}
 
 	key := msg.Key
@@ -84,8 +93,6 @@ func (p MessagePrinter) Print(msg pubsub.Message) error {
 	if tmpl, ok := p.templates[key]; ok {
 		var buf bytes.Buffer
 
-		escapeSpecialColorChars(record)
-
 		if p.filterFn(key, record, p.options) {
 			if err := tmpl.Execute(&buf, record); err != nil {
 				return err
@@ -94,40 +101,9 @@ func (p MessagePrinter) Print(msg pubsub.Message) error {
 			if p.options.ShowTime {
 				s = fmt.Sprintf("%s %s", time.Now(), s)
 			}
-			color.Println(s)
+			fmt.Println(s)
 		}
 		return nil
 	}
 	return fmt.Errorf("no format added for key: %s", key)
-}
-
-// escapeSpecialColorChars escapes special color chars from the string
-// values in the map.
-func escapeSpecialColorChars(m map[string]interface{}) {
-	for key, value := range m {
-		if s, ok := value.(string); ok {
-			m[key] = strings.Replace(s, "@", "@@", -1)
-		}
-	}
-}
-
-func stripColor(s string) string {
-	var buf bytes.Buffer
-	mode := false
-	for _, c := range s {
-		switch {
-		case mode && c == '@':
-			buf.WriteString("@@") // handle @
-			mode = false
-		case mode && c != '@':
-			mode = false
-			continue // ignore the special char
-		case c == '@' && !mode:
-			mode = true // ignore unescaped @
-		default:
-			buf.WriteRune(c)
-			mode = false
-		}
-	}
-	return buf.String()
 }

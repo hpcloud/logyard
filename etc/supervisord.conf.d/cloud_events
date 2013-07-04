@@ -1,5 +1,5 @@
 [program:cloud_events]
-command=/s/go/bin/cloudevents
+command=/s/go/bin/cloud_events
 priority=5
 redirect_stderr=true
 stdout_logfile=/s/logs/cloud_events.log

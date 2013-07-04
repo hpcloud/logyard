@@ -2,10 +2,13 @@ package drain
 
 import (
 	"fmt"
-	"github.com/ActiveState/doozerconfig"
 	"github.com/ActiveState/log"
 	"logyard"
+	"logyard/util/mapdiff"
 	"logyard/util/retry"
+	"logyard/util/state"
+	"logyard/util/statecache"
+	"stackato/server"
 	"strings"
 	"sync"
 	"time"
@@ -14,130 +17,100 @@ import (
 const configKey = "/proc/logyard/config/"
 
 type DrainManager struct {
-	mux       sync.Mutex       // mutex to protect Start/Stop
-	running   map[string]Drain // map of drain instance name to drain
-	stopCh    chan bool
-	doozerCfg *doozerconfig.DoozerConfig
-	doozerRev int64
+	mux        sync.Mutex // mutex to protect Start/Stop
+	stopCh     chan bool
+	stmMap     map[string]*state.StateMachine
+	stateCache *statecache.StateCache
 }
 
 func NewDrainManager() *DrainManager {
 	manager := new(DrainManager)
-	manager.running = make(map[string]Drain)
 	manager.stopCh = make(chan bool)
+	manager.stmMap = make(map[string]*state.StateMachine)
+	client, err := server.NewRedisClientRetry(
+		server.GetClusterConfig().MbusIp+":6464",
+		"",
+		0,
+		3)
+	if err != nil {
+		log.Fatal(err)
+	}
+	manager.stateCache = &statecache.StateCache{
+		"logyard:drainstatus:",
+		server.LocalIPMust(),
+		client}
 	return manager
 }
 
-// Stop stops the drain manager including running drains.
+// Stop stops the drain manager including running drains
 func (manager *DrainManager) Stop() {
 	manager.mux.Lock()
 	defer manager.mux.Unlock()
-	for name, _ := range manager.running {
-		manager.stopDrain(name)
+	for name, _ := range manager.stmMap {
+		manager.stopDrain(name, true)
 	}
-	// Sending on stopCh could block if DrainManager:Run().select{ ...
-	// } is blocking on a mutex (via Start/Stop). A better solution
-	// would be to get rid of mutexes and use channels. Until that
-	// happens, we asynchronously send on stopCh. Blocking is fine,
-	// because the process will be killed eventually.
+}
+
+func (manager *DrainManager) StopDrain(drainName string, clearStateCache bool) {
+	manager.mux.Lock()
+	defer manager.mux.Unlock()
+	manager.stopDrain(drainName, clearStateCache)
+}
+
+// stopDrain should only be called inside a mutex.
+func (manager *DrainManager) stopDrain(drainName string, clearStateCache bool) {
+	if drainStm, ok := manager.stmMap[drainName]; ok {
+		if err := drainStm.SendAction(state.STOP); err != nil {
+			log.Fatalf("Failed to stop drain %s; %v", drainName, err)
+		}
+		drainStm.Stop()
+		delete(manager.stmMap, drainName)
+		if clearStateCache {
+			manager.stateCache.Clear(drainName)
+		}
+	}
+	// Sending on stopCh could block if DrainManager.Run().select
+	// {...} is blocking on a mutex (via Start/Stop). Ideally, get rid
+	// of mutexes and use channels.
 	go func() {
 		manager.stopCh <- true
 	}()
 }
 
-// XXX: use tomb and channels to properly process start/stop events.
-
-// StopDrain starts the drain if it is running
-func (manager *DrainManager) StopDrain(drainName string) {
-	manager.mux.Lock()
-	defer manager.mux.Unlock()
-	manager.stopDrain(drainName)
-}
-
-// StopDrain starts the drain if it is running
-func (manager *DrainManager) stopDrain(drainName string) {
-	if drain, ok := manager.running[drainName]; ok {
-		log.Infof("[drain:%s] Stopping drain ...\n", drainName)
-
-		// timeout faulty drains (unlikely) from blocking the rest of
-		// the logyard.
-		done := make(chan error)
-		go func() {
-			done <- drain.Stop()
-		}()
-		var err error
-		select {
-		case err = <-done:
-			break
-		case <-time.After(5 * time.Second):
-			log.Fatalf("Error: expecting drain %s to stop in 1s, "+
-				"but it is taking more than 5s; exiting now and "+
-				"awaiting supervisord restart.", drainName)
-		}
-
-		if err != nil {
-			log.Errorf("[drain:%s] Unable to stop drain: %s\n", drainName, err)
-		} else {
-			delete(manager.running, drainName)
-			log.Infof("[drain:%s] Removed drain from memory\n", drainName)
-		}
-	} else {
-		log.Infof("[drain:%s] Drain cannot be stopped (it is not running)", drainName)
-	}
-}
-
-// StartDrain starts the drain and waits for it exit.
 func (manager *DrainManager) StartDrain(name, uri string, retry retry.Retryer) {
 	manager.mux.Lock()
 	defer manager.mux.Unlock()
 
-	if _, ok := manager.running[name]; ok {
-		log.Infof("[drain:%s] Cannot start drain (already running)", name)
-		return
-	}
+	var stateChangeFn state.StateChangedFn
 
-	cfg, err := ParseDrainUri(name, uri, logyard.Config.DrainFormats)
-	if err != nil {
-		log.Errorf("[drain:%s] Invalid drain URI (%s): %s", name, uri, err)
-		return
-	}
-
-	var drain Drain
-
-	if constructor, ok := DRAINS[cfg.Type]; ok && constructor != nil {
-		drain = constructor(name)
+	_, exists := manager.stmMap[name]
+	if exists {
+		// Stop the running drain first.
+		manager.stopDrain(name, false)
 	} else {
-		log.Info("[drain:%s] Unsupported drain", name)
-		return
+		stateChangeFn = func(state state.State, rev int64) {
+			manager.stateCache.SetState(name, state, rev)
+		}
 	}
 
-	manager.running[cfg.Name] = drain
-	log.Infof("[drain:%s] Starting drain: %s", name, uri)
-	go drain.Start(cfg)
+	process, err := NewDrainProcess(name, uri)
+	if err != nil {
+		log.Error(process.Logf("Couldn't create drain: %v", err))
+		return
+	}
+	drainStm := state.NewStateMachine("Drain", process, retry, stateChangeFn)
+	manager.stmMap[name] = drainStm
 
-	go func() {
-		err = drain.Wait()
-		delete(manager.running, name)
-		if err != nil {
-			proceed := retry.Wait(
-				fmt.Sprintf("[drain:%s] Drain exited abruptly -- %s", name, err))
-			if !proceed {
-				return
-			}
-			if _, ok := logyard.Config.Drains[name]; ok {
-				manager.StartDrain(name, uri, retry)
-			} else {
-				log.Infof("[drain:%s] Not restarting because the drain was deleted recently", name)
-			}
-		}
-	}()
+	if err = drainStm.SendAction(state.START); err != nil {
+		log.Fatalf("Failed to start drain %s; %v", name, err)
+	}
 }
 
-// NewRetryerForDrain chooses 
+// NewRetryerForDrain chooses
 func NewRetryerForDrain(name string) retry.Retryer {
 	var retryLimit time.Duration
 	var err error
-	for prefix, duration := range logyard.Config.RetryLimits {
+	for prefix, duration := range logyard.GetConfig().RetryLimits {
 		if strings.HasPrefix(name, prefix) {
 			if retryLimit, err = time.ParseDuration(duration); err != nil {
 				log.Error("[drain:%s] Invalid duration (%s) for drain prefix %s "+
@@ -159,23 +132,43 @@ func NewRetryerForDrain(name string) retry.Retryer {
 }
 
 func (manager *DrainManager) Run() {
-	log.Infof("Found %d drains to start\n", len(logyard.Config.Drains))
-	for name, uri := range logyard.Config.Drains {
+	iteration := 0
+	drains := logyard.GetConfig().Drains
+	log.Infof("Found %d drains to start\n", len(drains))
+	for name, uri := range drains {
 		manager.StartDrain(name, uri, NewRetryerForDrain(name))
 	}
 
-	// Watch for config changes in doozer
+	// Watch for config changes in redis.
 	for {
+		iteration += 1
+		prefix := fmt.Sprintf("CONFIG.%d", iteration)
+
 		select {
-		case change := <-logyard.Config.DrainChanges:
-			switch change.Type {
-			case doozerconfig.DELETE:
-				manager.StopDrain(change.Key)
-			case doozerconfig.SET:
-				manager.StopDrain(change.Key)
-				manager.StartDrain(
-					change.Key, logyard.Config.Drains[change.Key], NewRetryerForDrain(change.Key))
+		case err := <-logyard.GetConfigChanges():
+			if err != nil {
+				log.Fatalf("Error re-loading config: %v", err)
 			}
+			log.Infof(
+				"[%s] checking drains after a config change...",
+				prefix)
+			newDrains := logyard.GetConfig().Drains
+			for _, c := range mapdiff.MapDiff(drains, newDrains) {
+				if c.Deleted {
+					log.Infof("[%s] Drain %s was deleted.", prefix, c.Key)
+					manager.StopDrain(c.Key, true)
+					delete(drains, c.Key)
+				} else {
+					log.Infof("[%s] Drain %s was added.", prefix, c.Key)
+					manager.StopDrain(c.Key, false)
+					manager.StartDrain(
+						c.Key,
+						c.NewValue,
+						NewRetryerForDrain(c.Key))
+					drains[c.Key] = c.NewValue
+				}
+			}
+			log.Infof("[%s] Done checking drains.", prefix)
 		case <-manager.stopCh:
 			break
 		}

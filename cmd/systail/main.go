@@ -7,12 +7,25 @@ import (
 	"github.com/ActiveState/tail"
 	"github.com/alecthomas/gozmq"
 	"logyard"
+	"logyard/stackato/apptail"
 	"os"
 	"stackato/server"
 	"unicode/utf8"
 )
 
-func tailLogFile(name string, filepath string, nodeid string) (*tail.Tail, error) {
+// SystailLogMessage is a struct corresponding to an entry in the
+// systail log stream. Generally a subset of the fields in
+// `AppLogMessage`.
+type SystailLogMessage struct {
+	Text      string
+	Name      string // Component name (eg: dea)
+	UnixTime  int64
+	HumanTime string
+	NodeID    string
+}
+
+func tailLogFile(
+	name string, filepath string, nodeid string) (*tail.Tail, error) {
 	if filepath == "" {
 		filepath = fmt.Sprintf("/s/logs/%s.log", name)
 	}
@@ -20,7 +33,7 @@ func tailLogFile(name string, filepath string, nodeid string) (*tail.Tail, error
 	log.Info("Tailing... ", filepath)
 
 	t, err := tail.TailFile(filepath, tail.Config{
-		MaxLineSize: Config.MaxRecordSize,
+		MaxLineSize: getConfig().MaxRecordSize,
 		MustExist:   false,
 		Follow:      true,
 		// ignore existing content, to support subsequent re-runs of systail
@@ -41,11 +54,13 @@ func tailLogFile(name string, filepath string, nodeid string) (*tail.Tail, error
 			if !utf8.ValidString(line.Text) {
 				line.Text = string([]rune(line.Text))
 			}
-			data, err := json.Marshal(map[string]interface{}{
-				"UnixTime": line.Time.Unix(),
-				"Text":     line.Text,
-				"Name":     name,
-				"NodeID":   nodeid})
+			data, err := json.Marshal(SystailLogMessage{
+				Text:      line.Text,
+				Name:      name,
+				UnixTime:  line.Time.Unix(),
+				HumanTime: apptail.ToHerokuTime(line.Time),
+				NodeID:    nodeid,
+			})
 			if err != nil {
 				tail.Killf("Failed to encode to JSON: %v", err)
 				break
@@ -71,12 +86,14 @@ func main() {
 
 	tailers := []*tail.Tail{}
 
-	fmt.Printf("%+v\n", Config.LogFiles)
-	if len(Config.LogFiles) == 0 {
-		log.Fatal("No log files configured in doozer")
+	logFiles := getConfig().LogFiles
+
+	fmt.Printf("%+v\n", logFiles)
+	if len(logFiles) == 0 {
+		log.Fatal("No log files exist in configuration.")
 	}
 
-	for name, logfile := range Config.LogFiles {
+	for name, logfile := range logFiles {
 		t, err := tailLogFile(name, logfile, nodeid)
 		if err != nil {
 			log.Fatal(err)

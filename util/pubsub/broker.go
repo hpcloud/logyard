@@ -5,7 +5,7 @@ import (
 )
 
 type Broker struct {
-	PubAddr         string // Publisher Endpoint Address 
+	PubAddr         string // Publisher Endpoint Address
 	SubAddr         string // Subscriber Endpoint Address
 	BufferSize      int    // Memory buffer size
 	SubscribeFilter string
@@ -53,7 +53,7 @@ func (z Broker) NewPublisherMust() *Publisher {
 	return pub
 }
 
-func newPubSocket(bufferSize int) (zmq.Socket, error) {
+func newPubSocket(bufferSize int) (*zmq.Socket, error) {
 	ctx, err := GetGlobalContext()
 	if err != nil {
 		return nil, err

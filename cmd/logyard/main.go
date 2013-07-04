@@ -7,21 +7,12 @@ import (
 	"logyard/drain"
 	"os"
 	"os/signal"
-	"stackato/server"
 	"syscall"
 )
 
 func main() {
 	major, minor, patch := gozmq.Version()
 	log.Infof("Starting logyard (zeromq %d.%d.%d)", major, minor, patch)
-
-	doozer, headRev, err := server.NewDoozerClient("logyard")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	logyard.Init(doozer, headRev, true)
-	server.Init(doozer, headRev)
 
 	m := drain.NewDrainManager()
 	log.Info("Starting drain manager")

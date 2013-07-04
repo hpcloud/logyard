@@ -1,6 +1,7 @@
 package stream
 
 import (
+	"logyard/util/golor"
 	"regexp"
 	"strings"
 )
@@ -18,6 +19,9 @@ func init() {
 		// supervisord log prefix
 		regexp.MustCompile(
 			`\d+-\d+-\d+ \d+:\d+:\d+,\d+ (.+)`),
+		// auth.log prefix
+		regexp.MustCompile(
+			`\w+ \d+ \d+\:\d+\:\d+ (.+)`),
 	}
 }
 
@@ -31,7 +35,7 @@ func handleSystail(record map[string]interface{}, options MessagePrinterOptions)
 		return false
 	}
 
-	if !options.Raw && process == "logyard" && strings.Contains(text, "INFO") {
+	if !options.LogyardVerbose && process == "logyard" && strings.Contains(text, "INFO") {
 		return false
 	}
 
@@ -75,17 +79,19 @@ func handleSystail(record map[string]interface{}, options MessagePrinterOptions)
 	}
 
 	if !options.NoColor {
+		record["NodeID"] = golor.Colorize(node, golor.GRAY, -1)
 		switch severity {
 		case "ERROR":
-			record["Text"] = colorize(text, "r")
+			record["Text"] = golor.Colorize(text, golor.RED, -1)
 		case "WARN":
-			record["Text"] = colorize(text, "y")
+			// yellow
+			record["Text"] = golor.Colorize(text, golor.YELLOW, -1)
 		default:
 			record["Text"] = text
 		}
 
 		// Assign an unique color to the process name
-		record["Name"] = colorizeString(process)
+		record["Name"] = golor.Colorize(process, golor.AssignColor(process), -1)
 	}
 	return true
 }
@@ -94,19 +100,39 @@ func handleEvent(record map[string]interface{}, options MessagePrinterOptions) b
 	desc := record["Desc"].(string)
 	severity := record["Severity"].(string)
 	node := record["NodeID"].(string)
+	typ := record["Type"].(string)
+	process := record["Process"].(string)
 
 	if len(options.NodeID) > 0 && node != options.NodeID {
 		return false
 	}
 
 	if !options.NoColor {
+		record["NodeID"] = golor.Colorize(node, golor.GRAY, -1)
+		record["Type"] = golor.Colorize(typ, golor.MAGENTA, -1)
+		record["Process"] = golor.Colorize(process, golor.BLUE, -1)
 		switch severity {
 		case "ERROR":
-			record["Desc"] = colorize(desc, "R")
+			record["Desc"] = golor.Colorize(desc, -1, golor.RED)
 		case "WARNING":
-			record["Desc"] = colorize(desc, "Y")
+			record["Desc"] = golor.Colorize(desc, 0, golor.YELLOW)
 		default:
 		}
+	}
+	return true
+}
+
+func handleApptail(record map[string]interface{}, options MessagePrinterOptions) bool {
+	appname := record["AppName"].(string)
+	node := record["NodeID"].(string)
+
+	if len(options.NodeID) > 0 && node != options.NodeID {
+		return false
+	}
+
+	if !options.NoColor {
+		record["NodeID"] = golor.Colorize(node, golor.GRAY, -1)
+		record["AppName"] = golor.Colorize(appname, golor.BLUE, -1)
 	}
 	return true
 }
@@ -120,6 +146,8 @@ func streamHandler(
 		return handleSystail(record, options)
 	} else if keypart1 == "event" {
 		return handleEvent(record, options)
+	} else if keypart1 == "apptail" {
+		return handleApptail(record, options)
 	}
 
 	return true

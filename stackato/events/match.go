@@ -3,12 +3,13 @@
 package events
 
 import (
+	"github.com/ActiveState/log"
 	"regexp"
 	"strings"
 )
 
 // MultiRegexpMatch allows matching a string against multiple regular
-// expressions along with substrings for a fast fail-early matching. 
+// expressions along with substrings for a fast fail-early matching.
 type MultiRegexpMatcher struct {
 	substrings       map[string]string         // substring to name
 	regexps          map[string]*regexp.Regexp // name to regexp
@@ -23,11 +24,13 @@ func NewMultiRegexpMatcher() *MultiRegexpMatcher {
 }
 
 func (m *MultiRegexpMatcher) MustAdd(name string, substring string, re string) {
-	if _, ok := m.substrings[substring]; ok {
-		panic("already in substrings")
+	if oldName, ok := m.substrings[substring]; ok {
+		log.Fatalf(
+			"substring %s already added under %s; being added again by %s",
+			substring, oldName, name)
 	}
 	if _, ok := m.regexps[name]; ok {
-		panic("already in regexps")
+		log.Fatal("already in regexps")
 	}
 	m.substrings[substring] = name
 	m.regexps[name] = regexp.MustCompile(re)
@@ -42,7 +45,7 @@ func (m *MultiRegexpMatcher) Build() {
 }
 
 // Match tries to match the text against one of the substring/regexp
-// as efficiently as possible. 
+// as efficiently as possible.
 func (m *MultiRegexpMatcher) Match(text string) (string, []string) {
 	// TODO: use aho-corasick instead of regexp to match the substrings.
 	substring := m.substringsRegexp.FindString(text)

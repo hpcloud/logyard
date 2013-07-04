@@ -10,13 +10,16 @@ import (
 
 // IPConnDrain is a drain based on net.IPConn
 type IPConnDrain struct {
-	name string
+	name   string
+	initCh chan bool
 	tomb.Tomb
 }
 
-func NewIPConnDrain(name string) Drain {
-	rd := &IPConnDrain{name, tomb.Tomb{}}
-	return rd
+func NewIPConnDrain(name string) DrainType {
+	var d IPConnDrain
+	d.name = name
+	d.initCh = make(chan bool)
+	return &d
 }
 
 func (d *IPConnDrain) Start(config *DrainConfig) {
@@ -24,6 +27,7 @@ func (d *IPConnDrain) Start(config *DrainConfig) {
 
 	if !(config.Scheme == "udp" || config.Scheme == "tcp") {
 		d.Killf("Invalid scheme: %s", config.Scheme)
+		go d.finishedStarting(false)
 		return
 	}
 
@@ -37,18 +41,14 @@ func (d *IPConnDrain) Start(config *DrainConfig) {
 	case conn = <-dialer.Ch:
 		if dialer.Error != nil {
 			d.Kill(dialer.Error)
+			go d.finishedStarting(false)
 			return
 		}
 	case <-d.Dying():
 		// Close the connection returned in future by the dialer.
 		log.Infof("[drain:%s] Stop request; deferring close of connection",
 			d.name)
-		go func() {
-			conn = <-dialer.Ch
-			if dialer.Error == nil {
-				conn.Close()
-			}
-		}()
+		go dialer.WaitAndClose()
 		return
 	}
 	defer conn.Close()
@@ -58,6 +58,8 @@ func (d *IPConnDrain) Start(config *DrainConfig) {
 
 	sub := logyard.Broker.Subscribe(config.Filters...)
 	defer sub.Stop()
+
+	go d.finishedStarting(true)
 
 	for {
 		select {
@@ -76,6 +78,14 @@ func (d *IPConnDrain) Start(config *DrainConfig) {
 			return
 		}
 	}
+}
+
+func (d *IPConnDrain) finishedStarting(success bool) {
+	d.initCh <- success
+}
+
+func (d *IPConnDrain) WaitRunning() bool {
+	return <-d.initCh
 }
 
 func (d *IPConnDrain) Stop() error {

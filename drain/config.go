@@ -114,7 +114,7 @@ func ParseDrainUri(name string, uri string, namedFormats map[string]string) (*Dr
 		params.Del("filter")
 		config.Filters = filters
 	} else {
-		// default filter: all 
+		// default filter: all
 		config.Filters = []string{""}
 	}
 

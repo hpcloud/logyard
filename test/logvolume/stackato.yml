@@ -1,4 +1,0 @@
-name: logvolume
-mem: 32M
-ignores: [.git, bin]
-instances: 2

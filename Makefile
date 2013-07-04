@@ -19,6 +19,10 @@
 # local copy of that data.  Push any resulting changes to the git repo
 # in order to trigger generation of a new package.
 #
+# To locally test this Makefile, run:
+#
+#   rm -rf .gopath .goroot; STACKATO_PKG_BRANCH=mybranch make
+#
 
 NAME=logyard
 
@@ -43,6 +47,10 @@ INSTBINDIR=$(INSTDIR)$(INSTALLHOME)/bin
 
 BUILDGOPATH=$$PWD/.gopath
 
+GOARGS=-v -tags zmq_3_x
+
+GOARGS_TEST=-race
+
 ifdef STACKATO_PKG_BRANCH
     BRANCH_OPT=-b $(STACKATO_PKG_BRANCH)
 endif
@@ -56,22 +64,22 @@ repos:	$(COMMON_DIR)
 
 $(COMMON_DIR):	update
 
-compile:	
-	GOPATH=$(BUILDGOPATH) go install -tags zmq_3_x -v $(NAME)/...
-	GOPATH=$(BUILDGOPATH) go install -v github.com/ActiveState/tail/cmd/gotail
-	GOPATH=$(BUILDGOPATH) go test -v logyard/...
+compile:	$(BUILDGOROOT)
+	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go /usr/local/go/bin/go install $(GOARGS) $(NAME)/...
+	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go /usr/local/go/bin/go install $(GOARGS) github.com/ActiveState/tail/cmd/gotail
+	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go /usr/local/go/bin/go test $(GOARGS) $(GOARGS_TEST) logyard/... confdis/go/confdis/...
 
 install:	
 	mkdir -p $(INSTGOPATH)/$(SRCDIR)
-	rsync -a $(BUILDGOPATH)/$(SRCDIR)/config.yml $(INSTGOPATH)/$(SRCDIR)
+	rsync -a $(BUILDGOPATH)/$(SRCDIR)/etc/*.yml $(INSTGOPATH)/$(SRCDIR)/etc/
 	rsync -a $(BUILDGOPATH)/bin $(INSTGOPATH)
 	rsync -a etc $(INSTROOTDIR)
 	mkdir -p $(INSTBINDIR)
 	ln -sf $(GOBINDIR)/logyard-cli $(INSTBINDIR)
 	chown -Rh stackato.stackato $(INSTHOMEDIR)
 
-clean: 
-	GOPATH=$(BUILDGOPATH) go clean
+clean:	$(BUILDGOROOT)
+	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go /usr/local/go/bin/go clean
 
 # For manual use.
 
@@ -81,16 +89,17 @@ update:
 
 # For developer use.
 
-dev-setup:
+dev-setup:	update
 	cd .stackato-pkg/update/stackato-common/go && ./goget
 
 dev-install:	fmt dev-installall
 
 dev-installall:
-	go install -tags zmq_3_x -v logyard/... github.com/ActiveState/tail/cmd/gotail
+	go install $(GOARGS) logyard/... github.com/ActiveState/tail/cmd/gotail
 
 fmt:
+	rm -rf .goroot
 	gofmt -w .
 
 dev-test:
-	go test logyard/...
+	go test $(GOARGS) $(GOARGS_TEST) logyard/... confdis/go/confdis/...

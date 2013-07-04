@@ -1,0 +1,4 @@
+---
+# apptail configuration
+
+max_record_size: 950
