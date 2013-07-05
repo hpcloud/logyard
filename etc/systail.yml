@@ -32,6 +32,7 @@ log_files:
   cloud_events: ""
   config_redis: ""
   dea: ""
+  dockerd: ""
   aok: ""
   fence: ""
   filesystem_gateway: ""
