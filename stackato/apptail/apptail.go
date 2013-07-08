@@ -61,7 +61,7 @@ func AppInstanceStarted(instance *AppInstance, nodeid string) {
 	log.Infof("New app instance was started: %+v", instance)
 
 	for name, filename := range instance.LogFiles {
-		go func(filename string) {
+		go func(name string, filename string) {
 			pub := logyard.Broker.NewPublisherMust()
 			defer pub.Stop()
 
@@ -101,6 +101,6 @@ func AppInstanceStarted(instance *AppInstance, nodeid string) {
 			if err != nil {
 				log.Error(err)
 			}
-		}(filename)
+		}(name, filename)
 	}
 }
