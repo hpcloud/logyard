@@ -71,7 +71,8 @@ func AppInstanceStarted(instance *AppInstance, nodeid string) {
 				Follow:      true,
 				Location:    -1,
 				ReOpen:      false,
-				Poll:        true})
+				Poll:        true,
+				LimitRate:   GetConfig().RateLimit})
 			if err != nil {
 				log.Errorf("Cannot tail file (%s); %s", filename, err)
 				return
@@ -81,7 +82,7 @@ func AppInstanceStarted(instance *AppInstance, nodeid string) {
 				if !utf8.ValidString(line.Text) {
 					line.Text = string([]rune(line.Text))
 				}
-				err := (&AppLogMessage{
+				msg := &AppLogMessage{
 					Text:          line.Text,
 					LogFilename:   name,
 					UnixTime:      line.Time.Unix(),
@@ -92,7 +93,15 @@ func AppInstanceStarted(instance *AppInstance, nodeid string) {
 					AppName:       instance.AppName,
 					AppGroup:      instance.AppGroup,
 					NodeID:        nodeid,
-				}).Publish(pub, false)
+				}
+
+				if line.Err != nil {
+					// Mark this as a special error record, as it is
+					// coming from tail, not the app.
+					msg.Source = "stackato.apptail"
+				}
+
+				err := msg.Publish(pub, false)
 				if err != nil {
 					log.Fatal(err)
 				}

@@ -2,3 +2,9 @@
 # apptail configuration
 
 max_record_size: 950
+
+# maximum number of log lines per second that can be read from a file.
+# keep this number low, else apptail/logyard process will start using
+# more cpu usage if an attacker deploys an app with logging statements
+# inside an infinite loop.
+rate_limit: 400
