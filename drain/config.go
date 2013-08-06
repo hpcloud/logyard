@@ -126,9 +126,11 @@ func ParseDrainUri(name string, uri string, namedFormats map[string]string) (*Dr
 	if format, ok := params["format"]; ok {
 		params.Del("format")
 
-		config.Format, config.rawFormat, err = parseFormat(name, format[0], namedFormats)
-		if err != nil {
-			return nil, err
+		if format[0] != "json" {
+			config.Format, config.rawFormat, err = parseFormat(name, format[0], namedFormats)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
