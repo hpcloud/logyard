@@ -7,6 +7,8 @@ import (
 	"github.com/ActiveState/tail"
 	"logyard"
 	"logyard/util/pubsub"
+	"os"
+	"time"
 	"unicode/utf8"
 )
 
@@ -60,16 +62,41 @@ func (line *AppLogMessage) Publish(pub *pubsub.Publisher, allowInvalidJson bool)
 func AppInstanceStarted(instance *AppInstance, nodeid string) {
 	log.Infof("New app instance was started: %+v", instance)
 
+	// convert MB to limit in bytes.
+	filesize_limit := GetConfig().FileSizeLimit * 1024 * 1024
+
+	if !(filesize_limit > 0) {
+		panic("invalid value for `read_limit' in apptail config")
+	}
+
 	for name, filename := range instance.LogFiles {
 		go func(name string, filename string) {
 			pub := logyard.Broker.NewPublisherMust()
 			defer pub.Stop()
 
+			fi, err := os.Stat(filename)
+			if err != nil {
+				log.Errorf("Cannot stat file (%s); %s", filename, err)
+			}
+			size := fi.Size()
+			limit := filesize_limit
+			if size > filesize_limit {
+				err := fmt.Errorf("Skipping much of the larger file (%s); %v > %v",
+					name, size, filesize_limit)
+				// Publish special error message.
+				PublishLine(instance, nodeid, name, pub, &tail.Line{
+					Text: err.Error(),
+					Time: time.Now(),
+					Err:  err})
+			} else {
+				limit = size
+			}
+
 			tail, err := tail.TailFile(filename, tail.Config{
 				MaxLineSize: GetConfig().MaxRecordSize,
 				MustExist:   true,
 				Follow:      true,
-				Location:    -1,
+				Location:    &tail.SeekInfo{-limit, os.SEEK_END},
 				ReOpen:      false,
 				Poll:        true,
 				LimitRate:   GetConfig().RateLimit})
@@ -77,39 +104,48 @@ func AppInstanceStarted(instance *AppInstance, nodeid string) {
 				log.Errorf("Cannot tail file (%s); %s", filename, err)
 				return
 			}
+
 			for line := range tail.Lines {
-				// JSON must be a valid UTF-8 string
-				if !utf8.ValidString(line.Text) {
-					line.Text = string([]rune(line.Text))
-				}
-				msg := &AppLogMessage{
-					Text:          line.Text,
-					LogFilename:   name,
-					UnixTime:      line.Time.Unix(),
-					HumanTime:     ToHerokuTime(line.Time),
-					Source:        instance.Type,
-					InstanceIndex: instance.Index,
-					AppID:         instance.AppID,
-					AppName:       instance.AppName,
-					AppGroup:      instance.AppGroup,
-					NodeID:        nodeid,
-				}
-
-				if line.Err != nil {
-					// Mark this as a special error record, as it is
-					// coming from tail, not the app.
-					msg.Source = "stackato.apptail"
-				}
-
-				err := msg.Publish(pub, false)
-				if err != nil {
-					log.Fatal(err)
-				}
+				PublishLine(instance, nodeid, name, pub, line)
 			}
+
 			err = tail.Wait()
 			if err != nil {
 				log.Error(err)
 			}
 		}(name, filename)
 	}
+}
+
+func PublishLine(
+	instance *AppInstance, nodeid string,
+	name string, pub *pubsub.Publisher,
+	line *tail.Line) {
+
+	msg := &AppLogMessage{
+		Text:          line.Text,
+		LogFilename:   name,
+		UnixTime:      line.Time.Unix(),
+		HumanTime:     ToHerokuTime(line.Time),
+		Source:        instance.Type,
+		InstanceIndex: instance.Index,
+		AppID:         instance.AppID,
+		AppName:       instance.AppName,
+		AppGroup:      instance.AppGroup,
+		NodeID:        nodeid,
+	}
+
+	if line.Err != nil {
+		// Mark this as a special error record, as it is
+		// coming from tail, not the app.
+		msg.Source = "stackato.apptail"
+		msg.LogFilename = ""
+		log.Warnf("Published special rec: %+v", line)
+	}
+
+	err := msg.Publish(pub, false)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 }

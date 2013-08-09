@@ -37,7 +37,7 @@ func tailLogFile(
 		MustExist:   false,
 		Follow:      true,
 		// ignore existing content, to support subsequent re-runs of systail
-		Location: 0,
+		Location: &tail.SeekInfo{0, os.SEEK_END},
 		ReOpen:   true,
 		Poll:     false})
 
