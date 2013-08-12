@@ -81,7 +81,7 @@ func AppInstanceStarted(instance *AppInstance, nodeid string) {
 			size := fi.Size()
 			limit := filesize_limit
 			if size > filesize_limit {
-				err := fmt.Errorf("Skipping much of the larger file (%s); %v > %v",
+				err := fmt.Errorf("Skipping much of a large log file (%s); size (%v bytes) > read_limit (%v bytes)",
 					name, size, filesize_limit)
 				// Publish special error message.
 				PublishLine(instance, nodeid, name, pub, &tail.Line{
@@ -140,7 +140,7 @@ func PublishLine(
 		// coming from tail, not the app.
 		msg.Source = "stackato.apptail"
 		msg.LogFilename = ""
-		log.Warnf("Published special rec: %+v", line)
+		log.Warnf("[%s] %s", instance.AppName, line.Text)
 	}
 
 	err := msg.Publish(pub, false)
