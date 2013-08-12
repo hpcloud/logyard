@@ -1,8 +1,15 @@
 ---
 # cloud_events configuration
 
-# The two formats under '*' -- error and warning -- parse the default
-# vcap_logger logging format, which is also followed by Go components.
+# Message key is determined as "event.#{name}" where `name` is the 2nd
+# level child. For instance, the event spec "process_start" under
+# "supervisord" event group below corresponds to the message key
+# "event.process_start".
+
+# The two formats under the "__all__" group -- "error" and "warning"
+# -- parse the default vcap_logger logging format, which is also used
+# by the Go components.
+
 
 events:
   supervisord:
