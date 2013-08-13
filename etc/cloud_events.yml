@@ -10,6 +10,17 @@
 # -- parse the default vcap_logger logging format, which is also used
 # by the Go components.
 
+# How to add events?
+# ==================
+#
+# Adding a *new* event requires modifying the cloud_events
+# configuration:
+#
+#  * Edit, and copy this file to the VM.
+#  * Run `kato config set --yaml cloud_events / < cloud_events.yml`.
+#  * Run `kato process restart cloud_events` on all nodes.
+#  * Verify that your changes have taken effect using:
+#      logyard-cli stream event
 
 events:
   supervisord:
