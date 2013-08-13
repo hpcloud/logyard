@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/ActiveState/log"
 	"logyard/util/pubsub"
+	"os"
 	"strings"
 )
 
@@ -28,7 +29,7 @@ func Stream(ch chan []byte, options MessagePrinterOptions) {
 		if len(parts) != 2 {
 			printer.PrintInternalError(fmt.Sprintf(
 				"received invalid message: %v", string(line)))
-			continue
+			os.Exit(1)
 		}
 		msg := pubsub.Message{parts[0], parts[1]}
 		if !(strings.HasPrefix(msg.Key, "systail") ||
@@ -37,7 +38,7 @@ func Stream(ch chan []byte, options MessagePrinterOptions) {
 			printer.PrintInternalError(fmt.Sprintf(
 				"unsupported stream key (%s) for message: %v",
 				msg.Key, msg.Value))
-			continue
+			os.Exit(1)
 		}
 		if err := printer.Print(msg); err != nil {
 			log.Fatalf("Error -- %s -- printing message %s:%s",

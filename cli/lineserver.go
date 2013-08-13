@@ -32,9 +32,15 @@ func (srv *LineServer) Start() {
 			log.Fatal(err)
 		}
 		go func(conn net.Conn) {
+			reader := bufio.NewReader(conn)
 			for {
-				reader := bufio.NewReader(conn)
-				line, _, err := reader.ReadLine()
+				line, isPrefix, err := reader.ReadLine()
+				if isPrefix {
+					log.Warnf("Ignoring a very long line beginning with: %s", line)
+					for isPrefix {
+						line, isPrefix, err = reader.ReadLine()
+					}
+				}
 
 				if err == io.EOF {
 					// Exit silently if a client disconnects.
