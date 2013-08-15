@@ -60,8 +60,7 @@ func TestRetry(t *testing.T) {
 		SeqAction(state.START),
 		SeqDelay(20 * time.Millisecond),
 		SeqState("RUNNING|RETRYING|STARTING"),
-		// Give it 50ms total (>40ms)
-		SeqDelay(30 * time.Millisecond),
+		SeqDelay(100 * time.Millisecond),
 		SeqState("FATAL"),
 	})
 
