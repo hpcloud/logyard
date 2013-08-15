@@ -1,3 +1,5 @@
+[Logyard: The Why and How of Stackato's Logging System](http://www.activestate.com/blog/2013/04/logyard-why-and-how-stackatos-logging-system)
+
 # getting started
 
 ```
@@ -21,6 +23,5 @@ $GOPATH/bin/logyard
 # $GOPATH/bin/cloudevents &
 ```
 
-note: it is best to run these on the VM in a proper stackato
-requirement.
+note: it is best to run these on a Stackato dev VM.
 
