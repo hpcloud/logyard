@@ -72,6 +72,8 @@ compile:	$(BUILDGOROOT)
 install:	
 	mkdir -p $(INSTGOPATH)/$(SRCDIR)
 	rsync -a $(BUILDGOPATH)/$(SRCDIR)/etc/*.yml $(INSTGOPATH)/$(SRCDIR)/etc/
+	mkdir -p $(INSTGOPATH)/$(SRCDIR)/stackato/apptail/
+	rsync -a $(BUILDGOPATH)/$(SRCDIR)/stackato/apptail/*.conf $(INSTGOPATH)/$(SRCDIR)/stackato/apptail/
 	rsync -a $(BUILDGOPATH)/bin $(INSTGOPATH)
 	rsync -a etc $(INSTROOTDIR)
 	mkdir -p $(INSTBINDIR)

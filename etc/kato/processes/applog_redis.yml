@@ -1,0 +1,6 @@
+# Installed by package stackato-applog-redis
+# NOTE: applog_redis is spawned early by design. see bug 97459.
+---
+name: applog_redis
+roles:
+  - primary
