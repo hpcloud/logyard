@@ -1,4 +1,4 @@
-0;95;c
+
 [program:applog_redis]
 command=/usr/bin/redis-server /s/go/src/logyard/stackato/apptail/redis-server.conf
 priority=1
