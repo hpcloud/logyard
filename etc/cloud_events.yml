@@ -78,7 +78,7 @@ events:
     cc_timeline_event:
       substring: "TIMELINE"
       regex: 'EVENT -- TIMELINE (.+)$'
-      sample: 'EVENT -- TIMELINE {"event":"APP_DELETE", app":{"id":1,"name":"foo"}, "user":{"id":1,"email":"foo@bar.com"}}'
+      sample: 'EVENT -- TIMELINE {"event":"APP_DELETE", "app":{"id":1,"name":"foo"}, "user":{"id":1,"email":"foo@bar.com"}}'
       handlertype: json
       format: '{}'
   stager:
