@@ -75,6 +75,12 @@ events:
       sample: 'EVENT -- UPDATE_APP {"app_id":7,"app_name":"env","msg":"Updating something"}'
       handlertype: json
       format: '{{.msg}}'
+    cc_timeline_event:
+      substring: "TIMELINE"
+      regex: 'EVENT -- TIMELINE (.+)$'
+      sample: 'EVENT -- TIMELINE {"event":"APP_DELETE", app":{"id":1,"name":"foo"}, "user":{"id":1,"email":"foo@bar.com"}}'
+      handlertype: json
+      format: '{}'
   stager:
     stager_start:
       substring: 'START_STAGING'
