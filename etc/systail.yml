@@ -38,6 +38,7 @@ log_files:
   file_server: ""
   filesystem_gateway: ""
   filesystem_node: ""
+  gorouter: ""
   harbor_gateway: ""
   harbor_node: ""
   harbor_proxy_connector: ""
@@ -66,4 +67,6 @@ log_files:
   router2g: ""
   stager: ""
   systail: ""
+  uaa: ""
+  warden: ""
  
