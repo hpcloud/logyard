@@ -5,9 +5,9 @@
 # arbitrary actions.  The main intent is to set up various PKG_*
 # variables used to configure and generate the package.
 
-PKG_NAME="stackato-logyard"
+PKG_NAME="stackato-logyard-ng"
 PKG_VERSION="auto"
-PKG_DESCR_SHORT="stackato-logyard"
+PKG_DESCR_SHORT="stackato-logyard-ng"
 PKG_DESCR_LONG="Stackato log management component implemented in Go."
 PKG_BUILD_DEPENDS="stackato-golang (>=1.1), mercurial, bzr, zeromq-dev (>=3.2.2), redis-server"
 PKG_DEPENDS="zeromq-dev"
