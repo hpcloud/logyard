@@ -55,7 +55,6 @@ log_files:
   postgresql: ""
   postgresql_gateway: ""
   postgresql_node: ""
-  prealloc: ""
   rabbit_gateway: ""
   rabbit_node: ""
   redis_gateway: ""
