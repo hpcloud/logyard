@@ -65,7 +65,6 @@ log_files:
   redis_server: ""
   router: ""
   router2g: ""
-  stager: ""
   systail: ""
   uaa: ""
   warden: ""
