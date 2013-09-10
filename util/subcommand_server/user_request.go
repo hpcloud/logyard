@@ -15,7 +15,7 @@ type UserRequest struct {
 func NewUserRequest(postBody []byte) (*UserRequest, error) {
 	params := new(UserRequest)
 	if err := json.Unmarshal(postBody, params); err != nil {
-		return nil, fmt.Errorf("Invalid JSON in POST (%s)", err)
+		return nil, fmt.Errorf("Invalid or incorrect JSON in POST (%s)", err)
 	}
 
 	// User must not pass -json
