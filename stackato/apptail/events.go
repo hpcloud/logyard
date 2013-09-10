@@ -35,7 +35,7 @@ func MonitorCloudEvents(nodeid string) {
 			log.Fatal(err) // not expected at all
 		}
 
-		appid, name, group, err := extractAppInfo(event)
+		guid, name, space, err := extractAppInfo(event)
 		if err != nil {
 			log.Warn(err)
 			continue
@@ -45,11 +45,11 @@ func MonitorCloudEvents(nodeid string) {
 		case "event.dea_start", "event.dea_ready", "event.dea_stop":
 			index := int(event.Info["instance"].(float64))
 			source := "stackato.dea"
-			PublishAppLog(pub, appid, name, group, index, source, nodeid, &event)
+			PublishAppLog(pub, guid, name, space, index, source, nodeid, &event)
 		case "event.stager_start", "event.stager_end":
-			PublishAppLog(pub, appid, name, group, -1, "stackato.stager", nodeid, &event)
+			PublishAppLog(pub, guid, name, space, -1, "stackato.stager", nodeid, &event)
 		case "event.cc_app_update":
-			PublishAppLog(pub, appid, name, group, -1, "stackato.controller", nodeid, &event)
+			PublishAppLog(pub, guid, name, space, -1, "stackato.controller", nodeid, &event)
 		}
 	}
 	log.Warn("Finished listening for app relevant cloud events.")
@@ -60,32 +60,34 @@ func MonitorCloudEvents(nodeid string) {
 	}
 }
 
-func extractAppInfo(e events.Event) (appId int, appName, group string, err error) {
-	appIdFloat, ok := e.Info["app_id"].(float64)
+func extractAppInfo(e events.Event) (guid, name, space string, err error) {
+	var ok bool
+
+	guid, ok = e.Info["app_guid"].(string)
 	if !ok {
-		err = fmt.Errorf("app_id field missing in event '%s' from %s/%s'",
+		err = fmt.Errorf("app_guid field missing in event '%s' from %s/%s'",
 			e.Type, e.NodeID, e.Process)
 		return
 	}
-	appId = int(appIdFloat)
 
-	appName, ok = e.Info["app_name"].(string)
+	name, ok = e.Info["app_name"].(string)
 	if !ok {
 		err = fmt.Errorf("app_name field missing in event '%s' from %s/%s'",
 			e.Type, e.NodeID, e.Process)
 		return
 	}
 
-	group, ok = e.Info["group"].(string)
+	space, ok = e.Info["space"].(string)
 	if !ok {
-		err = fmt.Errorf("group field missing in event '%s' from %s/%s",
+		err = fmt.Errorf("space field missing in event '%s' from %s/%s",
 			e.Type, e.NodeID, e.Process)
 	}
 	return
 }
 
 func PublishAppLog(
-	pub *pubsub.Publisher, app_id int, app_name string, group string,
+	pub *pubsub.Publisher,
+	app_guid string, app_name string, space string,
 	index int, source string, nodeid string, event *events.Event) {
 
 	err := (&AppLogMessage{
@@ -95,9 +97,9 @@ func PublishAppLog(
 		HumanTime:     time.Unix(event.UnixTime, 0).Format("2006-01-02T15:04:05-07:00"), // heroku-format
 		Source:        source,
 		InstanceIndex: index,
-		AppID:         app_id,
+		AppGUID:       app_guid,
 		AppName:       app_name,
-		AppGroup:      group,
+		AppSpace:      space,
 		NodeID:        nodeid,
 	}).Publish(pub, true)
 

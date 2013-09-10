@@ -15,9 +15,9 @@ import (
 // AppInstance is the NATS message sent by dea/stager to notify of new
 // instances.
 type AppInstance struct {
-	AppID    int
+	AppGUID  string
 	AppName  string
-	AppGroup string `json:"group"`
+	AppSpace string `json:"space"`
 	Type     string
 	Index    int
 	LogFiles map[string]string
@@ -31,9 +31,9 @@ type AppLogMessage struct {
 	HumanTime     string
 	Source        string // example: app, staging, stackato.dea, stackato.stager
 	InstanceIndex int
-	AppID         int
+	AppGUID       string
 	AppName       string
-	AppGroup      string
+	AppSpace      string
 	NodeID        string // Host (DEA,stager) IP of this app instance
 }
 
@@ -52,7 +52,7 @@ func (line *AppLogMessage) Publish(pub *pubsub.Publisher, allowInvalidJson bool)
 			return fmt.Errorf("Failed to encode app log record to JSON: ", err)
 		}
 	}
-	key := fmt.Sprintf("apptail.%d", line.AppID)
+	key := fmt.Sprintf("apptail.%v", line.AppGUID)
 	pub.MustPublish(key, string(data))
 	return nil
 }
@@ -129,9 +129,9 @@ func PublishLine(
 		HumanTime:     ToHerokuTime(line.Time),
 		Source:        instance.Type,
 		InstanceIndex: instance.Index,
-		AppID:         instance.AppID,
+		AppGUID:       instance.AppGUID,
 		AppName:       instance.AppName,
-		AppGroup:      instance.AppGroup,
+		AppSpace:      instance.AppSpace,
 		NodeID:        nodeid,
 	}
 
