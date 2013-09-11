@@ -1,6 +1,8 @@
 ---
 # apptail configuration
 
+# Maxmimum number of characters (bytes) allowed in a single line of
+# log. 
 max_record_size: 950
 
 # maximum number of log lines per second that can be read from a file.
