@@ -1,7 +1,6 @@
 package retry
 
 import (
-	"fmt"
 	"github.com/ActiveState/log"
 	"time"
 )
@@ -77,16 +76,17 @@ func (retry *ProgressiveRetryer) Wait(msg string) bool {
 
 	// Log the retry action
 	if delay == 0 {
-		// Warn only for the first retry until next reset.
-		log.Warnf(fmt.Sprintf("%s -- retrying now.", msg))
+		log.Warnf("%s -- retrying now.", msg)
 	} else {
-		var record string
 		if retry.hasRetryLimit() {
-			record = fmt.Sprintf("%s -- retrying after %v (max %v).", msg, delay, retry.retryLimit)
+			// If there is a retry limit -- which are the tmp. and
+			// appdrain. drais -- this drain is to be considered
+			// unimportant for the sys admins. So we do not generate
+			// a WARN, thus putting it in cloud events.
+			log.Infof("%s -- retrying after %v (max %v).", msg, delay, retry.retryLimit)
 		} else {
-			record = fmt.Sprintf("%s -- retrying after %v.", msg, delay)
+			log.Warnf("%s -- retrying after %v.", msg, delay)
 		}
-		log.Infof(record)
 	}
 
 	time.Sleep(delay)

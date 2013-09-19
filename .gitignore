@@ -10,3 +10,5 @@ bin
 # packaging artifacts
 .gopath
 .goroot
+
+*.komodoproject
