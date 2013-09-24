@@ -13,6 +13,7 @@ log_files:
   auth: /var/log/auth.log
   cc_nginx_error: ""
   dmesg: /var/log/dmesg
+  dockerd: /var/log/stackato/dockerd.log
   dpkg: /var/log/dpkg.log
   kato: ""
   kernel: /var/log/kern.log
@@ -35,7 +36,6 @@ log_files:
   dir_server: ""
   aok: ""
   fence: ""
-  file_server: ""
   filesystem_gateway: ""
   filesystem_node: ""
   gorouter: ""
@@ -67,5 +67,3 @@ log_files:
   router2g: ""
   systail: ""
   uaa: ""
-  warden: ""
- 
