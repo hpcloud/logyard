@@ -62,38 +62,12 @@ events:
       severity: WARNING
       format: "OOM action: $1"
   cloud_controller:
-    cc_waiting_for_dea:
-      substring: "No resources available to"
-      regex: 'No resources available to start instance (.+)$'
-      sample: 'WARN -- No resources available to start instance {"droplet":6,"name":"sinatra-env","runtime":"ruby18"}'
-      severity: WARNING
-      handlertype: json
-      format: 'No DEA can accept app "{{.name}}" of runtime "{{.runtime}}"; retrying...'
-    cc_app_update:
-      substring: "UPDATE_APP"
-      regex: 'EVENT -- UPDATE_APP (.+)$'
-      sample: 'EVENT -- UPDATE_APP {"app_id":7,"app_name":"env","msg":"Updating something"}'
-      handlertype: json
-      format: '{{.msg}}'
     cc_timeline_event:
       substring: "TIMELINE"
       regex: 'INFO -- TIMELINE (.+)$'
       sample: 'INFO -- TIMELINE {"event":"APP_DELETE", "app":{"id":1,"name":"foo"}, "user":{"id":1,"email":"foo@bar.com"}}'
       handlertype: json
       format: 'Timeline event "{{.event}}" for app {{.app.name}}'
-  stager:
-    stager_start:
-      substring: 'START_STAGING'
-      regex: 'EVENT -- START_STAGING (.+)$'
-      sample: 'EVENT -- START_STAGING {"app_id":7,"app_name":"env"}'
-      handlertype: json
-      format: 'Staging application "{{.app_name}}"'
-    stager_end:
-      substring: "STAGING_COMPLETED"
-      regex: 'EVENT -- STAGING_COMPLETED (.+)$'
-      sample: 'EVENT -- STAGING_COMPLETED {"app_id":6,"app_name":"env"}'
-      handlertype: json
-      format: 'Completed staging application "{{.app_name}}"'
   dea:
     dea_start:
       substring: "START_INSTANCE"
