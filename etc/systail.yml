@@ -30,7 +30,7 @@ log_files:
   apptail: ""
   avahi_daemon: ""
   avahi_publisher: ""
-  cloud_controller_ng: ""
+  cloud_controller: ""
   cloud_events: ""
   config_redis: ""
   dea_ng: ""
