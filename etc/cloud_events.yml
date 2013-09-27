@@ -10,6 +10,9 @@
 # -- parse the default vcap_logger logging format, which is also used
 # by the Go components.
 
+# Event "format" will be used to render the event in Console's event log, and
+# also the app log stream (`s logs`).
+
 # How to add events?
 # ==================
 #
