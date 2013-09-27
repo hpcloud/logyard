@@ -67,32 +67,14 @@ events:
       regex: 'INFO -- TIMELINE (.+)$'
       sample: 'INFO -- TIMELINE {"event":"APP_DELETE", "app":{"id":1,"name":"foo"}, "user":{"id":1,"email":"foo@bar.com"}}'
       handlertype: json
-      format: 'Timeline event "{{.event}}" for app {{.app.name}}'
+      format: 'Timeline event "{{.event}}" for app {{.app.name}} from CC'
   dea:
-    dea_start:
-      substring: "START_INSTANCE"
-      regex: 'EVENT -- START_INSTANCE (.+)$'
-      sample: 'EVENT -- START_INSTANCE {"app_name":"env","app_id":6,"instance":0,"dea_id":"hash"}'
+    timeline:
+      substring: "TIMELINE"
+      regex: 'INFO -- TIMELINE (.+)$'
+      sample: 'INFO -- TIMELINE {"event":"APP_EXITED", "app":{"id":1,"name":"foo"}, "user":{"id":1,"email":"foo@bar.com"}}'
       handlertype: json
-      format: 'Starting application "{{.app_name}}" on DEA {{.dea_id}}'
-    dea_stop:
-      substring: "STOPPING_INSTANCE"
-      regex: 'EVENT -- STOPPING_INSTANCE (.+)$'
-      sample: 'EVENT -- STOPPING_INSTANCE {"app_id":6,"app_name":"env","instance":0,"dea_id":"deahas"}'
-      handlertype: json
-      format: 'Stopping application "{{.app_name}}" on DEA {{.dea_id}}'
-    dea_ready:
-      substring: "INSTANCE_READY"
-      regex: 'EVENT -- INSTANCE_READY (.+)$'
-      sample: 'EVENT -- INSTANCE_READY {"app_id":6,"app_name":"env","instance":0}'
-      handlertype: json
-      format: 'Application "{{.app_name}}" is now running on DEA {{.dea_id}}'
-    app_exited:
-      substring: "INSTANCE_EXITED"
-      regex: "EVENT -- INSTANCE_EXITED (.+)$"
-      sample: 'EVENT -- INSTANCE_EXITED {"app_id":6,"app_name":"converter","instance":0,"uptime":231,"exitcode":0}'
-      handlertype: json
-      format: 'Application "{{.app_name}}" exited on DEA {{.dea_id}} with exit code {{.exitcode}} after uptime {{.uptime}}'
+      format: 'Timeline event "{{.event}}" for app {{.app.name}} from DEA'
   __all__:
     error:
       substring: ERROR
