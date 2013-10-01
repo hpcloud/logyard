@@ -77,6 +77,7 @@ func AppInstanceStarted(instance *AppInstance, nodeid string) {
 			fi, err := os.Stat(filename)
 			if err != nil {
 				log.Errorf("Cannot stat file (%s); %s", filename, err)
+				return
 			}
 			size := fi.Size()
 			limit := filesize_limit
