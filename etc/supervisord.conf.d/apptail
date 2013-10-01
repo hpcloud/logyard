@@ -1,5 +1,5 @@
 [program:apptail]
-command=/s/go/bin/apptail
+command=sudo /s/kato/bin/start-service apptail
 priority=5
 redirect_stderr=true
 stdout_logfile=/s/logs/apptail.log
