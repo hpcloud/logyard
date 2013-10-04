@@ -97,7 +97,7 @@ dev-setup:	update
 dev-install:	fmt dev-installall
 
 dev-installall:
-	go install $(GOARGS) logyard/... github.com/ActiveState/tail/cmd/gotail
+	go install $(GOARGS) github.com/ActiveState/logyard/... github.com/ActiveState/tail/cmd/gotail
 
 fmt:
 	rm -rf .goroot

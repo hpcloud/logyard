@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/ActiveState/log"
+	"github.com/ActiveState/logyard/util/state"
 	"github.com/vmihailenco/redis"
-	"logyard/util/state"
 )
 
 type StateCache struct {

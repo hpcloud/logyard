@@ -1,7 +1,7 @@
 package stream
 
 import (
-	"logyard/util/golor"
+	"github.com/ActiveState/logyard/util/golor"
 	"regexp"
 	"strings"
 )
@@ -35,7 +35,7 @@ func handleSystail(record map[string]interface{}, options MessagePrinterOptions)
 		return false
 	}
 
-	if !options.LogyardVerbose && process == "logyard" && strings.Contains(text, "INFO") {
+	if !options.LogyardVerbose && process == "github.com/ActiveState/logyard" && strings.Contains(text, "INFO") {
 		return false
 	}
 

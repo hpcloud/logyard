@@ -2,10 +2,10 @@ package main
 
 import (
 	"github.com/ActiveState/log"
+	"github.com/ActiveState/logyard/stackato/apptail"
 	"github.com/alecthomas/gozmq"
 	"github.com/nu7hatch/gouuid"
 	"io/ioutil"
-	"logyard/stackato/apptail"
 	"os"
 	"stackato/server"
 )

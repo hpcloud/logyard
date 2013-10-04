@@ -5,8 +5,8 @@ package subcommand_server
 import (
 	"fmt"
 	"github.com/ActiveState/log"
+	"github.com/ActiveState/logyard/util/subcommand"
 	"io/ioutil"
-	"logyard/util/subcommand"
 	"net/http"
 )
 

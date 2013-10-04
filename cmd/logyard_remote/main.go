@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/ActiveState/log"
-	"logyard/cli/commands"
-	"logyard/util/subcommand_server"
+	"github.com/ActiveState/logyard/cli/commands"
+	"github.com/ActiveState/logyard/util/subcommand_server"
 )
 
 func main() {

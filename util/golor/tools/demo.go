@@ -4,7 +4,7 @@ package main
 
 import (
 	"fmt"
-	"logyard/util/golor"
+	"github.com/ActiveState/logyard/util/golor"
 )
 
 func main() {

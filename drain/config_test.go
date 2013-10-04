@@ -1,7 +1,7 @@
 package drain
 
 import (
-	"logyard/util/pubsub"
+	"github.com/ActiveState/logyard/util/pubsub"
 	"testing"
 )
 

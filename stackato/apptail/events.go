@@ -3,9 +3,9 @@ package apptail
 import (
 	"encoding/json"
 	"github.com/ActiveState/log"
-	"logyard"
-	"logyard/stackato/events"
-	"logyard/util/pubsub"
+	"github.com/ActiveState/logyard"
+	"github.com/ActiveState/logyard/stackato/events"
+	"github.com/ActiveState/logyard/util/pubsub"
 	"time"
 )
 

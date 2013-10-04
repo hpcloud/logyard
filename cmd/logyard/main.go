@@ -2,9 +2,9 @@ package main
 
 import (
 	"github.com/ActiveState/log"
+	"github.com/ActiveState/logyard"
+	"github.com/ActiveState/logyard/drain"
 	"github.com/alecthomas/gozmq"
-	"logyard"
-	"logyard/drain"
 	"os"
 	"os/signal"
 	"syscall"

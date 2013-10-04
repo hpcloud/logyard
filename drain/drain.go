@@ -2,7 +2,7 @@ package drain
 
 import (
 	"fmt"
-	"logyard"
+	"github.com/ActiveState/logyard"
 )
 
 type DrainType interface {

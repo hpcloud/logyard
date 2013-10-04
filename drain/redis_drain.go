@@ -3,9 +3,9 @@ package drain
 import (
 	"fmt"
 	"github.com/ActiveState/log"
+	"github.com/ActiveState/logyard"
 	"github.com/vmihailenco/redis"
 	"launchpad.net/tomb"
-	"logyard"
 	"stackato/server"
 	"strings"
 )

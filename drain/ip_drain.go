@@ -2,8 +2,8 @@ package drain
 
 import (
 	"github.com/ActiveState/log"
+	"github.com/ActiveState/logyard"
 	"launchpad.net/tomb"
-	"logyard"
 	"net"
 	"time"
 )

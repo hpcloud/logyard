@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"logyard"
+	"github.com/ActiveState/logyard"
 	"sort"
 )
 

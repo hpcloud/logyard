@@ -3,7 +3,7 @@ package state
 import (
 	"fmt"
 	"github.com/ActiveState/log"
-	"logyard/util/retry"
+	"github.com/ActiveState/logyard/util/retry"
 	"sync"
 )
 

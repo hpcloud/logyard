@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"logyard/util/pubsub"
+	"github.com/ActiveState/logyard/util/pubsub"
 	"net/url"
 	"strconv"
 	"strings"

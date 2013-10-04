@@ -1,7 +1,7 @@
 package logyard
 
 import (
-	"logyard/util/pubsub"
+	"github.com/ActiveState/logyard/util/pubsub"
 )
 
 var Broker pubsub.Broker

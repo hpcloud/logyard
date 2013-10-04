@@ -1,8 +1,8 @@
 package main
 
 import (
-	"logyard/cli/commands"
-	"logyard/util/subcommand"
+	"github.com/ActiveState/logyard/cli/commands"
+	"github.com/ActiveState/logyard/util/subcommand"
 )
 
 func main() {

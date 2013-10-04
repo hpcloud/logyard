@@ -3,7 +3,7 @@ package stream
 import (
 	"fmt"
 	"github.com/ActiveState/log"
-	"logyard/util/pubsub"
+	"github.com/ActiveState/logyard/util/pubsub"
 	"strings"
 )
 

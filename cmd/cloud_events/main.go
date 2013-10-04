@@ -3,8 +3,8 @@ package main
 import (
 	"encoding/json"
 	"github.com/ActiveState/log"
-	"logyard"
-	"logyard/stackato/events"
+	"github.com/ActiveState/logyard"
+	"github.com/ActiveState/logyard/stackato/events"
 )
 
 // TODO: share it with systail

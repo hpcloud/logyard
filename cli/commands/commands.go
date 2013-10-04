@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"logyard/util/subcommand"
+	"github.com/ActiveState/logyard/util/subcommand"
 )
 
 // GetAll returns all subcommands defined in this package.

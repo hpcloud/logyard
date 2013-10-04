@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/ActiveState/log"
-	"logyard/stackato/events"
+	"github.com/ActiveState/logyard/stackato/events"
 	"stackato/server"
 )
 

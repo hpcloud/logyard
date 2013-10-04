@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/ActiveState/log"
-	"logyard"
+	"github.com/ActiveState/logyard"
 )
 
 type recv struct {

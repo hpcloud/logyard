@@ -48,7 +48,7 @@ func AddDrain(name, uri string) error {
 var once sync.Once
 
 func createLogyardConfig() {
-	g, err := server.NewConfig("logyard", logyardConfig{})
+	g, err := server.NewConfig("github.com/ActiveState/logyard", logyardConfig{})
 	if err != nil {
 		log.Fatal(err)
 	}

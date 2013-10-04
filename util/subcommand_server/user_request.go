@@ -3,7 +3,7 @@ package subcommand_server
 import (
 	"encoding/json"
 	"fmt"
-	"logyard/util/subcommand"
+	"github.com/ActiveState/logyard/util/subcommand"
 )
 
 // UserRequest is a request to run a specific sub-command with args.

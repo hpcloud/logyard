@@ -2,7 +2,7 @@ package test
 
 import (
 	"fmt"
-	"logyard/util/state"
+	"github.com/ActiveState/logyard/util/state"
 	"testing"
 	"time"
 )

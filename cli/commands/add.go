@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"logyard"
-	"logyard/drain"
+	"github.com/ActiveState/logyard"
+	"github.com/ActiveState/logyard/drain"
 	"strings"
 )
 

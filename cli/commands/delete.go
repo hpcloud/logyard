@@ -3,7 +3,7 @@ package commands
 import (
 	"flag"
 	"fmt"
-	"logyard"
+	"github.com/ActiveState/logyard"
 )
 
 type delete struct {
