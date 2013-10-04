@@ -1,0 +1,6 @@
+gom 'stackato', :command => 'git clone gitolite@gitolite.activestate.com:stackato-go', :branch => 'cfv2'
+gom 'confdis/go/confdis', :command => 'git clone http://git-mirrors.activestate.com/confdis.git', :target => 'confdis'
+gom 'github.com/ActiveState/log'
+gom 'github.com/alecthomas/gozmq'
+gom 'launchpad.net/tomb'
+gom 'github.com/apcera/nats'
