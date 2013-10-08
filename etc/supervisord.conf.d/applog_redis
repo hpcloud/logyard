@@ -1,6 +1,6 @@
 
 [program:applog_redis]
-command=/usr/bin/redis-server /s/go/src/logyard/stackato/apptail/redis-server.conf
+command=/usr/bin/redis-server /s/go/src/logyard/clients/apptail/redis-server.conf
 priority=1
 redirect_stderr=true
 stdout_logfile=/s/logs/applog_redis.log
