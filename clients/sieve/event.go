@@ -1,4 +1,4 @@
-package events
+package sieve
 
 type Event struct {
 	Type     string // what type of event?

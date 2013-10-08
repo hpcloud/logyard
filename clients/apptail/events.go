@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/ActiveState/log"
 	"logyard"
-	"logyard/clients/event-sieve"
+	"logyard/clients/sieve"
 	"logyard/util/pubsub"
 	"time"
 )
@@ -29,7 +29,7 @@ func MonitorCloudEvents(nodeid string) {
 
 	log.Info("Listening for app relevant cloud events...")
 	for msg := range sub.Ch {
-		var event events.Event
+		var event sieve.Event
 
 		err := json.Unmarshal([]byte(msg.Value), &event)
 		if err != nil {
@@ -65,7 +65,7 @@ func MonitorCloudEvents(nodeid string) {
 func PublishAppLog(
 	pub *pubsub.Publisher,
 	t TimelineEvent,
-	index int, source string, nodeid string, event *events.Event) {
+	index int, source string, nodeid string, event *sieve.Event) {
 
 	err := (&AppLogMessage{
 		Text:          event.Desc,

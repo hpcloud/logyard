@@ -2,12 +2,12 @@ package main
 
 import (
 	"github.com/ActiveState/log"
-	"logyard/clients/event-sieve"
+	"logyard/clients/sieve"
 	"stackato/server"
 )
 
 type Config struct {
-	Events map[string]map[string]events.EventParserSpec `json:"events"`
+	Events map[string]map[string]sieve.EventParserSpec `json:"events"`
 }
 
 var c *server.Config

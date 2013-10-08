@@ -1,6 +1,6 @@
 // provides fast matching algorithms
 // TODO: aho-corasic on substring matching
-package events
+package sieve
 
 import (
 	"github.com/ActiveState/log"

@@ -1,4 +1,4 @@
-package events
+package sieve
 
 import (
 	"github.com/ActiveState/log"

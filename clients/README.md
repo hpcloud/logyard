@@ -1,1 +1,3 @@
-Stackato specific packages and programs live here.
+Clients for logyard.
+
+Not associated with logyard core itself.

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/ActiveState/log"
 	"logyard"
-	"logyard/clients/event-sieve"
+	"logyard/clients/sieve"
 )
 
 // TODO: share it with systail
@@ -18,7 +18,7 @@ type SystailRecord struct {
 func main() {
 	LoadConfig()
 
-	parser := events.NewStackatoParser(getConfig().Events)
+	parser := sieve.NewStackatoParser(getConfig().Events)
 	parser.DeleteSamples()
 
 	pub := logyard.Broker.NewPublisherMust()
