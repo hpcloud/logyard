@@ -10,62 +10,8 @@ import (
 type Event struct {
 	Id     string `json:"id"`
 	Status string `json:"status"`
-}
-
-type Config struct {
-	Hostname string
-}
-
-type NetworkSettings struct {
-	IpAddress   string
-	PortMapping map[string]map[string]string
-}
-
-type Container struct {
-	Id              string
-	Image           string
-	Config          *Config
-	NetworkSettings *NetworkSettings
-}
-
-func inspectContainer(id string, c http.Client) *Container {
-	// Use the container id to fetch the container json from the Remote API
-	// http://docs.docker.io/en/latest/api/docker_remote_api_v1.4/#inspect-a-container
-	res, err := c.Get("http://localhost:4243/containers/" + id + "/json")
-	if err != nil {
-		log.Println(err)
-		return nil
-	}
-	defer res.Body.Close()
-
-	if res.StatusCode == http.StatusOK {
-		d := json.NewDecoder(res.Body)
-
-		var container Container
-		if err = d.Decode(&container); err != nil {
-			log.Fatal(err)
-		}
-		return &container
-	}
-	return nil
-}
-
-func notify(container *Container) {
-	settings := container.NetworkSettings
-
-	if settings != nil && settings.PortMapping != nil {
-		// I only care about Tcp ports but you can also view Udp mappings
-		if ports, ok := settings.PortMapping["Tcp"]; ok {
-
-			log.Printf("Ip address allocated for: %s", container.Id)
-
-			// Log the public and private port mappings
-			for privatePort, publicPort := range ports {
-				// I am just writing to stdout but you can use this information to update hipache, redis, etc...
-				log.Printf("%s -> %s", privatePort, publicPort)
-			}
-		}
-	}
+	From   string `json:"from"`
+	Time   int64  `json:"time"`
 }
 
 func main() {
@@ -87,11 +33,6 @@ func main() {
 			}
 			log.Fatal(err)
 		}
-		if event.Status == "start" {
-			// We only want to inspect the container if it has started
-			if container := inspectContainer(event.Id, c); container != nil {
-				notify(container)
-			}
-		}
+		log.Printf("Event: %+v", event)
 	}
 }
