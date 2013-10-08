@@ -45,11 +45,7 @@ func main() {
 		if event != nil {
 			event.NodeID = record.NodeID
 			event.UnixTime = record.UnixTime
-			data, err := json.Marshal(event)
-			if err != nil {
-				log.Fatal(err)
-			}
-			pub.MustPublish("event."+event.Type, string(data))
+			event.MustPublish(pub)
 		}
 
 	}

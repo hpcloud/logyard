@@ -2,10 +2,17 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
+	"logyard"
+	"logyard/clients/sieve"
+	"logyard/util/pubsub"
 	"net/http"
+	"stackato/server"
 )
+
+var NodeID string
 
 type Event struct {
 	Id     string `json:"id"`
@@ -14,7 +21,23 @@ type Event struct {
 	Time   int64  `json:"time"`
 }
 
+func SendToLogyard(pub *pubsub.Publisher, event *Event) {
+	log.Printf("Event: %+v", event)
+	(&sieve.Event{
+		Type:     event.Status,
+		Process:  "docker_events",
+		Severity: "INFO",
+		UnixTime: event.Time,
+		NodeID:   NodeID,
+		Desc: fmt.Sprintf("%v status for container %v (image: %v)",
+			event.Status, event.Id, event.From),
+	}).MustPublish(pub)
+}
+
 func main() {
+	pub := logyard.Broker.NewPublisherMust()
+	defer pub.Stop()
+
 	c := http.Client{}
 	res, err := c.Get("http://localhost:4243/events")
 	if err != nil {
@@ -33,6 +56,14 @@ func main() {
 			}
 			log.Fatal(err)
 		}
-		log.Printf("Event: %+v", event)
+		SendToLogyard(pub, &event)
+	}
+}
+
+func init() {
+	var err error
+	NodeID, err = server.LocalIP()
+	if err != nil {
+		log.Fatalf("Failed to determine IP addr: %v", err)
 	}
 }

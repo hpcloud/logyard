@@ -1,5 +1,11 @@
 package sieve
 
+import (
+	"encoding/json"
+	"github.com/ActiveState/log"
+	"logyard/util/pubsub"
+)
+
 type Event struct {
 	Type     string // what type of event?
 	Desc     string // description of this event to be shown as-is to humans
@@ -8,4 +14,12 @@ type Event struct {
 	Process  string                 // which process generated this event?
 	UnixTime int64
 	NodeID   string // from which node did this event appear?
+}
+
+func (event *Event) MustPublish(pub *pubsub.Publisher) {
+	data, err := json.Marshal(event)
+	if err != nil {
+		log.Fatal(err)
+	}
+	pub.MustPublish("event."+event.Type, string(data))
 }
