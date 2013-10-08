@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/ActiveState/log"
 	"logyard"
-	"logyard/clients/events"
+	"logyard/clients/event-sieve"
 	"logyard/util/pubsub"
 	"time"
 )

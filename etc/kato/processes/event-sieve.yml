@@ -1,0 +1,6 @@
+# Installed by package stackato-logyard.
+---
+name: event-sieve
+config_origin: /s/go/src/logyard/etc/event-sieve.yml
+roles:
+  - base
