@@ -29,7 +29,7 @@ func SendToLogyard(pub *zmqpubsub.Publisher, event *Event) {
 		Severity: "INFO",
 		UnixTime: event.Time,
 		NodeID:   NodeID,
-		Desc: fmt.Sprintf("%v status for container %v (image: %v)",
+		Desc: fmt.Sprintf("%v action for container %v (image: %v)",
 			event.Status, event.Id, event.From),
 	}).MustPublish(pub)
 }
