@@ -7,7 +7,7 @@ import (
 	"github.com/ActiveState/tail"
 	"github.com/alecthomas/gozmq"
 	"logyard"
-	"logyard/stackato/apptail"
+	"logyard/clients/apptail"
 	"os"
 	"stackato/server"
 	"unicode/utf8"

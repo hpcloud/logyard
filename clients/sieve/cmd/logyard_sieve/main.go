@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/ActiveState/log"
 	"logyard"
-	"logyard/stackato/events"
+	"logyard/clients/sieve"
 )
 
 // TODO: share it with systail
@@ -18,7 +18,7 @@ type SystailRecord struct {
 func main() {
 	LoadConfig()
 
-	parser := events.NewStackatoParser(getConfig().Events)
+	parser := sieve.NewStackatoParser(getConfig().Events)
 	parser.DeleteSamples()
 
 	pub := logyard.Broker.NewPublisherMust()
@@ -45,11 +45,7 @@ func main() {
 		if event != nil {
 			event.NodeID = record.NodeID
 			event.UnixTime = record.UnixTime
-			data, err := json.Marshal(event)
-			if err != nil {
-				log.Fatal(err)
-			}
-			pub.MustPublish("event."+event.Type, string(data))
+			event.MustPublish(pub)
 		}
 
 	}

@@ -1,4 +1,10 @@
-package events
+package sieve
+
+import (
+	"encoding/json"
+	"github.com/ActiveState/log"
+	"github.com/ActiveState/zmqpubsub"
+)
 
 type Event struct {
 	Type     string // what type of event?
@@ -8,4 +14,12 @@ type Event struct {
 	Process  string                 // which process generated this event?
 	UnixTime int64
 	NodeID   string // from which node did this event appear?
+}
+
+func (event *Event) MustPublish(pub *zmqpubsub.Publisher) {
+	data, err := json.Marshal(event)
+	if err != nil {
+		log.Fatal(err)
+	}
+	pub.MustPublish("event."+event.Type, string(data))
 }

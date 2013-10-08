@@ -3,7 +3,7 @@ package stream
 import (
 	"fmt"
 	"github.com/ActiveState/log"
-	"logyard/util/pubsub"
+	"github.com/ActiveState/zmqpubsub"
 	"strings"
 )
 
@@ -30,7 +30,7 @@ func Stream(ch chan []byte, options MessagePrinterOptions) {
 				"received invalid message: %v", string(line)))
 			continue
 		}
-		msg := pubsub.Message{parts[0], parts[1]}
+		msg := zmqpubsub.Message{parts[0], parts[1]}
 		if !(strings.HasPrefix(msg.Key, "systail") ||
 			strings.HasPrefix(msg.Key, "apptail") ||
 			strings.HasPrefix(msg.Key, "event")) {

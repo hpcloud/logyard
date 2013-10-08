@@ -5,7 +5,7 @@ import (
 	"github.com/alecthomas/gozmq"
 	"github.com/nu7hatch/gouuid"
 	"io/ioutil"
-	"logyard/stackato/apptail"
+	"logyard/clients/apptail"
 	"os"
 	"stackato/server"
 )

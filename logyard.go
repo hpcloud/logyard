@@ -1,10 +1,10 @@
 package logyard
 
 import (
-	"logyard/util/pubsub"
+	"github.com/ActiveState/zmqpubsub"
 )
 
-var Broker pubsub.Broker
+var Broker zmqpubsub.Broker
 
 func init() {
 	Broker.PubAddr = "tcp://127.0.0.1:5559"

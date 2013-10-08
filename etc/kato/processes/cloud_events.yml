@@ -1,6 +1,0 @@
-# Installed by package stackato-logyard.
----
-name: cloud_events
-config_origin: /s/go/src/logyard/etc/cloud_events.yml
-roles:
-  - base
