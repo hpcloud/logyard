@@ -3,8 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/ActiveState/log"
 	"io"
-	"log"
 	"logyard"
 	"logyard/clients/sieve"
 	"logyard/util/pubsub"
@@ -22,7 +22,7 @@ type Event struct {
 }
 
 func SendToLogyard(pub *pubsub.Publisher, event *Event) {
-	log.Printf("Event: %+v", event)
+	log.Infof("Event: %+v", event)
 	(&sieve.Event{
 		Type:     event.Status,
 		Process:  "docker_events",
