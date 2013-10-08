@@ -1,7 +1,7 @@
 package drain
 
 import (
-	"logyard/util/pubsub"
+	"github.com/ActiveState/zmqpubsub"
 	"testing"
 )
 
@@ -51,7 +51,7 @@ func TestFormat(_t *testing.T) {
 		t.Fatal(err)
 	}
 	data, err := cfg.FormatJSON(
-		pubsub.Message{"samplekey", `{"Name":"dea", "NodeID":"192", "Text":"started app"}`})
+		zmqpubsub.Message{"samplekey", `{"Name":"dea", "NodeID":"192", "Text":"started app"}`})
 	if err != nil {
 		t.Fatal(err)
 	}

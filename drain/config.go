@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"logyard/util/pubsub"
+	"github.com/ActiveState/zmqpubsub"
 	"net/url"
 	"strconv"
 	"strings"
@@ -61,7 +61,7 @@ func (c *DrainConfig) GetParamBool(key string, def bool) (bool, error) {
 }
 
 // FormatJSON formats the given message and returns it with a newline
-func (c *DrainConfig) FormatJSON(msg pubsub.Message) ([]byte, error) {
+func (c *DrainConfig) FormatJSON(msg zmqpubsub.Message) ([]byte, error) {
 	if c.Format == nil {
 		if c.rawFormat {
 			// <key> <json>

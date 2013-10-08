@@ -3,7 +3,7 @@ package sieve
 import (
 	"encoding/json"
 	"github.com/ActiveState/log"
-	"logyard/util/pubsub"
+	"github.com/ActiveState/zmqpubsub"
 )
 
 type Event struct {
@@ -16,7 +16,7 @@ type Event struct {
 	NodeID   string // from which node did this event appear?
 }
 
-func (event *Event) MustPublish(pub *pubsub.Publisher) {
+func (event *Event) MustPublish(pub *zmqpubsub.Publisher) {
 	data, err := json.Marshal(event)
 	if err != nil {
 		log.Fatal(err)

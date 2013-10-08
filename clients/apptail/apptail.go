@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/ActiveState/log"
 	"github.com/ActiveState/tail"
+	"github.com/ActiveState/zmqpubsub"
 	"logyard"
-	"logyard/util/pubsub"
 	"os"
 	"time"
 	"unicode/utf8"
@@ -38,7 +38,7 @@ type AppLogMessage struct {
 }
 
 // Publish publishes an AppLogMessage to logyard after sanity checks.
-func (line *AppLogMessage) Publish(pub *pubsub.Publisher, allowInvalidJson bool) error {
+func (line *AppLogMessage) Publish(pub *zmqpubsub.Publisher, allowInvalidJson bool) error {
 	// JSON must be a UTF-8 encoded string.
 	if !utf8.ValidString(line.Text) {
 		line.Text = string([]rune(line.Text))
@@ -120,7 +120,7 @@ func AppInstanceStarted(instance *AppInstance, nodeid string) {
 
 func PublishLine(
 	instance *AppInstance, nodeid string,
-	name string, pub *pubsub.Publisher,
+	name string, pub *zmqpubsub.Publisher,
 	line *tail.Line) {
 
 	msg := &AppLogMessage{

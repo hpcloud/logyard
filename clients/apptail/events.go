@@ -3,9 +3,9 @@ package apptail
 import (
 	"encoding/json"
 	"github.com/ActiveState/log"
+	"github.com/ActiveState/zmqpubsub"
 	"logyard"
 	"logyard/clients/sieve"
-	"logyard/util/pubsub"
 	"time"
 )
 
@@ -63,7 +63,7 @@ func MonitorCloudEvents(nodeid string) {
 }
 
 func PublishAppLog(
-	pub *pubsub.Publisher,
+	pub *zmqpubsub.Publisher,
 	t TimelineEvent,
 	index int, source string, nodeid string, event *sieve.Event) {
 

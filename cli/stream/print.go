@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/ActiveState/zmqpubsub"
 	"logyard/util/golor"
-	"logyard/util/pubsub"
 	"strings"
 	"text/template"
 	"time"
@@ -65,7 +65,7 @@ func (p MessagePrinter) PrintInternalError(errmsg string) {
 }
 
 // Print a message from logyard streams
-func (p MessagePrinter) Print(msg pubsub.Message) error {
+func (p MessagePrinter) Print(msg zmqpubsub.Message) error {
 	if p.options.JSON {
 		key, value := msg.Key, msg.Value
 		if !p.options.NoColor {

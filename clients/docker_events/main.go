@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/ActiveState/log"
+	"github.com/ActiveState/zmqpubsub"
 	"io"
 	"logyard"
 	"logyard/clients/sieve"
-	"logyard/util/pubsub"
 	"net/http"
 	"stackato/server"
 )
@@ -21,7 +21,7 @@ type Event struct {
 	Time   int64  `json:"time"`
 }
 
-func SendToLogyard(pub *pubsub.Publisher, event *Event) {
+func SendToLogyard(pub *zmqpubsub.Publisher, event *Event) {
 	log.Infof("Event: %+v", event)
 	(&sieve.Event{
 		Type:     event.Status,
