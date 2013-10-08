@@ -41,13 +41,13 @@ func TestSampleLogs(t *testing.T) {
 
 func init() {
 	// XXX: I'm uncertain as to the simplest way to load
-	// cloud_events.yml as JSON and json.Unmarshal into config.Events
+	// sieve.yml as JSON and json.Unmarshal into config.Events
 	// .. all in Go. So, for now, I'll use ruby to do the JSON
 	// converstion.
-	fmt.Println("Loading etc/cloud_events.yml into test config struct")
+	fmt.Println("Loading etc/sieve.yml into test config struct")
 	if output, err := exec.Command(
 		"/usr/bin/ruby", "-ryaml", "-rjson", "-e",
-		"puts YAML.load_file('../../etc/cloud_events.yml').to_json",
+		"puts YAML.load_file('../../etc/sieve.yml').to_json",
 	).CombinedOutput(); err != nil {
 		panic(fmt.Sprintf("Failed to run ruby: %v (output: %s)", err, output))
 	} else {
