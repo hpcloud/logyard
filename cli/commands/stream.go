@@ -64,7 +64,7 @@ func (cmd *stream) Run(args []string) (string, error) {
 		args = []string{
 			"systail.logyard",
 			"systail.apptail",
-			"systail.cloud_events",
+			"systail.logyard_sieve",
 			"systail.systail",
 		}
 	}

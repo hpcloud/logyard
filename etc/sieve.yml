@@ -1,5 +1,5 @@
 ---
-# cloud_events configuration
+# sieve configuration
 
 # Message key is determined as "event.#{name}" where `name` is the 2nd
 # level child. For instance, the event spec "process_start" under
@@ -16,12 +16,12 @@
 # How to add events?
 # ==================
 #
-# Adding a *new* event requires modifying the cloud_events
+# Adding a *new* event requires modifying the sieve
 # configuration:
 #
 #  * Edit, and copy this file to the VM.
-#  * Run `kato config set --yaml cloud_events / < cloud_events.yml`.
-#  * Run `kato process restart cloud_events` on all nodes.
+#  * Run `kato config set --yaml logyard_sieve / < etc/sieve.yml`.
+#  * Run `kato process restart logyard_sieve` on all nodes.
 #  * Verify that your changes have taken effect using:
 #      logyard-cli stream event
 

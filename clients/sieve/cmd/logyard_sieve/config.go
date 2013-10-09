@@ -18,7 +18,7 @@ func getConfig() *Config {
 
 func LoadConfig() {
 	var err error
-	c, err = server.NewConfig("cloud_events", Config{})
+	c, err = server.NewConfig("logyard_sieve", Config{})
 	if err != nil {
 		log.Fatal(err)
 	}
