@@ -1,7 +1,7 @@
 package stream
 
 import (
-	"logyard/util/golor"
+	"github.com/ActiveState/golor"
 	"regexp"
 	"strings"
 )
