@@ -70,7 +70,7 @@ events:
       regex: 'INFO -- TIMELINE (.+)$'
       sample: 'INFO -- TIMELINE {"event":"APP_EXITED", "app":{"id":1,"name":"foo"}, "user":{"id":1,"email":"foo@bar.com"}}'
       handlertype: json
-      format: '[Timeline:{{.event}}] {{.message}}'
+      format: '[{{.event}}] {{.message}}'
   __all__:
     error:
       substring: ERROR
