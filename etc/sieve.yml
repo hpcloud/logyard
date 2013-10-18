@@ -64,13 +64,6 @@ events:
       sample: '[21510.516563] uwsgi invoked oom-killer: gfp_mask=0x50'
       severity: WARNING
       format: "OOM action: $1"
-  dea:
-    timeline:
-      substring: "TIMELINE"
-      regex: 'INFO -- TIMELINE (.+)$'
-      sample: 'INFO -- TIMELINE {"event":"APP_EXITED", "app":{"id":1,"name":"foo"}, "user":{"id":1,"email":"foo@bar.com"}}'
-      handlertype: json
-      format: '[{{.event}}] {{.message}}'
   __all__:
     error:
       substring: ERROR
@@ -89,7 +82,7 @@ events:
       regex: 'INFO -- TIMELINE (.+)$'
       sample: 'INFO -- TIMELINE {"event":"APP_DELETE", "app":{"id":1,"name":"foo"}, "user":{"id":1,"email":"foo@bar.com"}}'
       handlertype: json
-      format: '[Timeline:{{.event}}] {{.message}}'
+      format: '[{{.event}}] {{.message}}'
   filesystem_node:
     service_provision:
       substring: "Successfully provisioned service"
