@@ -60,7 +60,8 @@ func (line *AppLogMessage) Publish(pub *zmqpubsub.Publisher, allowInvalidJson bo
 // AppInstanceStarted is a function to be invoked when dea/stager
 // starts an application instance.
 func AppInstanceStarted(instance *AppInstance, nodeid string) {
-	log.Infof("New app instance was started: %+v", instance)
+	log.Infof("Tailing %v logs for %v:%v -- %+v",
+		instance.Type, instance.AppName, instance.Index, instance)
 
 	// convert MB to limit in bytes.
 	filesize_limit := GetConfig().FileSizeLimit * 1024 * 1024
@@ -99,7 +100,7 @@ func AppInstanceStarted(instance *AppInstance, nodeid string) {
 				Follow:      true,
 				Location:    &tail.SeekInfo{-limit, os.SEEK_END},
 				ReOpen:      false,
-				Poll:        true,
+				Poll:        false,
 				LimitRate:   GetConfig().RateLimit})
 			if err != nil {
 				log.Errorf("Cannot tail file (%s); %s", filename, err)
