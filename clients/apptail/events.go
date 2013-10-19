@@ -16,7 +16,8 @@ type App struct {
 }
 
 type TimelineEvent struct {
-	App App `json:"app"`
+	App           App `json:"app"`
+	InstanceIndex int `json:"instance_index"`
 }
 
 // Make relevant cloud events available in application logs. Heroku style.
@@ -47,12 +48,9 @@ func MonitorCloudEvents(nodeid string) {
 			}
 		}
 
-		// TODO: add an instance_index properly to the timeline event
-		index := -1 // FIXME: find the instance index; use -1 only for non-app instances (eg: staging)
-
 		source := "stackato." + event.Process
 
-		PublishAppLog(pub, t, index, source, nodeid, &event)
+		PublishAppLog(pub, t, source, nodeid, &event)
 	}
 	log.Warn("Finished listening for app relevant cloud events.")
 
@@ -65,7 +63,7 @@ func MonitorCloudEvents(nodeid string) {
 func PublishAppLog(
 	pub *zmqpubsub.Publisher,
 	t TimelineEvent,
-	index int, source string, nodeid string, event *sieve.Event) {
+	source string, nodeid string, event *sieve.Event) {
 
 	err := (&AppLogMessage{
 		Text:          event.Desc,
@@ -73,7 +71,7 @@ func PublishAppLog(
 		UnixTime:      event.UnixTime,
 		HumanTime:     time.Unix(event.UnixTime, 0).Format("2006-01-02T15:04:05-07:00"), // heroku-format
 		Source:        source,
-		InstanceIndex: index,
+		InstanceIndex: t.InstanceIndex,
 		AppGUID:       t.App.GUID,
 		AppName:       t.App.Name,
 		AppSpace:      t.App.Space,
