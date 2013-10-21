@@ -65,7 +65,7 @@ func PublishAppLog(
 	t TimelineEvent,
 	source string, nodeid string, event *sieve.Event) {
 
-	err := (&AppLogMessage{
+	err := (&Message{
 		Text:          event.Desc,
 		LogFilename:   "",
 		UnixTime:      event.UnixTime,

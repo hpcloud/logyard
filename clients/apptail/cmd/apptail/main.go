@@ -27,8 +27,8 @@ func main() {
 
 	natsclient := server.NewNatsClient(3)
 
-	natsclient.Subscribe("logyard."+uid+".newinstance", func(instance *apptail.AppInstance) {
-		apptail.AppInstanceStarted(instance, nodeid)
+	natsclient.Subscribe("logyard."+uid+".newinstance", func(instance *apptail.Instance) {
+		instance.Tail(nodeid)
 	})
 
 	natsclient.Publish("logyard."+uid+".start", []byte("{}"))
