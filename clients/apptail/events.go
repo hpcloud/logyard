@@ -21,7 +21,7 @@ type TimelineEvent struct {
 }
 
 // Make relevant cloud events available in application logs. Heroku style.
-func MonitorCloudEvents(nodeid string) {
+func MonitorCloudEvents() {
 	sub := logyard.Broker.Subscribe("event.timeline")
 	defer sub.Stop()
 
@@ -50,7 +50,7 @@ func MonitorCloudEvents(nodeid string) {
 
 		source := "stackato." + event.Process
 
-		PublishAppLog(pub, t, source, nodeid, &event)
+		PublishAppLog(pub, t, source, &event)
 	}
 	log.Warn("Finished listening for app relevant cloud events.")
 
@@ -63,7 +63,7 @@ func MonitorCloudEvents(nodeid string) {
 func PublishAppLog(
 	pub *zmqpubsub.Publisher,
 	t TimelineEvent,
-	source string, nodeid string, event *sieve.Event) {
+	source string, event *sieve.Event) {
 
 	err := (&Message{
 		Text:          event.Desc,
@@ -75,7 +75,7 @@ func PublishAppLog(
 		AppGUID:       t.App.GUID,
 		AppName:       t.App.Name,
 		AppSpace:      t.App.Space,
-		NodeID:        nodeid,
+		NodeID:        LocalNodeId(),
 	}).Publish(pub, true)
 
 	if err != nil {

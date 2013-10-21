@@ -17,24 +17,18 @@ func main() {
 	apptail.LoadConfig()
 	log.Infof("Config: %+v\n", apptail.GetConfig())
 
-	nodeid, err := server.LocalIP()
-	if err != nil {
-		log.Fatalf("Failed to determine IP addr: %v", err)
-	}
-	log.Info("Host IP: ", nodeid)
-
 	uid := getUID()
 
 	natsclient := server.NewNatsClient(3)
 
 	natsclient.Subscribe("logyard."+uid+".newinstance", func(instance *apptail.Instance) {
-		instance.Tail(nodeid)
+		instance.Tail()
 	})
 
 	natsclient.Publish("logyard."+uid+".start", []byte("{}"))
 	log.Infof("Waiting for instances...")
 
-	apptail.MonitorCloudEvents(nodeid)
+	apptail.MonitorCloudEvents()
 }
 
 // getUID returns the UID of the aggregator running on this node. the UID is

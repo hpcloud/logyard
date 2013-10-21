@@ -22,76 +22,89 @@ type Instance struct {
 }
 
 // Tail begins tailing the files for this instance.
-func (instance *Instance) Tail(nodeid string) {
+func (instance *Instance) Tail() {
 	log.Infof("Tailing %v logs for %v[%v] -- %+v",
 		instance.Type, instance.AppName, instance.Index, instance)
 
-	// convert MB to limit in bytes.
-	filesize_limit := GetConfig().FileSizeLimit * 1024 * 1024
-
-	if !(filesize_limit > 0) {
-		panic("invalid value for `read_limit' in apptail config")
-	}
-
 	for name, filename := range instance.LogFiles {
-		go func(name string, filename string) {
-			pub := logyard.Broker.NewPublisherMust()
-			defer pub.Stop()
-
-			fi, err := os.Stat(filename)
-			if err != nil {
-				log.Errorf("Cannot stat file (%s); %s", filename, err)
-				return
-			}
-			size := fi.Size()
-			limit := filesize_limit
-			if size > filesize_limit {
-				err := fmt.Errorf("Skipping much of a large log file (%s); size (%v bytes) > read_limit (%v bytes)",
-					name, size, filesize_limit)
-				// Publish special error message.
-				instance.publishLine(nodeid, name, pub, &tail.Line{
-					Text: err.Error(),
-					Time: time.Now(),
-					Err:  err})
-			} else {
-				limit = size
-			}
-
-			tail, err := tail.TailFile(filename, tail.Config{
-				MaxLineSize: GetConfig().MaxRecordSize,
-				MustExist:   true,
-				Follow:      true,
-				Location:    &tail.SeekInfo{-limit, os.SEEK_END},
-				ReOpen:      false,
-				Poll:        false,
-				LimitRate:   GetConfig().RateLimit})
-			if err != nil {
-				log.Errorf("Cannot tail file (%s); %s", filename, err)
-				return
-			}
-
-			for line := range tail.Lines {
-				instance.publishLine(nodeid, name, pub, line)
-			}
-
-			err = tail.Wait()
-			if err != nil {
-				log.Error(err)
-			}
-
-			log.Infof("Completed tailing %v for %v[%v]", name, instance.AppName, instance.Index)
-		}(name, filename)
+		go instance.tailFile(name, filename)
 	}
 }
 
+func (instance *Instance) tailFile(name, filename string) {
+	pub := logyard.Broker.NewPublisherMust()
+	defer pub.Stop()
+
+	limit, err := instance.getReadLimit(pub, name, filename)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	tail, err := tail.TailFile(filename, tail.Config{
+		MaxLineSize: GetConfig().MaxRecordSize,
+		MustExist:   true,
+		Follow:      true,
+		Location:    &tail.SeekInfo{-limit, os.SEEK_END},
+		ReOpen:      false,
+		Poll:        false,
+		LimitRate:   GetConfig().RateLimit})
+	if err != nil {
+		log.Errorf("Cannot tail file (%s); %s", filename, err)
+		return
+	}
+
+	for line := range tail.Lines {
+		instance.publishLine(pub, name, line)
+	}
+
+	err = tail.Wait()
+	if err != nil {
+		log.Error(err)
+	}
+
+	log.Infof("Completed tailing %v for %v[%v]", name, instance.AppName, instance.Index)
+}
+
+func (instance *Instance) getReadLimit(
+	pub *zmqpubsub.Publisher,
+	logname string,
+	filename string) (int64, error) {
+	// convert MB to limit in bytes.
+	filesizeLimit := GetConfig().FileSizeLimit * 1024 * 1024
+	if !(filesizeLimit > 0) {
+		panic("invalid value for `read_limit' in apptail config")
+	}
+
+	fi, err := os.Stat(filename)
+	if err != nil {
+		return -1, fmt.Errorf("Cannot stat file (%s); %s", filename, err)
+	}
+	size := fi.Size()
+	limit := filesizeLimit
+	if size > filesizeLimit {
+		err := fmt.Errorf("Skipping much of a large log file (%s); size (%v bytes) > read_limit (%v bytes)",
+			logname, size, filesizeLimit)
+		// Publish special error message.
+		instance.publishLine(pub, logname, &tail.Line{
+			Text: err.Error(),
+			Time: time.Now(),
+			Err:  err})
+	} else {
+		limit = size
+	}
+	return limit, nil
+}
+
+// publishLine zmq-publishes a log line corresponding to this instance
 func (instance *Instance) publishLine(
-	nodeid string,
-	name string, pub *zmqpubsub.Publisher,
+	pub *zmqpubsub.Publisher,
+	logname string,
 	line *tail.Line) {
 
 	msg := &Message{
 		Text:          line.Text,
-		LogFilename:   name,
+		LogFilename:   logname,
 		UnixTime:      line.Time.Unix(),
 		HumanTime:     ToHerokuTime(line.Time),
 		Source:        instance.Type,
@@ -99,7 +112,7 @@ func (instance *Instance) publishLine(
 		AppGUID:       instance.AppGUID,
 		AppName:       instance.AppName,
 		AppSpace:      instance.AppSpace,
-		NodeID:        nodeid,
+		NodeID:        LocalNodeId(),
 	}
 
 	if line.Err != nil {
@@ -114,5 +127,4 @@ func (instance *Instance) publishLine(
 	if err != nil {
 		log.Fatal(err)
 	}
-
 }
