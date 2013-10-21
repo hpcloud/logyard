@@ -60,7 +60,7 @@ func (line *AppLogMessage) Publish(pub *zmqpubsub.Publisher, allowInvalidJson bo
 // AppInstanceStarted is a function to be invoked when dea/stager
 // starts an application instance.
 func AppInstanceStarted(instance *AppInstance, nodeid string) {
-	log.Infof("Tailing %v logs for %v:%v -- %+v",
+	log.Infof("Tailing %v logs for %v[%v] -- %+v",
 		instance.Type, instance.AppName, instance.Index, instance)
 
 	// convert MB to limit in bytes.
@@ -115,6 +115,8 @@ func AppInstanceStarted(instance *AppInstance, nodeid string) {
 			if err != nil {
 				log.Error(err)
 			}
+
+			log.Infof("Completed tailing %v for %v[%v]", name, instance.AppName, instance.Index)
 		}(name, filename)
 	}
 }
