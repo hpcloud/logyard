@@ -37,6 +37,7 @@ log_files:
   fence: ""
   filesystem_gateway: ""
   filesystem_node: ""
+  gnatsd: ""
   harbor_gateway: ""
   harbor_node: ""
   harbor_proxy_connector: ""
