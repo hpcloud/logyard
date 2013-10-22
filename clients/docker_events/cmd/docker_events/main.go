@@ -1,27 +1,18 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/ActiveState/log"
 	"github.com/ActiveState/zmqpubsub"
-	"io"
 	"logyard"
+	"logyard/clients/docker_events"
 	"logyard/clients/sieve"
-	"net/http"
 	"stackato/server"
 )
 
 var NodeID string
 
-type Event struct {
-	Id     string `json:"id"`
-	Status string `json:"status"`
-	From   string `json:"from"`
-	Time   int64  `json:"time"`
-}
-
-func SendToLogyard(pub *zmqpubsub.Publisher, event *Event) {
+func SendToLogyard(pub *zmqpubsub.Publisher, event *docker_events.Event) {
 	log.Infof("Event: %+v", event)
 	(&sieve.Event{
 		Type:     event.Status,
@@ -38,25 +29,12 @@ func main() {
 	pub := logyard.Broker.NewPublisherMust()
 	defer pub.Stop()
 
-	c := http.Client{}
-	res, err := c.Get("http://localhost:4243/events")
-	if err != nil {
+	if ch, err := docker_events.Stream(); err != nil {
 		log.Fatal(err)
-	}
-	defer res.Body.Close()
-
-	// Read the streaming json from the events endpoint
-	// http://docs.docker.io/en/latest/api/docker_remote_api_v1.3/#monitor-docker-s-events
-	d := json.NewDecoder(res.Body)
-	for {
-		var event Event
-		if err := d.Decode(&event); err != nil {
-			if err == io.EOF {
-				break
-			}
-			log.Fatal(err)
+	} else {
+		for event := range ch {
+			SendToLogyard(pub, event)
 		}
-		SendToLogyard(pub, &event)
 	}
 }
 
