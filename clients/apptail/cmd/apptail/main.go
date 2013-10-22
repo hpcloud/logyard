@@ -26,7 +26,9 @@ func main() {
 	})
 
 	natsclient.Publish("logyard."+uid+".start", []byte("{}"))
-	log.Infof("Waiting for instances...")
+	log.Infof("Waiting for app instances ...")
+
+	go apptail.DockerListener.Listen()
 
 	apptail.MonitorCloudEvents()
 }

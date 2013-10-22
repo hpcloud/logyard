@@ -21,17 +21,31 @@ type Instance struct {
 	LogFiles map[string]string
 }
 
-// Tail begins tailing the files for this instance.
-func (instance *Instance) Tail() {
-	log.Infof("Tailing %v logs for %v[%v] -- %+v",
-		instance.Type, instance.AppName, instance.Index, instance)
-
-	for name, filename := range instance.LogFiles {
-		go instance.tailFile(name, filename)
-	}
+func (instance *Instance) Identifier() string {
+	return fmt.Sprintf("%v[%v:%v]", instance.AppName, instance.Index, instance.DockerId[:ID_LENGTH])
 }
 
-func (instance *Instance) tailFile(name, filename string) {
+// Tail begins tailing the files for this instance.
+func (instance *Instance) Tail() {
+	log.Infof("Tailing %v logs for %v -- %+v",
+		instance.Type, instance.Identifier(), instance)
+
+	stopCh := make(chan bool)
+
+	for name, filename := range instance.LogFiles {
+		go instance.tailFile(name, filename, stopCh)
+	}
+
+	go func() {
+		DockerListener.WaitForContainer(instance.DockerId)
+		log.Infof("Container for %v exited", instance.Identifier())
+		close(stopCh)
+	}()
+}
+
+func (instance *Instance) tailFile(name, filename string, stopCh chan bool) {
+	var err error
+
 	pub := logyard.Broker.NewPublisherMust()
 	defer pub.Stop()
 
@@ -54,16 +68,26 @@ func (instance *Instance) tailFile(name, filename string) {
 		return
 	}
 
-	for line := range tail.Lines {
-		instance.publishLine(pub, name, line)
+FORLOOP:
+	for {
+		select {
+		case line, ok := <-tail.Lines:
+			if !ok {
+				err = tail.Wait()
+				break FORLOOP
+			}
+			instance.publishLine(pub, name, line)
+		case <-stopCh:
+			err = tail.Stop()
+			break FORLOOP
+		}
 	}
 
-	err = tail.Wait()
 	if err != nil {
 		log.Error(err)
 	}
 
-	log.Infof("Completed tailing %v for %v[%v]", name, instance.AppName, instance.Index)
+	log.Infof("Completed tailing %v log for %v", name, instance.Identifier())
 }
 
 func (instance *Instance) getReadLimit(
@@ -101,6 +125,10 @@ func (instance *Instance) publishLine(
 	pub *zmqpubsub.Publisher,
 	logname string,
 	line *tail.Line) {
+
+	if line == nil {
+		panic("line is nil")
+	}
 
 	msg := &Message{
 		Text:          line.Text,
