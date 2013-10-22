@@ -21,6 +21,7 @@ func init() {
 }
 
 func (l *dockerListener) WaitForContainer(id string) {
+	var total int
 	id = id[:ID_LENGTH]
 
 	if len(id) != ID_LENGTH {
@@ -35,9 +36,11 @@ func (l *dockerListener) WaitForContainer(id string) {
 			panic("already added")
 		}
 		l.waiters[id] = make(chan bool)
+		total = len(l.waiters)
 	}()
 
 	// Wait
+	log.Infof("Waiting for container %v to exit (waiters count: %d)", id, total)
 	<-l.waiters[id]
 
 	func() {
