@@ -51,7 +51,7 @@ func (instance *Instance) tailFile(name, filename string, stopCh chan bool) {
 
 	limit, err := instance.getReadLimit(pub, name, filename)
 	if err != nil {
-		log.Error(err)
+		log.Warn(err)
 		return
 	}
 
@@ -64,7 +64,7 @@ func (instance *Instance) tailFile(name, filename string, stopCh chan bool) {
 		Poll:        false,
 		LimitRate:   GetConfig().RateLimit})
 	if err != nil {
-		log.Errorf("Cannot tail file (%s); %s", filename, err)
+		log.Warnf("Cannot tail file (%s); %s", filename, err)
 		return
 	}
 
@@ -84,7 +84,7 @@ FORLOOP:
 	}
 
 	if err != nil {
-		log.Error(err)
+		log.Warn(err)
 	}
 
 	log.Infof("Completed tailing %v log for %v", name, instance.Identifier())
