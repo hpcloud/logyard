@@ -31,14 +31,14 @@ func main() {
 		var record SystailRecord
 		err := json.Unmarshal([]byte(message.Value), &record)
 		if err != nil {
-			log.Errorf("failed to parse json: %s; ignoring record: %s",
+			log.Warnf("failed to parse json: %s; ignoring record: %s",
 				err, message.Value)
 			continue
 		}
 
 		event, err := parser.Parse(record.Name, record.Text)
 		if err != nil {
-			log.Errorf(
+			log.Warnf(
 				"failed to parse event from %s: %s -- source: %s", record.Name, err, record.Text)
 			continue
 		}
