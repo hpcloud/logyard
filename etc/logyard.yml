@@ -9,7 +9,9 @@ drainformats:
   systail: "{{.Name}}@{{.NodeID}}: {{.Text}}"
   apptail: "{{.HumanTime}} {{.Source}}.{{.InstanceIndex}}: {{.Text}}"
   event: "{{.Type}}@{{.NodeID}}: {{.Text}} -- via {{.Process}}"
-  systail_syslog: "<{{.Syslog.Priority}}>{{.Syslog.Time}} - {{.NodeID}} {{.Name}} - - - {{.Text}}"
+  systail-syslog: "<{{.Syslog.Priority}}>{{.Syslog.Time}} - {{.NodeID}} {{.Name}} - - - {{.Text}}"
+  apptail-syslog: "<{{.Syslog.Priority}}>{{.Syslog.Time}} - {{.NodeID}} {{.AppName}}[{{.InstanceIndex}}].{{.Source}} - - - {{.Text}}"
+  event-syslog: "<{{.Syslog.Priority}}>{{.Syslog.Time}} - {{.NodeID}} {{.Process}} - - - {{.Type}}: {{.Text}}"
 
 # retrylimit prevents infinite retrying of certain drains (identified
 # by name prefix) by putting a upper bound on the how long a drain
