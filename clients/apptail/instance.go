@@ -6,6 +6,7 @@ import (
 	"github.com/ActiveState/tail"
 	"github.com/ActiveState/zmqpubsub"
 	"logyard"
+	"logyard/clients/messagecommon"
 	"os"
 	"time"
 )
@@ -131,16 +132,13 @@ func (instance *Instance) publishLine(
 	}
 
 	msg := &Message{
-		Text:          line.Text,
 		LogFilename:   logname,
-		UnixTime:      line.Time.Unix(),
-		HumanTime:     ToHerokuTime(line.Time),
 		Source:        instance.Type,
 		InstanceIndex: instance.Index,
 		AppGUID:       instance.AppGUID,
 		AppName:       instance.AppName,
 		AppSpace:      instance.AppSpace,
-		NodeID:        LocalNodeId(),
+		MessageCommon: messagecommon.New(line.Text, line.Time, LocalNodeId()),
 	}
 
 	if line.Err != nil {

@@ -5,6 +5,7 @@ import (
 	"github.com/ActiveState/log"
 	"github.com/ActiveState/zmqpubsub"
 	"logyard"
+	"logyard/clients/messagecommon"
 	"logyard/clients/sieve"
 	"time"
 )
@@ -66,16 +67,13 @@ func PublishAppLog(
 	source string, event *sieve.Event) {
 
 	err := (&Message{
-		Text:          event.Desc,
 		LogFilename:   "",
-		UnixTime:      event.UnixTime,
-		HumanTime:     time.Unix(event.UnixTime, 0).Format("2006-01-02T15:04:05-07:00"), // heroku-format
 		Source:        source,
 		InstanceIndex: t.InstanceIndex,
 		AppGUID:       t.App.GUID,
 		AppName:       t.App.Name,
 		AppSpace:      t.App.Space,
-		NodeID:        LocalNodeId(),
+		MessageCommon: messagecommon.New(event.Desc, time.Unix(event.UnixTime, 0), LocalNodeId()),
 	}).Publish(pub, true)
 
 	if err != nil {

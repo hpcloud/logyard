@@ -8,7 +8,7 @@
 drainformats:
   systail: "{{.Name}}@{{.NodeID}}: {{.Text}}"
   apptail: "{{.HumanTime}} {{.Source}}.{{.InstanceIndex}}: {{.Text}}"
-  event: "{{.Type}}@{{.NodeID}}: {{.Desc}} -- via {{.Process}}"
+  event: "{{.Type}}@{{.NodeID}}: {{.Text}} -- via {{.Process}}"
 
 # retrylimit prevents infinite retrying of certain drains (identified
 # by name prefix) by putting a upper bound on the how long a drain
