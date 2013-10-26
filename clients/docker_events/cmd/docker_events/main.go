@@ -6,22 +6,24 @@ import (
 	"github.com/ActiveState/zmqpubsub"
 	"logyard"
 	"logyard/clients/docker_events"
+	"logyard/clients/messagecommon"
 	"logyard/clients/sieve"
 	"stackato/server"
+	"time"
 )
 
 var NodeID string
 
 func SendToLogyard(pub *zmqpubsub.Publisher, event *docker_events.Event) {
 	log.Infof("Event: %+v", event)
+	text := fmt.Sprintf("%v action for container %v (image: %v)",
+		event.Status, event.Id, event.From)
 	(&sieve.Event{
-		Type:     event.Status,
-		Process:  "docker_events",
-		Severity: "INFO",
-		UnixTime: event.Time,
-		NodeID:   NodeID,
-		Desc: fmt.Sprintf("%v action for container %v (image: %v)",
-			event.Status, event.Id, event.From),
+		Type:          event.Status,
+		Process:       "docker_events",
+		Severity:      "INFO",
+		Desc:          text,
+		MessageCommon: messagecommon.New(text, time.Unix(event.Time, 0), NodeID),
 	}).MustPublish(pub)
 }
 

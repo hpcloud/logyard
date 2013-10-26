@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/ActiveState/log"
 	"github.com/ActiveState/zmqpubsub"
+	"logyard/clients/messagecommon"
 )
 
 type Event struct {
@@ -12,8 +13,7 @@ type Event struct {
 	Severity string
 	Info     map[string]interface{} // event-specific information as json
 	Process  string                 // which process generated this event?
-	UnixTime int64
-	NodeID   string // from which node did this event appear?
+	messagecommon.MessageCommon
 }
 
 func (event *Event) MustPublish(pub *zmqpubsub.Publisher) {

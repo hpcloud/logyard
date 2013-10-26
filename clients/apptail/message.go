@@ -5,21 +5,19 @@ import (
 	"fmt"
 	"github.com/ActiveState/log"
 	"github.com/ActiveState/zmqpubsub"
+	"logyard/clients/messagecommon"
 	"unicode/utf8"
 )
 
 // Message corresponds to an entry in the app log stream.
 type Message struct {
-	Text          string
 	LogFilename   string
-	UnixTime      int64
-	HumanTime     string
 	Source        string // example: app, staging, stackato.dea_ng
 	InstanceIndex int
 	AppGUID       string
 	AppName       string
 	AppSpace      string
-	NodeID        string // Host (DEA,stager) IP of this app instance
+	messagecommon.MessageCommon
 }
 
 // Publish publishes an AppLogMessage to logyard after sanity checks.
