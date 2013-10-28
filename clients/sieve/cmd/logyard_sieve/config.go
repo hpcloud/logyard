@@ -20,7 +20,7 @@ func LoadConfig() {
 	var err error
 	c, err = server.NewConfig("logyard_sieve", Config{})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Unable to load logyard_sieve config; %v", err)
 	}
 	log.Info(getConfig().Events)
 }

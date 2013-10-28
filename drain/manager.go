@@ -33,7 +33,7 @@ func NewDrainManager() *DrainManager {
 		0,
 		3)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Unable to connect to applog_redis; %v", err)
 	}
 	manager.stateCache = &statecache.StateCache{
 		"logyard:drainstatus:",

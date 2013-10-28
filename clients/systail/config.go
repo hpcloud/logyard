@@ -20,6 +20,6 @@ func LoadConfig() {
 	var err error
 	c, err = server.NewConfig("systail", Config{})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Unable to load systail config; %v", err)
 	}
 }

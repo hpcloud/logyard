@@ -50,7 +50,7 @@ var once sync.Once
 func createLogyardConfig() {
 	g, err := server.NewConfig("logyard", logyardConfig{})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Unable to load logyard config; %v", err)
 	}
 	config = g
 	if config.GetConfig().(*logyardConfig).Drains == nil {

@@ -21,6 +21,6 @@ func LoadConfig() {
 	var err error
 	c, err = server.NewConfig("apptail", Config{})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Unable to load apptail config; %v", err)
 	}
 }
