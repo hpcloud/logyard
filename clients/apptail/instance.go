@@ -15,7 +15,7 @@ import (
 type Instance struct {
 	AppGUID  string
 	AppName  string
-	AppSpace string `json:"space"`
+	AppSpace string
 	Type     string
 	Index    int
 	DockerId string `json:"docker_id"`
