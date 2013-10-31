@@ -8,6 +8,8 @@ import (
 	"logyard"
 	"logyard/clients/messagecommon"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -19,11 +21,42 @@ type Instance struct {
 	Type     string
 	Index    int
 	DockerId string `json:"docker_id"`
+	RootPath string
 	LogFiles map[string]string
 }
 
 func (instance *Instance) Identifier() string {
 	return fmt.Sprintf("%v[%v:%v]", instance.AppName, instance.Index, instance.DockerId[:ID_LENGTH])
+}
+
+func (instance *Instance) GetLogFiles() map[string]string {
+	logfiles := GetConfig().DefaultLogFiles
+
+	// If the logfiles list was explicitly passed, use it as it is.
+	if len(instance.LogFiles) > 0 {
+		logfiles = instance.LogFiles
+	}
+
+	files := make(map[string]string)
+	for name, path := range logfiles {
+		fullpath := filepath.Join(instance.RootPath, path)
+		fullpath, err := filepath.Abs(fullpath)
+		if err != nil {
+			log.Warnf("Cannot find Abs of %v <join> %v", instance.RootPath, path)
+			continue
+		}
+		fullpath, err = filepath.EvalSymlinks(fullpath)
+		if err != nil {
+			log.Warnf("Cannot eval symlinks in path %v <join> %v", instance.RootPath, path)
+			continue
+		}
+		if !strings.HasPrefix(fullpath, instance.RootPath) {
+			log.Warnf("Ignoring insecure log path %v (via %v) in instance %+v", fullpath, path, instance)
+			continue
+		}
+		files[name] = fullpath
+	}
+	return files
 }
 
 // Tail begins tailing the files for this instance.
@@ -32,8 +65,11 @@ func (instance *Instance) Tail() {
 		instance.Type, instance.Identifier(), instance)
 
 	stopCh := make(chan bool)
+	logfiles := instance.GetLogFiles()
 
-	for name, filename := range instance.LogFiles {
+	log.Infof("Determined log files: %+v", logfiles)
+
+	for name, filename := range logfiles {
 		go instance.tailFile(name, filename, stopCh)
 	}
 
