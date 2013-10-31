@@ -28,15 +28,12 @@ func SendToLogyard(pub *zmqpubsub.Publisher, event *docker_events.Event) {
 }
 
 func main() {
+	log.Info("Starting docker_events")
 	pub := logyard.Broker.NewPublisherMust()
 	defer pub.Stop()
 
-	if ch, err := docker_events.Stream(); err != nil {
-		log.Fatal(err)
-	} else {
-		for event := range ch {
-			SendToLogyard(pub, event)
-		}
+	for event := range docker_events.Stream() {
+		SendToLogyard(pub, event)
 	}
 }
 

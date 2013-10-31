@@ -5,6 +5,7 @@ import (
 	"github.com/ActiveState/log"
 	"io"
 	"net/http"
+	"time"
 )
 
 type Event struct {
@@ -14,14 +15,9 @@ type Event struct {
 	Time   int64  `json:"time"`
 }
 
-func Stream() (chan *Event, error) {
-	c := http.Client{}
-	res, err := c.Get("http://localhost:4243/events")
-	if err != nil {
-		return nil, err
-	}
-
+func Stream() chan *Event {
 	ch := make(chan *Event)
+	res := getDockerEvents(3)
 
 	go func() {
 		defer res.Body.Close()
@@ -43,5 +39,22 @@ func Stream() (chan *Event, error) {
 		close(ch)
 	}()
 
-	return ch, nil
+	return ch
+}
+
+func getDockerEvents(retries int) *http.Response {
+	c := http.Client{}
+	for attempt := 0; attempt < retries; attempt++ {
+		res, err := c.Get("http://localhost:4243/events")
+		if err != nil {
+			if (attempt + 1) == retries {
+				log.Fatalf("Failed to read from docker daemon; giving up retrying: %v", err)
+			}
+			log.Warnf("Docker connection error (%v); retrying after 1 second.", err)
+			time.Sleep(time.Second)
+		} else {
+			return res
+		}
+	}
+	panic("unreachable")
 }

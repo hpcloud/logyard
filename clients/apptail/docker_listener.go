@@ -51,11 +51,7 @@ func (l *dockerListener) WaitForContainer(id string) {
 }
 
 func (l *dockerListener) Listen() {
-	ch, err := docker_events.Stream()
-	if err != nil {
-		log.Fatal(err)
-	}
-	for evt := range ch {
+	for evt := range docker_events.Stream() {
 		if len(evt.Id) != ID_LENGTH {
 			log.Fatalf("Invalid docker ID length: %v", len(evt.Id))
 		}
