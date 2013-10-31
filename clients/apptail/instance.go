@@ -29,43 +29,13 @@ func (instance *Instance) Identifier() string {
 	return fmt.Sprintf("%v[%v:%v]", instance.AppName, instance.Index, instance.DockerId[:ID_LENGTH])
 }
 
-func (instance *Instance) GetLogFiles() map[string]string {
-	logfiles := GetConfig().DefaultLogFiles
-
-	// If the logfiles list was explicitly passed, use it as it is.
-	if len(instance.LogFiles) > 0 {
-		logfiles = instance.LogFiles
-	}
-
-	files := make(map[string]string)
-	for name, path := range logfiles {
-		fullpath := filepath.Join(instance.RootPath, path)
-		fullpath, err := filepath.Abs(fullpath)
-		if err != nil {
-			log.Warnf("Cannot find Abs of %v <join> %v", instance.RootPath, path)
-			continue
-		}
-		fullpath, err = filepath.EvalSymlinks(fullpath)
-		if err != nil {
-			log.Warnf("Cannot eval symlinks in path %v <join> %v", instance.RootPath, path)
-			continue
-		}
-		if !strings.HasPrefix(fullpath, instance.RootPath) {
-			log.Warnf("Ignoring insecure log path %v (via %v) in instance %+v", fullpath, path, instance)
-			continue
-		}
-		files[name] = fullpath
-	}
-	return files
-}
-
 // Tail begins tailing the files for this instance.
 func (instance *Instance) Tail() {
 	log.Infof("Tailing %v logs for %v -- %+v",
 		instance.Type, instance.Identifier(), instance)
 
 	stopCh := make(chan bool)
-	logfiles := instance.GetLogFiles()
+	logfiles := instance.getLogFiles()
 
 	log.Infof("Determined log files: %+v", logfiles)
 
@@ -125,6 +95,36 @@ FORLOOP:
 	}
 
 	log.Infof("Completed tailing %v log for %v", name, instance.Identifier())
+}
+
+func (instance *Instance) getLogFiles() (logfiles map[string]string) {
+	if len(instance.LogFiles) > 0 {
+		// If the logfiles list was explicitly passed, use it as is.
+		logfiles = instance.LogFiles
+	} else {
+		// Else, use the default list configured in apptail config.
+		logfiles = GetConfig().DefaultLogFiles
+	}
+
+	for name, path := range logfiles {
+		fullpath := filepath.Join(instance.RootPath, path)
+		fullpath, err := filepath.Abs(fullpath)
+		if err != nil {
+			log.Warnf("Cannot find Abs of %v <join> %v", instance.RootPath, path)
+			continue
+		}
+		fullpath, err = filepath.EvalSymlinks(fullpath)
+		if err != nil {
+			log.Warnf("Cannot eval symlinks in path %v <join> %v", instance.RootPath, path)
+			continue
+		}
+		if !strings.HasPrefix(fullpath, instance.RootPath) {
+			log.Warnf("Ignoring insecure log path %v (via %v) in instance %+v", fullpath, path, instance)
+			continue
+		}
+		logfiles[name] = fullpath
+	}
+	return
 }
 
 func (instance *Instance) getReadLimit(
