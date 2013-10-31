@@ -8,7 +8,7 @@
 PKG_NAME="stackato-logyard-ng"
 PKG_VERSION="auto"
 PKG_DESCR_SHORT="stackato-logyard-ng"
-PKG_DESCR_LONG="Stackato log management component implemented in Go."
+PKG_DESCR_LONG="Logyard, stackato log management component"
 PKG_BUILD_DEPENDS="stackato-golang (>=1.1), mercurial, bzr, zeromq-dev (>=3.2.2), redis-server, pkg-config"
 PKG_DEPENDS="zeromq-dev"
 PKG_WARNING="The build dependency on redis-server is used for testing only."
