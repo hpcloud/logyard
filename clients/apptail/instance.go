@@ -97,34 +97,60 @@ FORLOOP:
 	log.Infof("Completed tailing %v log for %v", name, instance.Identifier())
 }
 
-func (instance *Instance) getLogFiles() (logfiles map[string]string) {
-	if len(instance.LogFiles) > 0 {
+func (instance *Instance) getLogFiles() map[string]string {
+	var logfiles map[string]string
+
+	rawMode := len(instance.LogFiles) > 0
+	if rawMode {
 		// If the logfiles list was explicitly passed, use it as is.
 		logfiles = instance.LogFiles
 	} else {
 		// Else, use the default list configured in apptail config.
-		logfiles = GetConfig().DefaultLogFiles
+		logfiles = make(map[string]string)
+		for key, value := range GetConfig().DefaultLogFiles {
+			logfiles[key] = value
+		}
+
+		// Lookup app-specific log files
+		stackatoYmlPath := filepath.Join(instance.RootPath, "/app/app/stackato.yml")
+		if _, err := os.Stat(stackatoYmlPath); err == nil {
+			if stackatoYml, err := NewStackatoYml(stackatoYmlPath); err != nil {
+				log.Warnf("Unable to access/parse stackato.yml for %v: %v", instance.Identifier(), err)
+			} else {
+				log.Infof("stackato.yml found with %d logfiles entries for %v", len(stackatoYml.LogFiles), instance.Identifier())
+				if len(stackatoYml.LogFiles) > 0 {
+					log.Infof("Adding app-specific log files: %+v", stackatoYml.LogFiles)
+					for key, value := range stackatoYml.LogFiles {
+						logfiles[key] = value
+					}
+				}
+			}
+		}
 	}
 
+	// Expand paths, and securely ensure they fail within the app root.
+	logfilesSecure := make(map[string]string)
 	for name, path := range logfiles {
 		fullpath := filepath.Join(instance.RootPath, path)
 		fullpath, err := filepath.Abs(fullpath)
 		if err != nil {
-			log.Warnf("Cannot find Abs of %v <join> %v", instance.RootPath, path)
+			// TODO: push warnings in this function to the app log stream.
+			log.Warnf("Cannot find Abs of %v <join> %v: %v", instance.RootPath, path, err)
 			continue
 		}
 		fullpath, err = filepath.EvalSymlinks(fullpath)
 		if err != nil {
-			log.Warnf("Cannot eval symlinks in path %v <join> %v", instance.RootPath, path)
+			log.Warnf("Cannot eval symlinks in path %v <join> %v: %v", instance.RootPath, path, err)
 			continue
 		}
 		if !strings.HasPrefix(fullpath, instance.RootPath) {
 			log.Warnf("Ignoring insecure log path %v (via %v) in instance %+v", fullpath, path, instance)
 			continue
 		}
-		logfiles[name] = fullpath
+		logfilesSecure[name] = fullpath
 	}
-	return
+
+	return logfilesSecure
 }
 
 func (instance *Instance) getReadLimit(
