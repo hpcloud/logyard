@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 )
 
-func GetDockerImageEnv(rootPath string) (map[string]string, error) {
-	data, err := ReadFileLimit(filepath.Join(rootPath, "/etc/stackato/image.env.json"), 50*1000)
+func GetDockerAppEnv(rootPath string) (map[string]string, error) {
+	data, err := ReadFileLimit(filepath.Join(rootPath, "/app/etc/droplet.env.json"), 50*1000)
 	if err != nil {
 		return nil, err
 	}

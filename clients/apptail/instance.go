@@ -107,35 +107,16 @@ func (instance *Instance) getLogFiles() map[string]string {
 	} else {
 		// Start from log files specified in the app image.
 		logfiles = make(map[string]string)
-		if env, err := GetDockerImageEnv(instance.RootPath); err != nil {
+		if env, err := GetDockerAppEnv(instance.RootPath); err != nil {
 			log.Errorf("Failed to read docker image env: %v", err)
 		} else {
-			if s, ok := env["APPTAIL_LOG_FILES"]; ok {
+			if s, ok := env["STACKATO_LOG_FILES"]; ok {
 				for _, f := range strings.Split(s, ":") {
 					parts := strings.SplitN(f, "=", 2)
 					logfiles[parts[0]] = parts[1]
 				}
 			} else {
-				log.Errorf("Expected env $APPTAIL_LOG_FILES not found in docker image")
-			}
-		}
-
-		// Add to that, the log files specified in the app's stackato.yml.
-		// TODO: allow apps to override by directly setting APPTAIL_LOG_FILES.
-		// This will however require runtime.env.json (set by Jan's runtime-
-		// helper.pl) to be created before the NATS message is set by the dea.
-		stackatoYmlPath := filepath.Join(instance.RootPath, "/app/app/stackato.yml")
-		if _, err := os.Stat(stackatoYmlPath); err == nil {
-			if stackatoYml, err := NewStackatoYml(stackatoYmlPath); err != nil {
-				log.Warnf("Unable to access/parse stackato.yml for %v: %v", instance.Identifier(), err)
-			} else {
-				log.Infof("stackato.yml found with %d logfiles entries for %v", len(stackatoYml.LogFiles), instance.Identifier())
-				if len(stackatoYml.LogFiles) > 0 {
-					log.Infof("Adding app-specific log files: %+v", stackatoYml.LogFiles)
-					for key, value := range stackatoYml.LogFiles {
-						logfiles[key] = value
-					}
-				}
+				log.Errorf("Expected env $STACKATO_LOG_FILES not found in docker image")
 			}
 		}
 	}
