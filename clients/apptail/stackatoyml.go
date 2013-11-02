@@ -2,10 +2,7 @@ package apptail
 
 import (
 	_ "fmt"
-	"io"
-	"io/ioutil"
 	"launchpad.net/goyaml"
-	"os"
 )
 
 type StackatoYml struct {
@@ -14,7 +11,7 @@ type StackatoYml struct {
 }
 
 func NewStackatoYml(path string) (*StackatoYml, error) {
-	data, err := getStackatoYmlSecure(path)
+	data, err := ReadFileLimit(path, 50*100)
 	if err != nil {
 		return nil, err
 	}
@@ -26,13 +23,4 @@ func NewStackatoYml(path string) (*StackatoYml, error) {
 	// fmt.Printf("Unmarshal(%v) => %+v\n", string(data), s)
 
 	return s, nil
-}
-
-func getStackatoYmlSecure(path string) ([]byte, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	r := io.LimitReader(file, 50*100)
-	return ioutil.ReadAll(r)
 }

@@ -6,10 +6,9 @@ import (
 )
 
 type Config struct {
-	MaxRecordSize   int               `json:"max_record_size"`
-	RateLimit       int64             `json:"rate_limit"`
-	FileSizeLimit   int64             `json:"read_limit"`
-	DefaultLogFiles map[string]string `json:"default_log_files"`
+	MaxRecordSize int   `json:"max_record_size"`
+	RateLimit     int64 `json:"rate_limit"`
+	FileSizeLimit int64 `json:"read_limit"`
 }
 
 var c *server.Config

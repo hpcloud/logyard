@@ -96,6 +96,9 @@ dev-setup:	update
 
 dev-install:	fmt dev-installall
 
+# convenient alias
+i:	dev-install
+
 dev-installall:
 	go install $(GOARGS) logyard/... github.com/ActiveState/tail/cmd/gotail
 

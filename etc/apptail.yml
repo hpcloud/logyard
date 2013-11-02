@@ -14,9 +14,3 @@ rate_limit: 400
 # maximum number of megabytes that are allowed to be read from a file
 # (near the end).
 read_limit: 16
-
-# List of log files to tail for each app. This list can be customized
-# (appended to) using stackato.yml.
-default_log_files:
-  stdout: /app/logs/stdout.log
-  stderr: /app/logs/stderr.log
