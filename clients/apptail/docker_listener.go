@@ -22,6 +22,7 @@ func init() {
 
 func (l *dockerListener) WaitForContainer(id string) {
 	var total int
+	ch := make(chan bool)
 	id = id[:ID_LENGTH]
 
 	if len(id) != ID_LENGTH {
@@ -35,19 +36,13 @@ func (l *dockerListener) WaitForContainer(id string) {
 		if _, ok := l.waiters[id]; ok {
 			panic("already added")
 		}
-		l.waiters[id] = make(chan bool)
+		l.waiters[id] = ch
 		total = len(l.waiters)
 	}()
 
 	// Wait
-	log.Infof("Waiting for container %v to exit (waiters count: %d)", id, total)
-	<-l.waiters[id]
-
-	func() {
-		l.mux.Lock()
-		defer l.mux.Unlock()
-		delete(l.waiters, id)
-	}()
+	log.Infof("Waiting for container %v to exit (total waiters: %d)", id, total)
+	<-ch
 }
 
 func (l *dockerListener) Listen() {
@@ -62,10 +57,9 @@ func (l *dockerListener) Listen() {
 		}
 		l.mux.Lock()
 		if ch, ok := l.waiters[evt.Id]; ok {
-			l.mux.Unlock()
 			close(ch)
-		} else {
-			l.mux.Unlock()
+			delete(l.waiters, evt.Id)
 		}
+		l.mux.Unlock()
 	}
 }
