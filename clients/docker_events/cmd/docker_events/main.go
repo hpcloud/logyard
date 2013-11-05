@@ -15,7 +15,6 @@ import (
 var NodeID string
 
 func SendToLogyard(pub *zmqpubsub.Publisher, event *docker_events.Event) {
-	log.Infof("Event: %+v", event)
 	text := fmt.Sprintf("%v action for container %v (image: %v)",
 		event.Status, event.Id, event.From)
 	(&sieve.Event{

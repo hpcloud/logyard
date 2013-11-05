@@ -34,6 +34,7 @@ log_files:
   config_redis: ""
   dea_ng: ""
   dir_server: ""
+  docker_events: ""
   fence: ""
   filesystem_gateway: ""
   filesystem_node: ""
