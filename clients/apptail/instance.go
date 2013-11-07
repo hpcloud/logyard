@@ -105,13 +105,18 @@ func (instance *Instance) getLogFiles() map[string]string {
 		// If the logfiles list was explicitly passed, use it as is.
 		logfiles = instance.LogFiles
 	} else {
-		// Start from log files specified in the app image.
+		// Use $STACKATO_LOG_FILES
 		logfiles = make(map[string]string)
 		if env, err := GetDockerAppEnv(instance.RootPath); err != nil {
 			log.Errorf("Failed to read docker image env: %v", err)
 		} else {
 			if s, ok := env["STACKATO_LOG_FILES"]; ok {
-				for _, f := range strings.Split(s, ":") {
+				parts := strings.Split(s, ":")
+				if len(parts) > 7 {
+					log.Warnf("$STACKATO_LOG_FILES contains more than 7 parts; using only last 7 parts")
+					parts = parts[len(parts)-7 : len(parts)]
+				}
+				for _, f := range parts {
 					parts := strings.SplitN(f, "=", 2)
 					logfiles[parts[0]] = parts[1]
 				}
