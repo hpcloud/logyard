@@ -9,7 +9,7 @@ export GOPATH=$HOME/go
 git clone <this-repo> $GOPATH/src/logyard
 cd $GOPATH/src/logyard
 make dev-setup 
-make dev-install
+make dev-install  # or, `make i`
 make dev-test  # optional
 ```
 
@@ -20,7 +20,7 @@ make dev-install
 $GOPATH/bin/logyard
 # $GOPATH/bin/systail &
 # $GOPATH/bin/apptail &
-# $GOPATH/bin/cloudevents &
+# $GOPATH/bin/logyard_sieve &
 ```
 
 note: it is best to run these on a Stackato dev VM.
