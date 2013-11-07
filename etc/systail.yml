@@ -12,7 +12,7 @@ log_files:
   auth: /var/log/auth.log
   cc_nginx_error: ""
   dmesg: /var/log/dmesg
-  dockerd: /var/log/stackato/dockerd.log
+  dockerd: /var/log/upstart/docker.log
   dpkg: /var/log/dpkg.log
   kato: ""
   kernel: /var/log/kern.log
