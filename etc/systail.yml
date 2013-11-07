@@ -9,7 +9,6 @@ max_record_size: 2048
 # systail will automatically use /s/log/${name}.log; for example,
 # "kato: " translates to "kato: /s/logs/kato.log"
 log_files:
-  aok_nginx_error: ""
   auth: /var/log/auth.log
   cc_nginx_error: ""
   dmesg: /var/log/dmesg
@@ -17,8 +16,6 @@ log_files:
   dpkg: /var/log/dpkg.log
   kato: ""
   kernel: /var/log/kern.log
-  nginx_error: /s/logs/nginx_error.log
-  stackato-lxc: ""
   supervisord: ""
   # log files for most kato-managed processes.
   # $ grep name processes.yml | awk '{print "    "$2": \"\""}' | sort | \
@@ -67,4 +64,3 @@ log_files:
   services_redis: ""
   stackato_rest: ""
   systail: ""
-  uaa: ""
