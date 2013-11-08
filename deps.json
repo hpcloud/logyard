@@ -1,0 +1,31 @@
+{
+    "github.com/ActiveState/golor": {
+        "repo": "http://git-mirrors.activestate.com/golor.git",
+        "version": "master",
+        "type": "git-clone",
+        "alias": "github.com/ActiveState/golor"
+    },
+    "github.com/ActiveState/tail": {
+        "repo": "http://git-mirrors.activestate.com/tail.git",
+        "version": "master",
+        "type": "git-clone",
+        "alias": "github.com/ActiveState/tail"
+    },
+    "github.com/ActiveState/zmqpubsub": {
+        "repo": "http://git-mirrors.activestate.com/zmqpubsub.git",
+        "version": "master",
+        "type": "git-clone",
+        "alias": "github.com/ActiveState/zmqpubsub"
+    },
+    "github.com/nu7hatch/gouuid": {
+        "repo": "github.com/nu7hatch/gouuid",
+        "version": "0345199",
+        "type": "git"
+    },
+    "stackato": {
+        "repo": "git://gitolite.activestate.com/stackato-go",
+        "version": "cfv2",
+        "type": "git-clone",
+        "alias": "stackato"
+    }
+}
