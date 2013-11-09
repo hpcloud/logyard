@@ -21,7 +21,7 @@
 #
 # To locally test this Makefile, run:
 #
-#   rm -rf .gopath .goroot; STACKATO_PKG_BRANCH=mybranch make
+#   rm -rf .gopath; STACKATO_PKG_BRANCH=mybranch make
 #
 
 NAME=logyard
@@ -103,7 +103,6 @@ dev-installall:
 	go install $(GOARGS) logyard/... github.com/ActiveState/tail/cmd/gotail
 
 fmt:
-	rm -rf .goroot
 	gofmt -w .
 
 dev-test:
