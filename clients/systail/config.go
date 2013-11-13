@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/ActiveState/log"
 	"stackato/server"
 )
 
@@ -20,6 +19,6 @@ func LoadConfig() {
 	var err error
 	c, err = server.NewConfig("systail", Config{})
 	if err != nil {
-		log.Fatalf("Unable to load systail config; %v", err)
+		fatal("Unable to load systail config; %v", err)
 	}
 }

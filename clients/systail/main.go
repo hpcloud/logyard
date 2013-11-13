@@ -74,7 +74,7 @@ func main() {
 
 	nodeid, err := server.LocalIP()
 	if err != nil {
-		log.Fatalf("Failed to determine IP addr: %v", err)
+		fatal("Failed to determine IP addr: %v", err)
 	}
 	log.Info("Host IP: ", nodeid)
 
@@ -84,13 +84,13 @@ func main() {
 
 	fmt.Printf("%+v\n", logFiles)
 	if len(logFiles) == 0 {
-		log.Fatal("No log files exist in configuration.")
+		fatal("No log files exist in configuration.")
 	}
 
 	for name, logfile := range logFiles {
 		t, err := tailLogFile(name, logfile, nodeid)
 		if err != nil {
-			log.Fatal(err)
+			fatal("%v", err)
 		}
 		tailers = append(tailers, t)
 	}
