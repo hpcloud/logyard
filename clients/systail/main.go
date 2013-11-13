@@ -67,6 +67,8 @@ func tailLogFile(
 }
 
 func main() {
+	go handleInterrupts()
+
 	major, minor, patch := gozmq.Version()
 	log.Infof("Starting systail (zeromq %d.%d.%d)", major, minor, patch)
 
