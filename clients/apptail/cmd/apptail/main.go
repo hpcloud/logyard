@@ -11,6 +11,7 @@ import (
 )
 
 func main() {
+	go apptail.HandleInterrupts()
 	major, minor, patch := gozmq.Version()
 	log.Infof("Starting apptail (zeromq %d.%d.%d)", major, minor, patch)
 
@@ -42,16 +43,16 @@ func getUID() string {
 	if _, err := os.Stat(uidFile); os.IsNotExist(err) {
 		uid, err := uuid.NewV4()
 		if err != nil {
-			log.Fatal(err)
+			apptail.Fatal("%v", err)
 		}
 		UID = uid.String()
 		if err = ioutil.WriteFile(uidFile, []byte(UID), 0644); err != nil {
-			log.Fatal(err)
+			apptail.Fatal("%v", err)
 		}
 	} else {
 		data, err := ioutil.ReadFile(uidFile)
 		if err != nil {
-			log.Fatal(err)
+			apptail.Fatal("%v", err)
 		}
 		UID = string(data)
 	}

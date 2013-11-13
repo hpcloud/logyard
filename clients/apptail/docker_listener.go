@@ -26,7 +26,7 @@ func (l *dockerListener) WaitForContainer(id string) {
 	id = id[:ID_LENGTH]
 
 	if len(id) != ID_LENGTH {
-		log.Fatalf("Invalid docker ID length: %v", len(id))
+		Fatal("Invalid docker ID length: %v", len(id))
 	}
 
 	// Add a wait channel
@@ -48,7 +48,7 @@ func (l *dockerListener) WaitForContainer(id string) {
 func (l *dockerListener) Listen() {
 	for evt := range docker_events.Stream() {
 		if len(evt.Id) != ID_LENGTH {
-			log.Fatalf("Invalid docker ID length: %v", len(evt.Id))
+			Fatal("Invalid docker ID length: %v", len(evt.Id))
 		}
 
 		// Notify container stop events by closing the appropriate ch.

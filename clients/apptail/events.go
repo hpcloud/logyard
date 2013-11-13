@@ -35,17 +35,17 @@ func MonitorCloudEvents() {
 
 		err := json.Unmarshal([]byte(msg.Value), &event)
 		if err != nil {
-			log.Fatal(err) // not expected at all
+			Fatal("%v", err) // not expected at all
 		}
 
 		// Re-parse the event json record into a TimelineEvent structure.
 		var t TimelineEvent
 		if data, err := json.Marshal(event.Info); err != nil {
-			log.Fatal(err)
+			Fatal("%v", err)
 		} else {
 			err = json.Unmarshal(data, &t)
 			if err != nil {
-				log.Fatalf("Invalid timeline event: %v", err)
+				Fatal("Invalid timeline event: %v", err)
 			}
 		}
 
@@ -57,7 +57,7 @@ func MonitorCloudEvents() {
 
 	err := sub.Wait()
 	if err != nil {
-		log.Fatal(err)
+		Fatal("%v", err)
 	}
 }
 
@@ -77,6 +77,6 @@ func PublishAppLog(
 	}).Publish(pub, true)
 
 	if err != nil {
-		log.Fatal(err)
+		Fatal("%v", err)
 	}
 }
