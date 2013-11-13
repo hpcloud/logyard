@@ -58,6 +58,8 @@ func tailLogFile(name string, filepath string, nodeid string) (*tail.Tail, error
 }
 
 func main() {
+	go HandleInterrupts()
+
 	major, minor, patch := gozmq.Version()
 	log.Infof("Starting systail (zeromq %d.%d.%d)", major, minor, patch)
 
@@ -65,6 +67,7 @@ func main() {
 
 	nodeid, err := server.LocalIP()
 	if err != nil {
+		Cleanup()
 		log.Fatalf("Failed to determine IP addr: %v", err)
 	}
 	log.Info("Host IP: ", nodeid)
@@ -73,12 +76,14 @@ func main() {
 
 	fmt.Printf("%+v\n", Config.LogFiles)
 	if len(Config.LogFiles) == 0 {
+		Cleanup()
 		log.Fatal("No log files configured in doozer")
 	}
 
 	for name, logfile := range Config.LogFiles {
 		t, err := tailLogFile(name, logfile, nodeid)
 		if err != nil {
+			Cleanup()
 			log.Fatal(err)
 		}
 		tailers = append(tailers, t)

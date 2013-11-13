@@ -14,6 +14,7 @@ var Config struct {
 func LoadConfig() {
 	conn, headRev, err := server.NewDoozerClient("systail")
 	if err != nil {
+		Cleanup()
 		log.Fatal(err)
 	}
 
@@ -23,12 +24,14 @@ func LoadConfig() {
 	Config.LogFiles = make(map[string]string)
 	err = doozerCfg.Load()
 	if err != nil {
+		Cleanup()
 		log.Fatal(err)
 	}
 
 	// Watch for config changes in doozer
 	go doozerCfg.Monitor(key+"*", func(change *doozerconfig.Change, err error) {
 		if err != nil {
+			Cleanup()
 			log.Fatalf("Error processing config change in doozer: %s", err)
 			return
 		}
