@@ -1,4 +1,4 @@
-package messagecommon
+package common
 
 import (
 	"time"

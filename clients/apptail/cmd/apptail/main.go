@@ -6,12 +6,14 @@ import (
 	"github.com/nu7hatch/gouuid"
 	"io/ioutil"
 	"logyard/clients/apptail"
+	"logyard/clients/apptail/docker"
+	"logyard/clients/common"
 	"os"
 	"stackato/server"
 )
 
 func main() {
-	go apptail.HandleInterrupts()
+	go common.RegisterTailCleanup()
 	major, minor, patch := gozmq.Version()
 	log.Infof("Starting apptail (zeromq %d.%d.%d)", major, minor, patch)
 
@@ -29,7 +31,7 @@ func main() {
 	natsclient.Publish("logyard."+uid+".start", []byte("{}"))
 	log.Infof("Waiting for app instances ...")
 
-	go apptail.DockerListener.Listen()
+	go docker.DockerListener.Listen()
 
 	apptail.MonitorCloudEvents()
 }
@@ -43,16 +45,16 @@ func getUID() string {
 	if _, err := os.Stat(uidFile); os.IsNotExist(err) {
 		uid, err := uuid.NewV4()
 		if err != nil {
-			apptail.Fatal("%v", err)
+			common.Fatal("%v", err)
 		}
 		UID = uid.String()
 		if err = ioutil.WriteFile(uidFile, []byte(UID), 0644); err != nil {
-			apptail.Fatal("%v", err)
+			common.Fatal("%v", err)
 		}
 	} else {
 		data, err := ioutil.ReadFile(uidFile)
 		if err != nil {
-			apptail.Fatal("%v", err)
+			common.Fatal("%v", err)
 		}
 		UID = string(data)
 	}

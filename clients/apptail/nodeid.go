@@ -2,6 +2,7 @@ package apptail
 
 import (
 	"github.com/ActiveState/log"
+	"logyard/clients/common"
 	"stackato/server"
 	"sync"
 )
@@ -15,7 +16,7 @@ func LocalNodeId() string {
 		var err error
 		nodeid, err = server.LocalIP()
 		if err != nil {
-			Fatal("Failed to determine IP addr: %v", err)
+			common.Fatal("Failed to determine IP addr: %v", err)
 		}
 		log.Info("Local Node ID: ", nodeid)
 	})

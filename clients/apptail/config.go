@@ -1,6 +1,7 @@
 package apptail
 
 import (
+	"logyard/clients/common"
 	"stackato/server"
 )
 
@@ -20,6 +21,6 @@ func LoadConfig() {
 	var err error
 	c, err = server.NewConfig("apptail", Config{})
 	if err != nil {
-		Fatal("Unable to load apptail config; %v", err)
+		common.Fatal("Unable to load apptail config; %v", err)
 	}
 }

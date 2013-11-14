@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/ActiveState/log"
 	"logyard"
-	"logyard/clients/messagecommon"
+	"logyard/clients/common"
 	"logyard/clients/sieve"
 	"time"
 )
@@ -45,7 +45,7 @@ func main() {
 			continue
 		}
 		if event != nil {
-			event.MessageCommon = messagecommon.New(event.Desc, time.Unix(record.UnixTime, 0), record.NodeID)
+			event.MessageCommon = common.NewMessageCommon(event.Desc, time.Unix(record.UnixTime, 0), record.NodeID)
 			event.MustPublish(pub)
 		}
 

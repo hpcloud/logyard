@@ -1,4 +1,4 @@
-package messagecommon
+package common
 
 import (
 	"time"
@@ -13,7 +13,7 @@ type MessageCommon struct {
 	Syslog    syslogMessage
 }
 
-func New(text string, t time.Time, node string) MessageCommon {
+func NewMessageCommon(text string, t time.Time, node string) MessageCommon {
 	return MessageCommon{
 		text,
 		node,

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/ActiveState/log"
 	"github.com/ActiveState/zmqpubsub"
-	"logyard/clients/messagecommon"
+	"logyard/clients/common"
 	"unicode/utf8"
 )
 
@@ -17,7 +17,7 @@ type Message struct {
 	AppGUID       string
 	AppName       string
 	AppSpace      string
-	messagecommon.MessageCommon
+	common.MessageCommon
 }
 
 // Publish publishes an AppLogMessage to logyard after sanity checks.

@@ -5,8 +5,8 @@ import (
 	"github.com/ActiveState/log"
 	"github.com/ActiveState/zmqpubsub"
 	"logyard"
+	"logyard/clients/common"
 	"logyard/clients/docker_events"
-	"logyard/clients/messagecommon"
 	"logyard/clients/sieve"
 	"stackato/server"
 	"time"
@@ -22,7 +22,7 @@ func SendToLogyard(pub *zmqpubsub.Publisher, event *docker_events.Event) {
 		Process:       "docker_events",
 		Severity:      "INFO",
 		Desc:          text,
-		MessageCommon: messagecommon.New(text, time.Unix(event.Time, 0), NodeID),
+		MessageCommon: common.NewMessageCommon(text, time.Unix(event.Time, 0), NodeID),
 	}).MustPublish(pub)
 }
 

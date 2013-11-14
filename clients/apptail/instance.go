@@ -6,7 +6,8 @@ import (
 	"github.com/ActiveState/tail"
 	"github.com/ActiveState/zmqpubsub"
 	"logyard"
-	"logyard/clients/messagecommon"
+	"logyard/clients/apptail/docker"
+	"logyard/clients/common"
 	"os"
 	"path/filepath"
 	"strings"
@@ -26,7 +27,7 @@ type Instance struct {
 }
 
 func (instance *Instance) Identifier() string {
-	return fmt.Sprintf("%v[%v:%v]", instance.AppName, instance.Index, instance.DockerId[:ID_LENGTH])
+	return fmt.Sprintf("%v[%v:%v]", instance.AppName, instance.Index, instance.DockerId[:docker.ID_LENGTH])
 }
 
 // Tail begins tailing the files for this instance.
@@ -44,7 +45,7 @@ func (instance *Instance) Tail() {
 	}
 
 	go func() {
-		DockerListener.WaitForContainer(instance.DockerId)
+		docker.DockerListener.WaitForContainer(instance.DockerId)
 		log.Infof("Container for %v exited", instance.Identifier())
 		close(stopCh)
 	}()
@@ -107,7 +108,7 @@ func (instance *Instance) getLogFiles() map[string]string {
 	} else {
 		// Use $STACKATO_LOG_FILES
 		logfiles = make(map[string]string)
-		if env, err := GetDockerAppEnv(instance.RootPath); err != nil {
+		if env, err := docker.GetDockerAppEnv(instance.RootPath); err != nil {
 			log.Errorf("Failed to read docker image env: %v", err)
 		} else {
 			if s, ok := env["STACKATO_LOG_FILES"]; ok {
@@ -224,7 +225,7 @@ func (instance *Instance) publishLineAs(pub *zmqpubsub.Publisher, source string,
 		AppGUID:       instance.AppGUID,
 		AppName:       instance.AppName,
 		AppSpace:      instance.AppSpace,
-		MessageCommon: messagecommon.New(line.Text, line.Time, LocalNodeId()),
+		MessageCommon: common.NewMessageCommon(line.Text, line.Time, LocalNodeId()),
 	}
 
 	if line.Err != nil {
@@ -237,6 +238,6 @@ func (instance *Instance) publishLineAs(pub *zmqpubsub.Publisher, source string,
 
 	err := msg.Publish(pub, false)
 	if err != nil {
-		Fatal("unable to publish: %v", err)
+		common.Fatal("unable to publish: %v", err)
 	}
 }

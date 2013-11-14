@@ -5,7 +5,7 @@ import (
 	"github.com/ActiveState/log"
 	"github.com/ActiveState/zmqpubsub"
 	"logyard"
-	"logyard/clients/messagecommon"
+	"logyard/clients/common"
 	"logyard/clients/sieve"
 	"time"
 )
@@ -35,17 +35,17 @@ func MonitorCloudEvents() {
 
 		err := json.Unmarshal([]byte(msg.Value), &event)
 		if err != nil {
-			Fatal("%v", err) // not expected at all
+			common.Fatal("%v", err) // not expected at all
 		}
 
 		// Re-parse the event json record into a TimelineEvent structure.
 		var t TimelineEvent
 		if data, err := json.Marshal(event.Info); err != nil {
-			Fatal("%v", err)
+			common.Fatal("%v", err)
 		} else {
 			err = json.Unmarshal(data, &t)
 			if err != nil {
-				Fatal("Invalid timeline event: %v", err)
+				common.Fatal("Invalid timeline event: %v", err)
 			}
 		}
 
@@ -57,7 +57,7 @@ func MonitorCloudEvents() {
 
 	err := sub.Wait()
 	if err != nil {
-		Fatal("%v", err)
+		common.Fatal("%v", err)
 	}
 }
 
@@ -73,10 +73,10 @@ func PublishAppLog(
 		AppGUID:       t.App.GUID,
 		AppName:       t.App.Name,
 		AppSpace:      t.App.Space,
-		MessageCommon: messagecommon.New(event.Desc, time.Unix(event.UnixTime, 0), LocalNodeId()),
+		MessageCommon: common.NewMessageCommon(event.Desc, time.Unix(event.UnixTime, 0), LocalNodeId()),
 	}).Publish(pub, true)
 
 	if err != nil {
-		Fatal("%v", err)
+		common.Fatal("%v", err)
 	}
 }

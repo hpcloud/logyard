@@ -1,6 +1,7 @@
 package main
 
 import (
+	"logyard/clients/common"
 	"stackato/server"
 )
 
@@ -19,6 +20,6 @@ func LoadConfig() {
 	var err error
 	c, err = server.NewConfig("systail", Config{})
 	if err != nil {
-		fatal("Unable to load systail config; %v", err)
+		common.Fatal("Unable to load systail config; %v", err)
 	}
 }

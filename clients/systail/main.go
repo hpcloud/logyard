@@ -7,7 +7,7 @@ import (
 	"github.com/ActiveState/tail"
 	"github.com/alecthomas/gozmq"
 	"logyard"
-	"logyard/clients/messagecommon"
+	"logyard/clients/common"
 	"os"
 	"stackato/server"
 	"unicode/utf8"
@@ -18,7 +18,7 @@ import (
 // `AppLogMessage`.
 type SystailLogMessage struct {
 	Name string // Component name (eg: dea)
-	messagecommon.MessageCommon
+	common.MessageCommon
 }
 
 func tailLogFile(
@@ -53,7 +53,7 @@ func tailLogFile(
 			}
 			data, err := json.Marshal(SystailLogMessage{
 				name,
-				messagecommon.New(line.Text, line.Time, nodeid),
+				common.NewMessageCommon(line.Text, line.Time, nodeid),
 			})
 			if err != nil {
 				tail.Killf("Failed to encode to JSON: %v", err)
@@ -67,7 +67,7 @@ func tailLogFile(
 }
 
 func main() {
-	go handleInterrupts()
+	go common.RegisterTailCleanup()
 
 	major, minor, patch := gozmq.Version()
 	log.Infof("Starting systail (zeromq %d.%d.%d)", major, minor, patch)
@@ -76,7 +76,7 @@ func main() {
 
 	nodeid, err := server.LocalIP()
 	if err != nil {
-		fatal("Failed to determine IP addr: %v", err)
+		common.Fatal("Failed to determine IP addr: %v", err)
 	}
 	log.Info("Host IP: ", nodeid)
 
@@ -86,13 +86,13 @@ func main() {
 
 	fmt.Printf("%+v\n", logFiles)
 	if len(logFiles) == 0 {
-		fatal("No log files exist in configuration.")
+		common.Fatal("No log files exist in configuration.")
 	}
 
 	for name, logfile := range logFiles {
 		t, err := tailLogFile(name, logfile, nodeid)
 		if err != nil {
-			fatal("%v", err)
+			common.Fatal("%v", err)
 		}
 		tailers = append(tailers, t)
 	}

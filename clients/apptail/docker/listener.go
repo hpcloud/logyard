@@ -1,7 +1,8 @@
-package apptail
+package docker
 
 import (
 	"github.com/ActiveState/log"
+	"logyard/clients/common"
 	"logyard/clients/docker_events"
 	"sync"
 )
@@ -26,7 +27,7 @@ func (l *dockerListener) WaitForContainer(id string) {
 	id = id[:ID_LENGTH]
 
 	if len(id) != ID_LENGTH {
-		Fatal("Invalid docker ID length: %v", len(id))
+		common.Fatal("Invalid docker ID length: %v", len(id))
 	}
 
 	// Add a wait channel
@@ -48,7 +49,7 @@ func (l *dockerListener) WaitForContainer(id string) {
 func (l *dockerListener) Listen() {
 	for evt := range docker_events.Stream() {
 		if len(evt.Id) != ID_LENGTH {
-			Fatal("Invalid docker ID length: %v", len(evt.Id))
+			common.Fatal("Invalid docker ID length: %v", len(evt.Id))
 		}
 
 		// Notify container stop events by closing the appropriate ch.

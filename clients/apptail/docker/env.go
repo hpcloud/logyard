@@ -1,4 +1,4 @@
-package apptail
+package docker
 
 import (
 	"encoding/json"
