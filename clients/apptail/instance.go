@@ -149,7 +149,7 @@ func (instance *Instance) getLogFiles() map[string]string {
 		}
 		fullpath, err = filepath.EvalSymlinks(fullpath)
 		if err != nil {
-			instance.notify(pub, fmt.Sprintf("WARN -- Ignoring inaccessible, nonexistent or insecure path %v", path))
+			instance.notify(pub, fmt.Sprintf("WARN -- Ignoring missing/inaccessible path %v", path))
 			continue
 		}
 		if !strings.HasPrefix(fullpath, instance.RootPath) {
@@ -157,7 +157,7 @@ func (instance *Instance) getLogFiles() map[string]string {
 			// This user warning is exactly the same as above, lest we provide
 			// a backdoor for a malicious user to list the directory tree on
 			// the host.
-			instance.notify(pub, fmt.Sprintf("WARN -- Ignoring inaccessible, nonexistent or insecure path %v", path))
+			instance.notify(pub, fmt.Sprintf("WARN -- Ignoring missing/inaccessible path %v", path))
 			continue
 		}
 		logfilesSecure[name] = fullpath
