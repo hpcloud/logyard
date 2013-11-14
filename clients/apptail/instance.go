@@ -129,6 +129,11 @@ func (instance *Instance) getLogFiles() map[string]string {
 	// Expand paths, and securely ensure they fail within the app root.
 	logfilesSecure := make(map[string]string)
 	for name, path := range logfiles {
+		// Treat relative paths as being relative the app directory.
+		if !filepath.IsAbs(path) {
+			path = filepath.Join("/app/app/", path)
+		}
+
 		fullpath := filepath.Join(instance.RootPath, path)
 		fullpath, err := filepath.Abs(fullpath)
 		if err != nil {
