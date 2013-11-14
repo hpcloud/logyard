@@ -62,7 +62,7 @@ func (instance *Instance) tailFile(name, filename string, stopCh chan bool) {
 		return
 	}
 
-	tail, err := tail.TailFile(filename, tail.Config{
+	t, err := tail.TailFile(filename, tail.Config{
 		MaxLineSize: GetConfig().MaxRecordSize,
 		MustExist:   true,
 		Follow:      true,
@@ -78,14 +78,14 @@ func (instance *Instance) tailFile(name, filename string, stopCh chan bool) {
 FORLOOP:
 	for {
 		select {
-		case line, ok := <-tail.Lines:
+		case line, ok := <-t.Lines:
 			if !ok {
-				err = tail.Wait()
+				err = t.Wait()
 				break FORLOOP
 			}
 			instance.publishLine(pub, name, line)
 		case <-stopCh:
-			err = tail.Stop()
+			err = t.Stop()
 			break FORLOOP
 		}
 	}
@@ -126,10 +126,16 @@ func (instance *Instance) getLogFiles() map[string]string {
 		}
 	}
 
-	// Expand paths, and securely ensure they fail within the app root.
+	pub := logyard.Broker.NewPublisherMust()
+	defer pub.Stop()
+	// XXX: this delay is unfortunately required, else the publish calls
+	// (instance.notify) below for warnings will get ignored.
+	time.Sleep(100 * time.Millisecond)
+
+	// Expand paths, and securely ensure they fall within the app root.
 	logfilesSecure := make(map[string]string)
 	for name, path := range logfiles {
-		// Treat relative paths as being relative the app directory.
+		// Treat relative paths as being relative to the app directory.
 		if !filepath.IsAbs(path) {
 			path = filepath.Join("/app/app/", path)
 		}
@@ -137,17 +143,21 @@ func (instance *Instance) getLogFiles() map[string]string {
 		fullpath := filepath.Join(instance.RootPath, path)
 		fullpath, err := filepath.Abs(fullpath)
 		if err != nil {
-			// TODO: push warnings in this function to the app log stream.
 			log.Warnf("Cannot find Abs of %v <join> %v: %v", instance.RootPath, path, err)
+			instance.notify(pub, fmt.Sprintf("WARN -- Failed to find absolute path for %v", path))
 			continue
 		}
 		fullpath, err = filepath.EvalSymlinks(fullpath)
 		if err != nil {
-			log.Warnf("Cannot eval symlinks in path %v <join> %v: %v", instance.RootPath, path, err)
+			instance.notify(pub, fmt.Sprintf("WARN -- Ignoring inaccessible, nonexistent or insecure path %v", path))
 			continue
 		}
 		if !strings.HasPrefix(fullpath, instance.RootPath) {
 			log.Warnf("Ignoring insecure log path %v (via %v) in instance %+v", fullpath, path, instance)
+			// This user warning is exactly the same as above, lest we provide
+			// a backdoor for a malicious user to list the directory tree on
+			// the host.
+			instance.notify(pub, fmt.Sprintf("WARN -- Ignoring inaccessible, nonexistent or insecure path %v", path))
 			continue
 		}
 		logfilesSecure[name] = fullpath
@@ -186,19 +196,23 @@ func (instance *Instance) getReadLimit(
 	return limit, nil
 }
 
-// publishLine zmq-publishes a log line corresponding to this instance
-func (instance *Instance) publishLine(
-	pub *zmqpubsub.Publisher,
-	logname string,
-	line *tail.Line) {
+// publishLine publishes a log line corresponding to this instance.
+func (instance *Instance) publishLine(pub *zmqpubsub.Publisher, logname string, line *tail.Line) {
+	instance.publishLineAs(pub, instance.Type, logname, line)
+}
 
+func (instance *Instance) notify(pub *zmqpubsub.Publisher, line string) {
+	instance.publishLineAs(pub, "stackato.apptail", "", tail.NewLine(line))
+}
+
+func (instance *Instance) publishLineAs(pub *zmqpubsub.Publisher, source string, logname string, line *tail.Line) {
 	if line == nil {
 		panic("line is nil")
 	}
 
 	msg := &Message{
 		LogFilename:   logname,
-		Source:        instance.Type,
+		Source:        source,
 		InstanceIndex: instance.Index,
 		AppGUID:       instance.AppGUID,
 		AppName:       instance.AppName,
