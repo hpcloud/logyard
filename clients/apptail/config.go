@@ -1,7 +1,6 @@
 package apptail
 
 import (
-	"github.com/ActiveState/log"
 	"stackato/server"
 )
 
@@ -21,6 +20,6 @@ func LoadConfig() {
 	var err error
 	c, err = server.NewConfig("apptail", Config{})
 	if err != nil {
-		log.Fatalf("Unable to load apptail config; %v", err)
+		Fatal("Unable to load apptail config; %v", err)
 	}
 }

@@ -211,6 +211,6 @@ func (instance *Instance) publishLine(
 
 	err := msg.Publish(pub, false)
 	if err != nil {
-		log.Fatal(err)
+		Fatal("unable to publish: %v", err)
 	}
 }
