@@ -135,12 +135,15 @@ func (instance *Instance) getLogFiles() map[string]string {
 	// Expand paths, and securely ensure they fall within the app root.
 	logfilesSecure := make(map[string]string)
 	for name, path := range logfiles {
+		var fullpath string
+
 		// Treat relative paths as being relative to the app directory.
 		if !filepath.IsAbs(path) {
-			path = filepath.Join("/app/app/", path)
+			fullpath = filepath.Join(instance.RootPath, "/app/app/", path)
+		} else {
+			fullpath = filepath.Join(instance.RootPath, path)
 		}
 
-		fullpath := filepath.Join(instance.RootPath, path)
 		fullpath, err := filepath.Abs(fullpath)
 		if err != nil {
 			log.Warnf("Cannot find Abs of %v <join> %v: %v", instance.RootPath, path, err)
