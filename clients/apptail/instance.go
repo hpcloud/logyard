@@ -166,6 +166,10 @@ func (instance *Instance) getLogFiles() map[string]string {
 		logfilesSecure[name] = fullpath
 	}
 
+	if len(logfilesSecure) == 0 {
+		instance.notify(pub, fmt.Sprintf("ERROR -- No valid log files detected for tailing"))
+	}
+
 	return logfilesSecure
 }
 
