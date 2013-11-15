@@ -69,6 +69,7 @@ func (instance *Instance) tailFile(name, filename string, stopCh chan bool) {
 	limit, err := instance.getReadLimit(pub, name, filename)
 	if err != nil {
 		log.Warn(err)
+		instance.SendTimelineEvent("WARN -- %v", err)
 		return
 	}
 
@@ -82,6 +83,7 @@ func (instance *Instance) tailFile(name, filename string, stopCh chan bool) {
 		LimitRate:   GetConfig().RateLimit})
 	if err != nil {
 		log.Warnf("Cannot tail file (%s); %s", filename, err)
+		instance.SendTimelineEvent("ERROR -- Cannot tail file (%s); %s", name, err)
 		return
 	}
 
@@ -102,6 +104,7 @@ FORLOOP:
 
 	if err != nil {
 		log.Warn(err)
+		instance.SendTimelineEvent("WARN -- Error tailing file (%s); %s", name, err)
 	}
 
 	log.Infof("Completed tailing %v log for %v", name, instance.Identifier())
@@ -123,8 +126,8 @@ func (instance *Instance) getLogFiles() map[string]string {
 			if s, ok := env["STACKATO_LOG_FILES"]; ok {
 				parts := strings.Split(s, ":")
 				if len(parts) > 7 {
-					log.Warnf("$STACKATO_LOG_FILES contains more than 7 parts; using only last 7 parts")
 					parts = parts[len(parts)-7 : len(parts)]
+					instance.SendTimelineEvent("WARN -- $STACKATO_LOG_FILES is large; using only last 7 logs: %v", parts)
 				}
 				for _, f := range parts {
 					parts := strings.SplitN(f, "=", 2)
@@ -151,12 +154,12 @@ func (instance *Instance) getLogFiles() map[string]string {
 		fullpath, err := filepath.Abs(fullpath)
 		if err != nil {
 			log.Warnf("Cannot find Abs of %v <join> %v: %v", instance.RootPath, path, err)
-			instance.notify(fmt.Sprintf("WARN -- Failed to find absolute path for %v", path))
+			instance.SendTimelineEvent("WARN -- Failed to find absolute path for %v", path)
 			continue
 		}
 		fullpath, err = filepath.EvalSymlinks(fullpath)
 		if err != nil {
-			instance.notify(fmt.Sprintf("WARN -- Ignoring missing/inaccessible path %v", path))
+			instance.SendTimelineEvent("WARN -- Ignoring missing/inaccessible path %v", path)
 			continue
 		}
 		if !strings.HasPrefix(fullpath, instance.RootPath) {
@@ -164,14 +167,14 @@ func (instance *Instance) getLogFiles() map[string]string {
 			// This user warning is exactly the same as above, lest we provide
 			// a backdoor for a malicious user to list the directory tree on
 			// the host.
-			instance.notify(fmt.Sprintf("WARN -- Ignoring missing/inaccessible path %v", path))
+			instance.SendTimelineEvent("WARN -- Ignoring missing/inaccessible path %v", path)
 			continue
 		}
 		logfilesSecure[name] = fullpath
 	}
 
 	if len(logfilesSecure) == 0 {
-		instance.notify(fmt.Sprintf("ERROR -- No valid log files detected for tailing"))
+		instance.SendTimelineEvent("ERROR -- No valid log files detected for tailing")
 	}
 
 	return logfilesSecure
@@ -194,13 +197,9 @@ func (instance *Instance) getReadLimit(
 	size := fi.Size()
 	limit := filesizeLimit
 	if size > filesizeLimit {
-		err := fmt.Errorf("Skipping much of a large log file (%s); size (%v bytes) > read_limit (%v bytes)",
+		instance.SendTimelineEvent(
+			"Skipping much of a large log file (%s); size (%v bytes) > read_limit (%v bytes)",
 			logname, size, filesizeLimit)
-		// Publish special error message.
-		instance.publishLine(pub, logname, &tail.Line{
-			Text: err.Error(),
-			Time: time.Now(),
-			Err:  err})
 	} else {
 		limit = size
 	}
@@ -237,12 +236,12 @@ func (instance *Instance) publishLineAs(pub *zmqpubsub.Publisher, source string,
 
 	err := msg.Publish(pub, false)
 	if err != nil {
-		common.Fatal("unable to publish: %v", err)
+		common.Fatal("Unable to publish: %v", err)
 	}
 }
 
-func (instance *Instance) notify(line string) {
-	// instance.publishLineAs(pub, "stackato.apptail", "", tail.NewLine(line))
+func (instance *Instance) SendTimelineEvent(format string, v ...interface{}) {
+	line := fmt.Sprintf(format, v...)
 	tEvent := event.TimelineEvent{event.App{instance.AppGUID, instance.AppSpace, instance.AppName}, instance.Index}
 	evt := sieve.Event{
 		Type:     "timeline",
