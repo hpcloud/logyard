@@ -9,6 +9,7 @@ import (
 	"logyard/clients/apptail/docker"
 	"logyard/clients/apptail/event"
 	"logyard/clients/apptail/message"
+	"logyard/clients/apptail/pubchannel"
 	"logyard/clients/apptail/util"
 	"logyard/clients/common"
 	"logyard/clients/sieve"
@@ -28,6 +29,7 @@ type Instance struct {
 	DockerId string `json:"docker_id"`
 	RootPath string
 	LogFiles map[string]string
+	pubch    *pubchannel.PubChannel
 }
 
 func (instance *Instance) Identifier() string {
@@ -40,6 +42,9 @@ func (instance *Instance) Tail() {
 		instance.Type, instance.Identifier(), instance)
 
 	stopCh := make(chan bool)
+
+	instance.pubch = pubchannel.New("event.timeline", stopCh)
+
 	logfiles := instance.getLogFiles()
 
 	log.Infof("Determined log files: %+v", logfiles)
@@ -131,12 +136,6 @@ func (instance *Instance) getLogFiles() map[string]string {
 		}
 	}
 
-	pub := logyard.Broker.NewPublisherMust()
-	defer pub.Stop()
-	// XXX: this delay is unfortunately required, else the publish calls
-	// (instance.notify) below for warnings will get ignored.
-	time.Sleep(100 * time.Millisecond)
-
 	// Expand paths, and securely ensure they fall within the app root.
 	logfilesSecure := make(map[string]string)
 	for name, path := range logfiles {
@@ -152,12 +151,12 @@ func (instance *Instance) getLogFiles() map[string]string {
 		fullpath, err := filepath.Abs(fullpath)
 		if err != nil {
 			log.Warnf("Cannot find Abs of %v <join> %v: %v", instance.RootPath, path, err)
-			instance.notify(pub, fmt.Sprintf("WARN -- Failed to find absolute path for %v", path))
+			instance.notify(fmt.Sprintf("WARN -- Failed to find absolute path for %v", path))
 			continue
 		}
 		fullpath, err = filepath.EvalSymlinks(fullpath)
 		if err != nil {
-			instance.notify(pub, fmt.Sprintf("WARN -- Ignoring missing/inaccessible path %v", path))
+			instance.notify(fmt.Sprintf("WARN -- Ignoring missing/inaccessible path %v", path))
 			continue
 		}
 		if !strings.HasPrefix(fullpath, instance.RootPath) {
@@ -165,14 +164,14 @@ func (instance *Instance) getLogFiles() map[string]string {
 			// This user warning is exactly the same as above, lest we provide
 			// a backdoor for a malicious user to list the directory tree on
 			// the host.
-			instance.notify(pub, fmt.Sprintf("WARN -- Ignoring missing/inaccessible path %v", path))
+			instance.notify(fmt.Sprintf("WARN -- Ignoring missing/inaccessible path %v", path))
 			continue
 		}
 		logfilesSecure[name] = fullpath
 	}
 
 	if len(logfilesSecure) == 0 {
-		instance.notify(pub, fmt.Sprintf("ERROR -- No valid log files detected for tailing"))
+		instance.notify(fmt.Sprintf("ERROR -- No valid log files detected for tailing"))
 	}
 
 	return logfilesSecure
@@ -242,7 +241,7 @@ func (instance *Instance) publishLineAs(pub *zmqpubsub.Publisher, source string,
 	}
 }
 
-func (instance *Instance) notify(pub *zmqpubsub.Publisher, line string) {
+func (instance *Instance) notify(line string) {
 	// instance.publishLineAs(pub, "stackato.apptail", "", tail.NewLine(line))
 	tEvent := event.TimelineEvent{event.App{instance.AppGUID, instance.AppSpace, instance.AppName}, instance.Index}
 	evt := sieve.Event{
@@ -256,5 +255,5 @@ func (instance *Instance) notify(pub *zmqpubsub.Publisher, line string) {
 		Process:       "apptail",
 		MessageCommon: common.NewMessageCommon(line, time.Now(), util.LocalNodeId()),
 	}
-	evt.MustPublish(pub)
+	instance.pubch.Ch <- evt
 }
