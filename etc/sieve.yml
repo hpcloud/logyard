@@ -82,7 +82,7 @@ events:
       regex: 'INFO -- TIMELINE (.+)$'
       sample: 'INFO -- TIMELINE {"event":"APP_DELETE", "app":{"id":1,"name":"foo"}, "user":{"id":1,"email":"foo@bar.com"}}'
       handlertype: json
-      format: '[{{.event}}] {{.message}}'
+      format: '{{.message}}'
   filesystem_node:
     service_provision:
       substring: "Successfully provisioned service"
