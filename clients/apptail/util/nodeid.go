@@ -1,4 +1,4 @@
-package apptail
+package util
 
 import (
 	"github.com/ActiveState/log"

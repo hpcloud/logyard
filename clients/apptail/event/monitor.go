@@ -1,25 +1,16 @@
-package apptail
+package event
 
 import (
 	"encoding/json"
 	"github.com/ActiveState/log"
 	"github.com/ActiveState/zmqpubsub"
 	"logyard"
+	"logyard/clients/apptail/message"
+	"logyard/clients/apptail/util"
 	"logyard/clients/common"
 	"logyard/clients/sieve"
 	"time"
 )
-
-type App struct {
-	GUID  string `json:"guid"`
-	Space string `json:"space_guid"`
-	Name  string `json:"name"`
-}
-
-type TimelineEvent struct {
-	App           App `json:"app"`
-	InstanceIndex int `json:"instance_index"`
-}
 
 // Make relevant cloud events available in application logs. Heroku style.
 func MonitorCloudEvents() {
@@ -66,14 +57,14 @@ func PublishAppLog(
 	t TimelineEvent,
 	source string, event *sieve.Event) {
 
-	err := (&Message{
+	err := (&message.Message{
 		LogFilename:   "",
 		Source:        source,
 		InstanceIndex: t.InstanceIndex,
 		AppGUID:       t.App.GUID,
 		AppName:       t.App.Name,
 		AppSpace:      t.App.Space,
-		MessageCommon: common.NewMessageCommon(event.Desc, time.Unix(event.UnixTime, 0), LocalNodeId()),
+		MessageCommon: common.NewMessageCommon(event.Desc, time.Unix(event.UnixTime, 0), util.LocalNodeId()),
 	}).Publish(pub, true)
 
 	if err != nil {

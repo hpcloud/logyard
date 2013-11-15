@@ -21,7 +21,7 @@ func init() {
 	DockerListener.waiters = make(map[string]chan bool)
 }
 
-func (l *dockerListener) WaitForContainer(id string) {
+func (l *dockerListener) BlockUntilContainerStops(id string) {
 	var total int
 	ch := make(chan bool)
 	id = id[:ID_LENGTH]

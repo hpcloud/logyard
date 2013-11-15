@@ -7,7 +7,11 @@ import (
 	"github.com/ActiveState/zmqpubsub"
 	"logyard"
 	"logyard/clients/apptail/docker"
+	"logyard/clients/apptail/event"
+	"logyard/clients/apptail/message"
+	"logyard/clients/apptail/util"
 	"logyard/clients/common"
+	"logyard/clients/sieve"
 	"os"
 	"path/filepath"
 	"strings"
@@ -45,7 +49,7 @@ func (instance *Instance) Tail() {
 	}
 
 	go func() {
-		docker.DockerListener.WaitForContainer(instance.DockerId)
+		docker.DockerListener.BlockUntilContainerStops(instance.DockerId)
 		log.Infof("Container for %v exited", instance.Identifier())
 		close(stopCh)
 	}()
@@ -209,23 +213,19 @@ func (instance *Instance) publishLine(pub *zmqpubsub.Publisher, logname string, 
 	instance.publishLineAs(pub, instance.Type, logname, line)
 }
 
-func (instance *Instance) notify(pub *zmqpubsub.Publisher, line string) {
-	instance.publishLineAs(pub, "stackato.apptail", "", tail.NewLine(line))
-}
-
 func (instance *Instance) publishLineAs(pub *zmqpubsub.Publisher, source string, logname string, line *tail.Line) {
 	if line == nil {
 		panic("line is nil")
 	}
 
-	msg := &Message{
+	msg := &message.Message{
 		LogFilename:   logname,
 		Source:        source,
 		InstanceIndex: instance.Index,
 		AppGUID:       instance.AppGUID,
 		AppName:       instance.AppName,
 		AppSpace:      instance.AppSpace,
-		MessageCommon: common.NewMessageCommon(line.Text, line.Time, LocalNodeId()),
+		MessageCommon: common.NewMessageCommon(line.Text, line.Time, util.LocalNodeId()),
 	}
 
 	if line.Err != nil {
@@ -240,4 +240,21 @@ func (instance *Instance) publishLineAs(pub *zmqpubsub.Publisher, source string,
 	if err != nil {
 		common.Fatal("unable to publish: %v", err)
 	}
+}
+
+func (instance *Instance) notify(pub *zmqpubsub.Publisher, line string) {
+	// instance.publishLineAs(pub, "stackato.apptail", "", tail.NewLine(line))
+	tEvent := event.TimelineEvent{event.App{instance.AppGUID, instance.AppSpace, instance.AppName}, instance.Index}
+	evt := sieve.Event{
+		Type:     "timeline",
+		Desc:     line,
+		Severity: "INFO",
+		Info: map[string]interface{}{
+			"app":            tEvent.App,
+			"instance_index": tEvent.InstanceIndex,
+		},
+		Process:       "apptail",
+		MessageCommon: common.NewMessageCommon(line, time.Now(), util.LocalNodeId()),
+	}
+	evt.MustPublish(pub)
 }

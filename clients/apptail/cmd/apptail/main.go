@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"logyard/clients/apptail"
 	"logyard/clients/apptail/docker"
+	apptail_event "logyard/clients/apptail/event"
 	"logyard/clients/common"
 	"os"
 	"stackato/server"
@@ -33,7 +34,7 @@ func main() {
 
 	go docker.DockerListener.Listen()
 
-	apptail.MonitorCloudEvents()
+	apptail_event.MonitorCloudEvents()
 }
 
 // getUID returns the UID of the aggregator running on this node. the UID is
