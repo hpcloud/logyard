@@ -229,7 +229,7 @@ func (instance *Instance) publishLineAs(pub *zmqpubsub.Publisher, source string,
 	if line.Err != nil {
 		// Mark this as a special error record, as it is
 		// coming from tail, not the app.
-		msg.Source = "stackato.apptail"
+		msg.Source = "stackato[apptail]"
 		msg.LogFilename = ""
 		log.Warnf("[%s] %s", instance.AppName, line.Text)
 	}

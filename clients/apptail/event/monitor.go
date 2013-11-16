@@ -2,6 +2,7 @@ package event
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/ActiveState/log"
 	"github.com/ActiveState/zmqpubsub"
 	"logyard"
@@ -40,7 +41,12 @@ func MonitorCloudEvents() {
 			}
 		}
 
-		source := "stackato." + event.Process
+		var source string
+		if t.InstanceIndex > -1 {
+			source = fmt.Sprintf("stackato[%v.%v]", event.Process, t.InstanceIndex)
+		} else {
+			source = fmt.Sprintf("stackato[%v]", event.Process)
+		}
 
 		PublishAppLog(pub, t, source, &event)
 	}
