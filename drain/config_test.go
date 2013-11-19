@@ -43,7 +43,7 @@ func TestParams(_t *testing.T) {
 
 func TestFormat(_t *testing.T) {
 	t := &DrainConfigTest{_t}
-	formatEncoded := "%7B%7B.Name%7D%7D%40%7B%7B.NodeID%7D%7D%3A+%7B%7B.Text%7D%7D"
+	formatEncoded := "%7B%7B.name%7D%7D%40%7B%7B.node_id%7D%7D%3A+%7B%7B.text%7D%7D"
 	cfg, err := ParseDrainUri(
 		"loggly", "tcp://logs.loggly.com:123/?format="+formatEncoded,
 		make(map[string]string))
@@ -51,7 +51,7 @@ func TestFormat(_t *testing.T) {
 		t.Fatal(err)
 	}
 	data, err := cfg.FormatJSON(
-		zmqpubsub.Message{"samplekey", `{"Name":"dea", "NodeID":"192", "Text":"started app"}`})
+		zmqpubsub.Message{"samplekey", `{"name":"dea", "node_id":"192", "text":"started app"}`})
 	if err != nil {
 		t.Fatal(err)
 	}

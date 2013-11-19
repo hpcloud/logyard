@@ -9,12 +9,12 @@ import (
 	"time"
 )
 
-// TODO: share it with systail
+// TODO: reuse logyard/clients/systail record
 type SystailRecord struct {
-	UnixTime int64
-	Text     string
-	Name     string
-	NodeID   string
+	UnixTime int64  `json:"unix_time"`
+	Text     string `json:"text"`
+	Name     string `json:"name"`
+	NodeID   string `json:"node_id"`
 }
 
 func main() {

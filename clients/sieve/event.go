@@ -8,11 +8,11 @@ import (
 )
 
 type Event struct {
-	Type     string // what type of event?
-	Desc     string // description of this event to be shown as-is to humans
-	Severity string
-	Info     map[string]interface{} // event-specific information as json
-	Process  string                 // which process generated this event?
+	Type     string                 `json:"type"`     // Event identifier.
+	Desc     string                 `json:"desc"`     // Event description
+	Severity string                 `json:"severity"` // Event severity (INFO, WARN, ERROR)
+	Info     map[string]interface{} `json:"info"`     // Aribtrary data specific to this event
+	Process  string                 `json:"process"`  // The process that generated this event
 	common.MessageCommon
 }
 

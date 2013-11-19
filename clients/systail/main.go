@@ -17,7 +17,7 @@ import (
 // systail log stream. Generally a subset of the fields in
 // `AppLogMessage`.
 type SystailLogMessage struct {
-	Name string // Component name (eg: dea)
+	Name string `json:"name"` // Component name (eg: dea)
 	common.MessageCommon
 }
 

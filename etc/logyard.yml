@@ -6,12 +6,12 @@
 # A configurable set of format strings that can be referred to from
 # the drain URIs.
 drainformats:
-  systail: "{{.Name}}@{{.NodeID}}: {{.Text}}"
-  apptail: "{{.HumanTime}} {{.Source}}.{{.InstanceIndex}}: {{.Text}}"
-  event: "{{.Type}}@{{.NodeID}}: {{.Text}} -- via {{.Process}}"
-  systail-syslog: "<{{.Syslog.Priority}}>{{.Syslog.Time}} - {{.NodeID}} {{.Name}} - - - {{.Text}}"
-  apptail-syslog: "<{{.Syslog.Priority}}>{{.Syslog.Time}} - {{.NodeID}} {{.AppName}}[{{.InstanceIndex}}].{{.Source}} - - - {{.Text}}"
-  event-syslog: "<{{.Syslog.Priority}}>{{.Syslog.Time}} - {{.NodeID}} {{.Process}} - - - {{.Type}}: {{.Text}}"
+  systail: "{{.name}}@{{.node_id}}: {{.text}}"
+  apptail: "{{.human_time}} {{.source}}.{{.instance_index}}: {{.text}}"
+  event: "{{.type}}@{{.node_id}}: {{.tet}} -- via {{.process}}"
+  systail-syslog: "<{{.syslog.priority}}>{{.syslog.time}} - {{.node_id}} {{.name}} - - - {{.text}}"
+  apptail-syslog: "<{{.syslog.priority}}>{{.syslog.time}} - {{.node_id}} {{.app_name}}[{{.instance_index}}].{{.source}} - - - {{.text}}"
+  event-syslog: "<{{.syslog.priority}}>{{.syslog.time}} - {{.node_id}} {{.process}} - - - {{.type}}: {{.text}}"
 
 # retrylimit prevents infinite retrying of certain drains (identified
 # by name prefix) by putting a upper bound on the how long a drain
