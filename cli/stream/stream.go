@@ -14,11 +14,11 @@ func Stream(ch chan []byte, options MessagePrinterOptions) {
 	printer := NewMessagePrinter(options)
 
 	printer.AddFormat("systail",
-		"{{.Name}}@{{.NodeID}}: {{.Text}}")
+		"{{.name}}@{{.node_id}}: {{.text}}")
 	printer.AddFormat("event",
-		"{{.Type}}[{{.Process}}]@{{.NodeID}}: {{.Desc}}")
+		"{{.type}}[{{.process}}]@{{.node_id}}: {{.desc}}")
 	printer.AddFormat("apptail",
-		"{{.AppName}}[{{.Source}}]@{{.NodeID}}: {{.Text}}")
+		"{{.app_name}}[{{.source}}]@{{.node_id}}: {{.text}}")
 
 	printer.SetPrePrintHook(streamHandler)
 

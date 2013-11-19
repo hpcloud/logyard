@@ -11,12 +11,12 @@ import (
 
 // Message corresponds to an entry in the app log stream.
 type Message struct {
-	LogFilename   string
-	Source        string // example: app, staging, stackato.dea_ng
-	InstanceIndex int
-	AppGUID       string
-	AppName       string
-	AppSpace      string
+	LogFilename   string `json:"filename"`
+	Source        string `json:"source"` // example: app, staging, stackato.dea_ng
+	InstanceIndex int    `json:"instance_index"`
+	AppGUID       string `json:"app_guid"`
+	AppName       string `json:"app_name"`
+	AppSpace      string `json:"app_space"`
 	common.MessageCommon
 }
 

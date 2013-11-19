@@ -6,16 +6,9 @@ import (
 	"logyard"
 	"logyard/clients/common"
 	"logyard/clients/sieve"
+	"logyard/clients/systail"
 	"time"
 )
-
-// TODO: share it with systail
-type SystailRecord struct {
-	UnixTime int64
-	Text     string
-	Name     string
-	NodeID   string
-}
 
 func main() {
 	LoadConfig()
@@ -30,7 +23,7 @@ func main() {
 
 	log.Info("Watching the systail stream on this node")
 	for message := range sub.Ch {
-		var record SystailRecord
+		var record systail.Message
 		err := json.Unmarshal([]byte(message.Value), &record)
 		if err != nil {
 			log.Warnf("failed to parse json: %s; ignoring record: %s",

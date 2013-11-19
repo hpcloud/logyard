@@ -26,9 +26,9 @@ func init() {
 }
 
 func handleSystail(record map[string]interface{}, options MessagePrinterOptions) bool {
-	text := record["Text"].(string)
-	process := record["Name"].(string)
-	node := record["NodeID"].(string)
+	text := record["text"].(string)
+	process := record["name"].(string)
+	node := record["node_id"].(string)
 	severity := ""
 
 	if len(options.NodeID) > 0 && node != options.NodeID {
@@ -79,43 +79,43 @@ func handleSystail(record map[string]interface{}, options MessagePrinterOptions)
 	}
 
 	if !options.NoColor {
-		record["NodeID"] = golor.Colorize(node, golor.GRAY, -1)
+		record["node_id"] = golor.Colorize(node, golor.GRAY, -1)
 		switch severity {
 		case "ERROR":
-			record["Text"] = golor.Colorize(text, golor.RED, -1)
+			record["text"] = golor.Colorize(text, golor.RED, -1)
 		case "WARN":
 			// yellow
-			record["Text"] = golor.Colorize(text, golor.YELLOW, -1)
+			record["text"] = golor.Colorize(text, golor.YELLOW, -1)
 		default:
-			record["Text"] = text
+			record["text"] = text
 		}
 
 		// Assign an unique color to the process name
-		record["Name"] = golor.Colorize(process, golor.AssignColor(process), -1)
+		record["name"] = golor.Colorize(process, golor.AssignColor(process), -1)
 	}
 	return true
 }
 
 func handleEvent(record map[string]interface{}, options MessagePrinterOptions) bool {
-	desc := record["Desc"].(string)
-	severity := record["Severity"].(string)
-	node := record["NodeID"].(string)
-	typ := record["Type"].(string)
-	process := record["Process"].(string)
+	desc := record["desc"].(string)
+	severity := record["severity"].(string)
+	node := record["node_id"].(string)
+	typ := record["type"].(string)
+	process := record["process"].(string)
 
 	if len(options.NodeID) > 0 && node != options.NodeID {
 		return false
 	}
 
 	if !options.NoColor {
-		record["NodeID"] = golor.Colorize(node, golor.GRAY, -1)
+		record["node_id"] = golor.Colorize(node, golor.GRAY, -1)
 		record["Type"] = golor.Colorize(typ, golor.MAGENTA, -1)
-		record["Process"] = golor.Colorize(process, golor.BLUE, -1)
+		record["process"] = golor.Colorize(process, golor.BLUE, -1)
 		switch severity {
 		case "ERROR":
-			record["Desc"] = golor.Colorize(desc, -1, golor.RED)
+			record["desc"] = golor.Colorize(desc, -1, golor.RED)
 		case "WARNING":
-			record["Desc"] = golor.Colorize(desc, 0, golor.YELLOW)
+			record["desc"] = golor.Colorize(desc, 0, golor.YELLOW)
 		default:
 		}
 	}
@@ -123,16 +123,16 @@ func handleEvent(record map[string]interface{}, options MessagePrinterOptions) b
 }
 
 func handleApptail(record map[string]interface{}, options MessagePrinterOptions) bool {
-	appname := record["AppName"].(string)
-	node := record["NodeID"].(string)
+	appname := record["app_name"].(string)
+	node := record["node_id"].(string)
 
 	if len(options.NodeID) > 0 && node != options.NodeID {
 		return false
 	}
 
 	if !options.NoColor {
-		record["NodeID"] = golor.Colorize(node, golor.GRAY, -1)
-		record["AppName"] = golor.Colorize(appname, golor.BLUE, -1)
+		record["node_id"] = golor.Colorize(node, golor.GRAY, -1)
+		record["app_name"] = golor.Colorize(appname, golor.BLUE, -1)
 	}
 	return true
 }
