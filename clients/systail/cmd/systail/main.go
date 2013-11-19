@@ -8,18 +8,11 @@ import (
 	"github.com/alecthomas/gozmq"
 	"logyard"
 	"logyard/clients/common"
+	"logyard/clients/systail"
 	"os"
 	"stackato/server"
 	"unicode/utf8"
 )
-
-// SystailLogMessage is a struct corresponding to an entry in the
-// systail log stream. Generally a subset of the fields in
-// `AppLogMessage`.
-type SystailLogMessage struct {
-	Name string `json:"name"` // Component name (eg: dea)
-	common.MessageCommon
-}
 
 func tailLogFile(
 	name string, filepath string, nodeid string) (*tail.Tail, error) {
@@ -30,7 +23,7 @@ func tailLogFile(
 	log.Info("Tailing... ", filepath)
 
 	t, err := tail.TailFile(filepath, tail.Config{
-		MaxLineSize: getConfig().MaxRecordSize,
+		MaxLineSize: systail.GetConfig().MaxRecordSize,
 		MustExist:   false,
 		Follow:      true,
 		// ignore existing content, to support subsequent re-runs of systail
@@ -51,7 +44,7 @@ func tailLogFile(
 			if !utf8.ValidString(line.Text) {
 				line.Text = string([]rune(line.Text))
 			}
-			data, err := json.Marshal(SystailLogMessage{
+			data, err := json.Marshal(systail.Message{
 				name,
 				common.NewMessageCommon(line.Text, line.Time, nodeid),
 			})
@@ -72,7 +65,7 @@ func main() {
 	major, minor, patch := gozmq.Version()
 	log.Infof("Starting systail (zeromq %d.%d.%d)", major, minor, patch)
 
-	LoadConfig()
+	systail.LoadConfig()
 
 	nodeid, err := server.LocalIP()
 	if err != nil {
@@ -82,7 +75,7 @@ func main() {
 
 	tailers := []*tail.Tail{}
 
-	logFiles := getConfig().LogFiles
+	logFiles := systail.GetConfig().LogFiles
 
 	fmt.Printf("%+v\n", logFiles)
 	if len(logFiles) == 0 {

@@ -1,4 +1,4 @@
-package main
+package systail
 
 import (
 	"logyard/clients/common"
@@ -12,7 +12,7 @@ type Config struct {
 
 var c *server.Config
 
-func getConfig() *Config {
+func GetConfig() *Config {
 	return c.GetConfig().(*Config)
 }
 
