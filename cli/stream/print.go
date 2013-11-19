@@ -75,6 +75,7 @@ func (p MessagePrinter) Print(msg zmqpubsub.Message) error {
 		return nil
 	}
 
+	// TODO: somehow use {apptail,systail}.Message and {sieve}.Event here.
 	var record map[string]interface{}
 
 	if err := json.Unmarshal([]byte(msg.Value), &record); err != nil {

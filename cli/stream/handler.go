@@ -12,7 +12,7 @@ func init() {
 	datetimePatterns = []*regexp.Regexp{
 		// vcap log prefix
 		regexp.MustCompile(
-			`\[[^\]]+\] \S+ \- \S+=\S+ \S+=\S+ \S+=\S+ (.+)`),
+			`\[[^\]]+\] \S+ \- \S+=\S+ (.+)`),
 		// Go projects log prefix
 		regexp.MustCompile(
 			`\d+\/\d+\/\d+ \d+\:\d+\:\d+ (.+)`),
