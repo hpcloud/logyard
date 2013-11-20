@@ -27,7 +27,7 @@ log_files:
   apptail: ""
   avahi_daemon: ""
   avahi_publisher: ""
-  cloud_controller: ""
+  cloud_controller_ng: ""
   config_redis: ""
   dea_ng: ""
   dir_server: ""
