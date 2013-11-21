@@ -1,5 +1,5 @@
 #
-# Makefile for stackato-logyard
+# Makefile for stackato-logyard-ng
 #
 # Used solely by packaging systems.
 # Must support targets "all", "install", "uninstall".
