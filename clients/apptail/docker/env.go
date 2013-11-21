@@ -6,7 +6,7 @@ import (
 )
 
 func GetDockerAppEnv(rootPath string) (map[string]string, error) {
-	data, err := readFileLimit(filepath.Join(rootPath, "/app/etc/droplet.env.json"), 50*1000)
+	data, err := readFileLimit(filepath.Join(rootPath, "/home/stackato/etc/droplet.env.json"), 50*1000)
 	if err != nil {
 		return nil, err
 	}
