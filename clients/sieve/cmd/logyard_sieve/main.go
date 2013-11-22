@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"github.com/ActiveState/log"
+	"github.com/alecthomas/gozmq"
 	"logyard"
 	"logyard/clients/common"
 	"logyard/clients/sieve"
@@ -11,6 +12,9 @@ import (
 )
 
 func main() {
+	major, minor, patch := gozmq.Version()
+	log.Infof("Starting logyard_sieve (zeromq %d.%d.%d)", major, minor, patch)
+
 	LoadConfig()
 
 	parser := sieve.NewStackatoParser(getConfig().Events)
