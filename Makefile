@@ -60,6 +60,7 @@ repos:
 	git archive HEAD | tar -x -C $(BUILDGOPATH)/src/$(NAME)
 	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go go get -v github.com/vube/depman
 	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go depman
+	rm -f $(BUILDGOPATH)/bin/depman
 
 $(COMMON_DIR):	update
 
