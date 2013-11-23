@@ -23,5 +23,5 @@ $GOPATH/bin/logyard
 # $GOPATH/bin/logyard_sieve &
 ```
 
-note: it is best to run these on a Stackato dev VM.
+note: it is best to run these on the Stackato dev VM.
 
