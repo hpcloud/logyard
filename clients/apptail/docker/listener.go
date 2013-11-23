@@ -48,8 +48,9 @@ func (l *dockerListener) BlockUntilContainerStops(id string) {
 
 func (l *dockerListener) Listen() {
 	for evt := range docker_events.Stream() {
-		if len(evt.Id) != ID_LENGTH {
-			common.Fatal("Invalid docker ID length: %v", len(evt.Id))
+		id := evt.Id[:ID_LENGTH]
+		if len(id) != ID_LENGTH {
+			common.Fatal("Invalid docker ID length: %v (orig: %v)", len(id), len(evt.Id))
 		}
 
 		// Notify container stop events by closing the appropriate ch.
@@ -57,7 +58,7 @@ func (l *dockerListener) Listen() {
 			continue
 		}
 		l.mux.Lock()
-		if ch, ok := l.waiters[evt.Id]; ok {
+		if ch, ok := l.waiters[id]; ok {
 			close(ch)
 			delete(l.waiters, evt.Id)
 		}
