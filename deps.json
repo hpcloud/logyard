@@ -18,9 +18,10 @@
         "alias": "github.com/ActiveState/zmqpubsub"
     },
     "github.com/nu7hatch/gouuid": {
-        "repo": "github.com/nu7hatch/gouuid",
+        "repo": "http://github.com/nu7hatch/gouuid.git",
         "version": "0345199",
-        "type": "git"
+        "type": "git-clone",
+        "alias": "github.com/nu7hatch/gouuid"
     },
     "stackato": {
         "repo": "git://gitolite.activestate.com/stackato-go",
