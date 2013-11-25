@@ -60,7 +60,7 @@ func (l *dockerListener) Listen() {
 		l.mux.Lock()
 		if ch, ok := l.waiters[id]; ok {
 			close(ch)
-			delete(l.waiters, evt.Id)
+			delete(l.waiters, id)
 		}
 		l.mux.Unlock()
 	}
