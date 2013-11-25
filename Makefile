@@ -45,29 +45,29 @@ INSTROOTDIR=$(INSTDIR)$(INSTALLROOT)
 INSTGOPATH=$(INSTDIR)$(INSTALLROOT)/go
 INSTBINDIR=$(INSTDIR)$(INSTALLHOME)/bin
 
-BUILDGOPATH=$$PWD/.gopath
+BUILDGOPATH=$(shell pwd)/.gopath
 
 GOARGS=-v -tags zmq_3_x
 
 GOARGS_TEST=-race
 
-ifdef STACKATO_PKG_BRANCH
-    BRANCH_OPT=-b $(STACKATO_PKG_BRANCH)
-endif
+export PATH := /usr/local/go/bin:$(BUILDGOPATH)/bin/:$(PATH)
 
 all:	repos compile
 
-repos:	$(COMMON_DIR)
+repos:
 	mkdir -p $(BUILDGOPATH)/src/$(NAME)
 	git archive HEAD | tar -x -C $(BUILDGOPATH)/src/$(NAME)
-	GOPATH=$(BUILDGOPATH) $(PKGTMPDIR)/goget $(PKGTMPDIR)/goget.manifest
+	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go go get -v github.com/vube/depman
+	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go depman
+	rm -f $(BUILDGOPATH)/bin/depman
 
 $(COMMON_DIR):	update
 
 compile:	$(BUILDGOROOT)
-	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go /usr/local/go/bin/go install $(GOARGS) $(NAME)/...
-	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go /usr/local/go/bin/go install $(GOARGS) github.com/ActiveState/tail/cmd/gotail
-	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go /usr/local/go/bin/go test $(GOARGS) $(GOARGS_TEST) logyard/... confdis/go/confdis/...
+	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go go install $(GOARGS) $(NAME)/...
+	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go go install $(GOARGS) github.com/ActiveState/tail/cmd/gotail
+	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go go test $(GOARGS) $(GOARGS_TEST) logyard/... confdis/go/confdis/...
 
 install:	
 	mkdir -p $(INSTGOPATH)/$(SRCDIR)
@@ -81,13 +81,7 @@ install:
 	chown -Rh stackato.stackato $(INSTHOMEDIR)
 
 clean:	$(BUILDGOROOT)
-	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go /usr/local/go/bin/go clean
-
-# For manual use.
-
-update:
-	rm -rf $(UPDATE)
-	git clone $(BRANCH_OPT) $(COMMON_REPO) $(COMMON_DIR)
+	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go go clean
 
 # For developer use.
 
