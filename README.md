@@ -6,22 +6,28 @@
 # prepare your gopath
 export GOPATH=$HOME/go
 
+# install depman
+go get -v github.com/vube/depman
+
 git clone <this-repo> $GOPATH/src/logyard
 cd $GOPATH/src/logyard
-make dev-setup 
-make dev-install  # or, `make i`
+
+# install dependencies
+depman
+
+# build logyard binary
+make i
+
 make dev-test  # optional
 ```
 
 # run
 
-```
-make dev-install
-$GOPATH/bin/logyard
-# $GOPATH/bin/systail &
-# $GOPATH/bin/apptail &
-# $GOPATH/bin/logyard_sieve &
-```
+rsync your GOPATH to the VM's /s/go and:
 
-note: it is best to run these on the Stackato dev VM.
+```
+make i
+# restart all of selected services
+sup restart logyard systail apptail logyard_sieve docker_events
+```
 
