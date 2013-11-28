@@ -12,6 +12,7 @@ func readFileLimit(path string, limit int64) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 	r := io.LimitReader(file, limit)
 	return ioutil.ReadAll(r)
 }
