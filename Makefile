@@ -15,10 +15,6 @@
 # The resulting package installs in /home/stackato,
 # is not intended to be relocatable.
 #
-# This package depends on external data.  Run "make update" to update the
-# local copy of that data.  Push any resulting changes to the git repo
-# in order to trigger generation of a new package.
-#
 # To locally test this Makefile, run:
 #
 #   rm -rf .gopath; STACKATO_PKG_BRANCH=mybranch make
@@ -27,12 +23,6 @@
 NAME=logyard
 
 SRCDIR=src/$(NAME)
-
-COMMON_REPO=git://gitolite.activestate.com/stackato-common.git
-
-UPDATE=.stackato-pkg/update
-COMMON_DIR=$(UPDATE)/stackato-common
-PKGTMPDIR=$(COMMON_DIR)/go
 
 INSTALLHOME=/home/stackato
 INSTALLROOT=$(INSTALLHOME)/stackato
@@ -62,8 +52,6 @@ repos:
 	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go depman
 	rm -f $(BUILDGOPATH)/bin/depman
 
-$(COMMON_DIR):	update
-
 compile:	$(BUILDGOROOT)
 	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go go install $(GOARGS) $(NAME)/...
 	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go go install $(GOARGS) github.com/ActiveState/tail/cmd/gotail
@@ -84,9 +72,6 @@ clean:	$(BUILDGOROOT)
 	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go go clean
 
 # For developer use.
-
-dev-setup:	update
-	cd .stackato-pkg/update/stackato-common/go && ./goget
 
 dev-install:	fmt dev-installall
 
