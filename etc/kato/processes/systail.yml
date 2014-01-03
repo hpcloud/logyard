@@ -2,5 +2,6 @@
 ---
 name: systail
 config_origin: /s/go/src/logyard/etc/systail.yml
+sets_running_status: true
 roles:
   - base

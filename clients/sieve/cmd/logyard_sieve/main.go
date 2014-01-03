@@ -8,6 +8,7 @@ import (
 	"logyard/clients/common"
 	"logyard/clients/sieve"
 	"logyard/clients/systail"
+	"stackato/server"
 	"time"
 )
 
@@ -24,6 +25,8 @@ func main() {
 	defer pub.Stop()
 	sub := logyard.Broker.Subscribe("systail")
 	defer sub.Stop()
+
+	server.MarkRunning("logyard_sieve")
 
 	log.Info("Watching the systail stream on this node")
 	for message := range sub.Ch {

@@ -34,6 +34,8 @@ func main() {
 
 	go docker.DockerListener.Listen()
 
+	server.MarkRunning("apptail")
+
 	apptail_event.MonitorCloudEvents()
 }
 

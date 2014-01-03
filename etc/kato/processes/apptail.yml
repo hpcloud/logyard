@@ -2,5 +2,6 @@
 ---
 name: apptail
 config_origin: /s/go/src/logyard/etc/apptail.yml
+sets_running_status: true
 roles:
   - dea

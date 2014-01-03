@@ -31,6 +31,8 @@ func main() {
 	pub := logyard.Broker.NewPublisherMust()
 	defer pub.Stop()
 
+	server.MarkRunning("docker_events")
+
 	for event := range docker_events.Stream() {
 		SendToLogyard(pub, event)
 	}

@@ -7,6 +7,7 @@ import (
 	"logyard/drain"
 	"os"
 	"os/signal"
+	"stackato/server"
 	"syscall"
 )
 
@@ -27,6 +28,8 @@ func main() {
 		log.Info("Exiting now.")
 		os.Exit(0)
 	}()
+
+	server.MarkRunning("logyard")
 
 	log.Info("Running pubsub broker")
 	log.Fatal(logyard.Broker.Run())

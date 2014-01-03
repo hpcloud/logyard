@@ -25,7 +25,7 @@
     },
     "stackato": {
         "repo": "git://gitolite.activestate.com/stackato-go",
-        "version": "9e63505cc",
+        "version": "cfv2",
         "type": "git-clone",
         "alias": "stackato"
     }

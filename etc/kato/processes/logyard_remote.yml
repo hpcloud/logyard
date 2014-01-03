@@ -1,5 +1,6 @@
 # Installed by package stackato-logyard.
 ---
 name: logyard_remote
+sets_running_status: true
 roles:
   - base

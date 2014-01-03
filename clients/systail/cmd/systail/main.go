@@ -90,6 +90,8 @@ func main() {
 		tailers = append(tailers, t)
 	}
 
+	server.MarkRunning("systail")
+
 	for _, tail := range tailers {
 		err := tail.Wait()
 		if err != nil {
