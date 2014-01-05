@@ -46,10 +46,11 @@ events:
       format: "Process '$1' crashed on a node ($2)"
   kato:
     kato_action:
-      substring: 'INVOKE'
-      regex: 'INVOKE (.+)'
-      sample: '[info] (12339) INVOKE kato start'
-      format: '$1'
+      substring: 'INVOKE-ADMIN-ACTION'
+      regex: 'INVOKE-ADMIN-ACTION (.+)'
+      sample: '[info] (12339) INVOKE-ADMIN-ACTION {"command": "kato start","status": "succeeded"}'
+      format: '{{.command}} ({{.status}})'
+      handlertype: json
   nginx:
     nginx_error:
       substring: "error"
