@@ -144,9 +144,10 @@ func (instance *Instance) getLogFiles() map[string]string {
 	for name, path := range logfiles {
 		var fullpath string
 
-		// Treat relative paths as being relative to the app directory.
+		// Treat relative paths as being relative to $STACKATO_APP_ROOT
 		if !filepath.IsAbs(path) {
-			fullpath = filepath.Join(instance.RootPath, "/app/app/", path)
+			stackatoAppRoot := "/home/stackato/"
+			fullpath = filepath.Join(instance.RootPath, stackatoAppRoot, path)
 		} else {
 			fullpath = filepath.Join(instance.RootPath, path)
 		}
