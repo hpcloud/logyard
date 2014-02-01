@@ -159,6 +159,7 @@ func (instance *Instance) getLogFiles() map[string]string {
 		}
 		fullpath, err = filepath.EvalSymlinks(fullpath)
 		if err != nil {
+			log.Infof("Error reading log file %v: %v", fullpath, err)
 			instance.SendTimelineEvent("WARN -- Ignoring missing/inaccessible path %v", path)
 			continue
 		}
