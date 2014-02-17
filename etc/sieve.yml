@@ -81,7 +81,7 @@ events:
     timeline:
       substring: "TIMELINE"
       regex: 'INFO -- TIMELINE (.+), data: .+'
-      sample: 'INFO -- TIMELINE {"event":"APP_DELETE", "app":{"id":1,"name":"foo"}, "user":{"id":1,"email":"foo@bar.com"}}'
+      sample: 'INFO -- TIMELINE {"event":"APP_DELETE", "app":{"id":1,"name":"foo"}, "user":{"id":1,"email":"foo@bar.com"}}, data: blah'
       handlertype: json
       format: '{{.message}}'
   filesystem_node:
