@@ -2,9 +2,9 @@
 # systail configuration
 
 # This value should be large enough to _not_ make cloudevents trip
-# up on json unmarshall errors too often. 2048 should be good
-# enough.
-max_record_size: 2048
+# up on json unmarshall errors too often. 
+max_record_size: 4096
+
 # Log files to be streamed by systail. If the path value is empty,
 # systail will automatically use /s/log/${name}.log; for example,
 # "kato: " translates to "kato: /s/logs/kato.log"
