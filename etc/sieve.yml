@@ -68,19 +68,19 @@ events:
   __all__:
     error:
       substring: ERROR
-      regex: 'ERROR -- (.+)$'
+      regex: 'ERROR -- (.+?)(, data: .+)?$'
       sample: 'postgresql_gateway - pid=4340 tid=2e99 fid=bad6  ERROR -- Failed fetching handles: Errno::ETIMEDOUT'
       severity: ERROR
       format: '$1'
     warning:
       substring: WARN
-      regex: 'WARN -- (.+)$'
-      sample: 'WARN -- Took 18.09s to process ps and du stats'
+      regex: 'WARN -- (.+?)(, data: .+)?$'
+      sample: 'WARN -- Took 18.09s to process ps and du stats, data: foo'
       severity: WARNING
       format: '$1'
     timeline:
       substring: "TIMELINE"
-      regex: 'INFO -- TIMELINE (.+), data: .+'
+      regex: 'INFO -- TIMELINE (.+?)(, data: .+)?$'
       sample: 'INFO -- TIMELINE {"event":"APP_DELETE", "app":{"id":1,"name":"foo"}, "user":{"id":1,"email":"foo@bar.com"}}, data: blah'
       handlertype: json
       format: '{{.message}}'

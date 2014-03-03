@@ -45,8 +45,8 @@ func NewJsonEventHandler(severity string, descTmpl string) JsonEventHandler {
 }
 
 func (handler JsonEventHandler) HandleEvent(results []string, event *Event) error {
-	if len(results) != 2 {
-		return fmt.Errorf("did not find a single JSON match; instead found %d", len(results))
+	if len(results) < 1 {
+		return fmt.Errorf("no regex matches found")
 	}
 	err := json.Unmarshal([]byte(results[1]), &event.Info)
 	if err != nil {
