@@ -6,11 +6,6 @@
   "ports": [
     "6464:6464"
   ],
-  "hooks": {
-    "post-install": [
-      "mkdir -p /var/stackato/data/applog_redis"
-    ]
-  },
   "kato": {
     "processes": [
       "/source/etc/kato/applog_redis.yml"
