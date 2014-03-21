@@ -1,6 +1,6 @@
 
 [program:applog_redis]
-command=/s/stackon/stackon-run /s/etc/stackons/stackato/applog-redis/stackon.json
+command=/s/stackon/stackon-run stackato/applog-redis
 priority=1
 redirect_stderr=true
 stdout_logfile=/s/logs/applog_redis.log
