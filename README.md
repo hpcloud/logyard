@@ -19,7 +19,8 @@ git clone <this-repo> $GOPATH/src/logyard
 cd $GOPATH/src/logyard
 
 # install dependencies
-sudo apt-get install zeromq-dev>=3.2.2
+wget http://stackato-pkg.nas1.activestate.com/repo-common/zeromq-dev_3.2.2_amd64.deb
+sudo dpkg -i zeromq-dev*deb # see also: .stackato-pkg/config
 go get -v github.com/vube/depman
 depman
 
