@@ -2,6 +2,5 @@
 ---
 name: logyard
 config_origin: /s/go/src/logyard/etc/logyard.yml
-sets_running_status: true
 roles:
   - base
