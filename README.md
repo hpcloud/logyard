@@ -2,17 +2,25 @@
 
 # getting started
 
-```
-# prepare your gopath
-export GOPATH=$HOME/go
+get a Stackato VM running and then:
 
-# install depman
-go get -v github.com/vube/depman
+
+```
+# install golang
+wget http://stackato-pkg.nas1.activestate.com/repo-common/stackato-golang_1.2_amd64.deb
+sudo dpkg -i stackato-golang*deb
+export PATH=/usr/local/go/bin:$PATH
+
+# prepare your gopath
+export GOPATH=/s/go
+rm -rf /s/go/src 
 
 git clone <this-repo> $GOPATH/src/logyard
 cd $GOPATH/src/logyard
 
 # install dependencies
+sudo apt-get install zeromq-dev>=3.2.2
+go get -v github.com/vube/depman
 depman
 
 # build logyard binary
@@ -22,8 +30,6 @@ make dev-test  # optional
 ```
 
 # run
-
-rsync your GOPATH to the VM's /s/go and:
 
 ```
 make i
