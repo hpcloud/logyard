@@ -1,6 +1,5 @@
 # Installed by package stackato-logyard.
 ---
 name: docker_events
-sets_running_status: true
 roles:
   - base
