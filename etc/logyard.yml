@@ -8,7 +8,7 @@
 drainformats:
   systail: "{{.name}}@{{.node_id}}: {{.text}}"
   apptail: "{{.human_time}} {{.source}}.{{.instance_index}}: {{.text}}"
-  event: "{{.type}}@{{.node_id}}: {{.tet}} -- via {{.process}}"
+  event: "{{.type}}@{{.node_id}}: {{.text}} -- via {{.process}}"
   systail-syslog: "<{{.syslog.priority}}>{{.syslog.time}} - {{.node_id}} {{.name}} - - - {{.text}}"
   apptail-syslog: "<{{.syslog.priority}}>{{.syslog.time}} - {{.node_id}} {{.app_name}}[{{.instance_index}}].{{.source}} - - - {{.text}}"
   event-syslog: "<{{.syslog.priority}}>{{.syslog.time}} - {{.node_id}} {{.process}} - - - {{.type}}: {{.text}}"
