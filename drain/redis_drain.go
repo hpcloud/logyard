@@ -46,7 +46,7 @@ func (d *RedisDrain) Start(config *DrainConfig) {
 	}
 
 	// HACK (stackato-specific): "core" translates to the applog redis on core node
-	coreIP := server.GetClusterConfig().MbusIp
+	coreIP := server.GetClusterConfig().GetMbusIP()
 	if config.Host == "stackato-core" {
 		config.Host = coreIP
 	} else if strings.HasPrefix(config.Host, "stackato-core:") {
