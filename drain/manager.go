@@ -27,11 +27,9 @@ func NewDrainManager() *DrainManager {
 	manager := new(DrainManager)
 	manager.stopCh = make(chan bool)
 	manager.stmMap = make(map[string]*state.StateMachine)
-	client, err := server.NewRedisClientRetry(
-		server.GetClusterConfig().MbusIp+":6464",
-		"",
-		0,
-		3)
+	applogRedisAddr := server.GetClusterConfig().GetMbusIP() + ":6464"
+	log.Infof("Connecting to applog_redis at %v", applogRedisAddr)
+	client, err := server.NewRedisClientRetry(applogRedisAddr, "", 0, 3)
 	if err != nil {
 		log.Fatalf("Unable to connect to applog_redis; %v", err)
 	}
