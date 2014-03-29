@@ -1,5 +1,5 @@
 [program:docker_events]
-command=/s/stackon/stackon-run stackato/logyard docker_events
+command=/s/stackon/stackon-run stackato/logyard --process docker_events
 priority=5
 redirect_stderr=true
 stdout_logfile=/s/logs/docker_events.log

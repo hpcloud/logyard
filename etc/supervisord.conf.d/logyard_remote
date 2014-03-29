@@ -1,5 +1,5 @@
 [program:logyard_remote]
-command=/s/stackon/stackon-run stackato/logyard logyard_remote
+command=/s/stackon/stackon-run stackato/logyard --process logyard_remote
 priority=5
 redirect_stderr=true
 stdout_logfile=/s/logs/logyard_remote.log

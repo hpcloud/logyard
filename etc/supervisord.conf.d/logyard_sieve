@@ -1,5 +1,5 @@
 [program:logyard_sieve]
-command=/s/stackon/stackon-run stackato/logyard logyard_sieve
+command=/s/stackon/stackon-run stackato/logyard --process 
 priority=5
 redirect_stderr=true
 stdout_logfile=/s/logs/logyard_sieve.log

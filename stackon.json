@@ -11,6 +11,23 @@
         "/s/logs:/s/logs:ro",
         "/var/log/upstart/docker.log:/var/log/upstart/docker.log:ro"
       ]
+    },
+    "logyard_remote": {
+      "cmd": ["/logyard/bin/logyard_remote"],
+      "ports": ["8891:8891"]
+    },
+    "apptail": {
+      "cmd": ["/logyard/bin/apptail"],
+      "volumes": [
+        "/var/lib/docker:/var/lib/docker:ro"
+      ]
+    },
+    "docker_events": {
+      "cmd": ["/logyard/bin/docker_events"],
+      "volumes": ["TODO: bind docker unix sock for dind"]
+    },
+    "logyard_sieve": {
+      "cmd": ["/logyard/bin/logyard_sieve"]
     }
   },
   "kato": {

@@ -1,5 +1,5 @@
 [program:logyard]
-command=/s/stackon/stackon-run stackato/logyard logyard
+command=/s/stackon/stackon-run stackato/logyard --process logyard
 priority=5
 redirect_stderr=true
 stdout_logfile=/s/logs/logyard.log
