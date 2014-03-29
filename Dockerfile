@@ -7,6 +7,6 @@ RUN wget -q http://stackato-pkg.nas1.activestate.com/repo-common/zeromq-dev_3.2.
 
 ADD vendor/bin /logyard/bin
 ADD etc /logyard/etc
-ADD stackon.json /logyard/
+ADD stackon.json /
 
 ENV PATH /logyard/bin:$PATH

@@ -1,5 +1,14 @@
 {
   "name": "stackato/logyard",
+  "processes": {
+    "logyard": {
+      "cmd": ["/logyard/bin/logyard"],
+      "ports": ["5559:5559", "5560:5560"]
+    },
+    "systail": {
+      "cmd": ["/logyard/bin/systail"]
+    }
+  },
   "kato": {
     "processes": [
       "/logyard/etc/kato/processes/apptail.yml",
