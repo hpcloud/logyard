@@ -1,5 +1,5 @@
 [program:systail]
-command=/s/go/bin/systail
+command=/s/stackon/stackon-run stackato/logyard systail
 priority=5
 redirect_stderr=true
 stdout_logfile=/s/logs/systail.log

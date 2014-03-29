@@ -1,0 +1,21 @@
+{
+  "name": "stackato/logyard",
+  "kato": {
+    "processes": [
+      "/logyard/etc/kato/processes/apptail.yml",
+      "/logyard/etc/kato/processes/docker_events.yml",
+      "/logyard/etc/kato/processes/logyard_remote.yml",
+      "/logyard/etc/kato/processes/logyard_sieve.yml",
+      "/logyard/etc/kato/processes/logyard.yml",
+      "/logyard/etc/kato/processes/systail.yml"
+    ],
+    "supervisor": [
+      "/logyard/etc/supervisord.conf.d/apptail",
+      "/logyard/etc/supervisord.conf.d/docker_events",
+      "/logyard/etc/supervisord.conf.d/logyard_remote",
+      "/logyard/etc/supervisord.conf.d/logyard_sieve",
+      "/logyard/etc/supervisord.conf.d/logyard",
+      "/logyard/etc/supervisord.conf.d/systail"
+    ]
+  }
+}

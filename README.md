@@ -2,39 +2,22 @@
 
 # getting started
 
-get a Stackato VM running and then:
-
-
-```
-# install golang
-wget http://stackato-pkg.nas1.activestate.com/repo-common/stackato-golang_1.2_amd64.deb
-sudo dpkg -i stackato-golang*deb
-export PATH=/usr/local/go/bin:$PATH
-
-# prepare your gopath
-export GOPATH=/s/go
-rm -rf /s/go/src 
-
-git clone <this-repo> $GOPATH/src/logyard
-cd $GOPATH/src/logyard
-
-# install dependencies
-wget http://stackato-pkg.nas1.activestate.com/repo-common/zeromq-dev_3.2.2_amd64.deb
-sudo dpkg -i zeromq-dev*deb # see also: .stackato-pkg/config
-go get -v github.com/vube/depman
-depman
-
-# build logyard binary
-make i
-
-make dev-test  # optional
-```
-
-# run
+run once:
 
 ```
-make i
-# restart all of selected services
-sup restart logyard systail apptail logyard_sieve docker_events
+docker login -u stackato -e s@s.com -p suchDogeW0w docker-internal.stackato.com
+docker pull docker-internal.stackato.com/stackatobuild/go:master
+docker tag docker-internal.stackato.com/stackatobuild/go:master stackatobuild/go
 ```
 
+hack, hack, hack ... and build:
+
+```
+make docker
+```
+
+restart logyard (or whatever) with the new docker image:
+
+```
+sup restart logyard  # or whatever
+```
