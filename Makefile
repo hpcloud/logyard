@@ -60,8 +60,6 @@ compile:	$(BUILDGOROOT)
 install:	
 	mkdir -p $(INSTGOPATH)/$(SRCDIR)
 	rsync -a $(BUILDGOPATH)/$(SRCDIR)/etc/*.yml $(INSTGOPATH)/$(SRCDIR)/etc/
-	mkdir -p $(INSTGOPATH)/$(SRCDIR)/clients/apptail/
-	rsync -a $(BUILDGOPATH)/$(SRCDIR)/clients/apptail/*.conf $(INSTGOPATH)/$(SRCDIR)/clients/apptail/
 	rsync -a $(BUILDGOPATH)/bin $(INSTGOPATH)
 	rsync -a etc $(INSTROOTDIR)
 	mkdir -p $(INSTBINDIR)

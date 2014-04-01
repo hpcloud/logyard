@@ -1,10 +1,9 @@
 
 [program:applog_redis]
-command=/usr/bin/redis-server /s/go/src/logyard/clients/apptail/redis-server.conf
+command=/s/stackon/stackon-run stackato/applog-redis
 priority=1
 redirect_stderr=true
 stdout_logfile=/s/logs/applog_redis.log
 stdout_logfile_maxbytes=1MB
 stdout_logfile_backups=3
 autostart=false
-

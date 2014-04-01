@@ -1,0 +1,17 @@
+{
+  "name": "stackato/applog-redis",
+  "volumes": [
+    "/var/stackato/data/applog_redis:/var/stackato/data/applog_redis:rw"
+  ],
+  "ports": [
+    "6464:6464"
+  ],
+  "kato": {
+    "processes": [
+      "/source/etc/kato/applog_redis.yml"
+    ],
+    "supervisor": [
+      "/source/etc/supervisord.conf.d/applog_redis"
+    ]
+  }
+}
