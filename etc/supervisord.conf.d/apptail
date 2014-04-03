@@ -7,3 +7,5 @@ stdout_logfile_maxbytes=1MB
 stdout_logfile_backups=3
 autostart=false
 exitcodes=0
+stopasgroup=true
+killasgroup=true
