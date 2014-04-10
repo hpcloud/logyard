@@ -60,7 +60,9 @@ func (p MessagePrinter) PrintInternalError(errmsg string) {
 	if p.options.NoColor {
 		fmt.Println(errmsg)
 	} else {
-		fmt.Println(golor.Colorize(errmsg, golor.WHITE, golor.RED))
+		fmt.Printf("%v: %v\n",
+			golor.Colorize("INTERNAL", golor.WHITE, golor.RED),
+			golor.Colorize(errmsg, golor.RED, -1))
 	}
 }
 
