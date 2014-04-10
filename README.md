@@ -2,12 +2,10 @@
 
 # getting started
 
-run once:
+clone sources on a Stackato VM and then run once:
 
 ```
-docker login -u stackato -e s@s.com -p suchDogeW0w docker-internal.stackato.com
-docker pull docker-internal.stackato.com/stackatobuild/go:master
-docker tag docker-internal.stackato.com/stackatobuild/go:master stackatobuild/go
+stackon-fetch http://stackato:suchDogeW0w@docker-internal.stackato.com master stackatobuild/go
 ```
 
 hack, hack, hack ... and build:
