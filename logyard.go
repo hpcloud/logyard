@@ -8,8 +8,8 @@ import (
 var Broker zmqpubsub.Broker
 
 func init() {
-	Broker.PubAddr = "ipc:///tmp/logyardpub.sock"
-	Broker.SubAddr = "ipc:///tmp/logyardsub.sock"
+	Broker.PubAddr = "ipc:///var/stackato/run/logyardpub.sock"
+	Broker.SubAddr = "ipc:///var/stackato/run/logyardsub.sock"
 	Broker.BufferSize = 100
 
 	log.Infof("Loygard broker config: %+v\n", Broker)
