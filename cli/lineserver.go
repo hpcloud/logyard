@@ -11,6 +11,8 @@ import (
 	"net"
 )
 
+const LINESERVER_DEFAULT_BUFSIZE = 16384
+
 // LineServer is a line-based server à la `nc -l`. Ch channel will
 // receive incoming lines from all clients.
 type LineServer struct {
@@ -24,7 +26,8 @@ func NewLineServer(proto, laddr string) (*LineServer, error) {
 	if err != nil {
 		return nil, err
 	}
-	bufSize, err := getenvInt("LOGYARD_CLI_STREAM_BUFSIZE", 4096)
+	bufSize, err := getenvInt(
+		"LOGYARD_CLI_STREAM_BUFSIZE", LINESERVER_DEFAULT_BUFSIZE)
 	if err != nil {
 		return nil, err
 	}
