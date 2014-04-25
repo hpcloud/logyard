@@ -37,9 +37,14 @@ func (srv *LineServer) Start() {
 				line, isPrefix, err := reader.ReadLine()
 				if isPrefix {
 					log.Warnf("Ignoring a very long line beginning with: %s", line)
+					parts := 1
 					for isPrefix {
 						line, isPrefix, err = reader.ReadLine()
+						log.Warnf("Ignoring next part: %s", line)
+						parts++
 					}
+					log.Infof("Ignored %d parts", parts)
+					continue
 				}
 
 				if err == io.EOF {
