@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/ActiveState/log"
 	"github.com/ActiveState/tail"
+	"github.com/ActiveState/tail/ratelimiter"
 	"github.com/ActiveState/zmqpubsub"
 	"logyard"
 	"logyard/clients/apptail/docker"
@@ -73,6 +74,10 @@ func (instance *Instance) tailFile(name, filename string, stopCh chan bool) {
 		return
 	}
 
+	capacity := GetConfig().RateLimit
+	rate := time.Duration(int64(time.Second) / int64(capacity))
+	rateLimiter := ratelimiter.NewLeakyBucket(1000, rate)
+
 	t, err := tail.TailFile(filename, tail.Config{
 		MaxLineSize: GetConfig().MaxRecordSize,
 		MustExist:   true,
@@ -80,7 +85,7 @@ func (instance *Instance) tailFile(name, filename string, stopCh chan bool) {
 		Location:    &tail.SeekInfo{-limit, os.SEEK_END},
 		ReOpen:      false,
 		Poll:        false,
-		LimitRate:   GetConfig().RateLimit})
+		RateLimiter: rateLimiter})
 	if err != nil {
 		log.Warnf("Cannot tail file (%s); %s", filename, err)
 		instance.SendTimelineEvent("ERROR -- Cannot tail file (%s); %s", name, err)

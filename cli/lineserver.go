@@ -3,12 +3,12 @@ package cli
 // Funtionality to emulate line-based TCP server
 
 import (
-	"os"
-	"strconv"
 	"bufio"
 	"github.com/ActiveState/log"
 	"io"
 	"net"
+	"os"
+	"strconv"
 )
 
 const LINESERVER_DEFAULT_BUFSIZE = 16384
@@ -17,7 +17,7 @@ const LINESERVER_DEFAULT_BUFSIZE = 16384
 // receive incoming lines from all clients.
 type LineServer struct {
 	listener net.Listener
-	bufSize int
+	bufSize  int
 	Ch       chan []byte
 }
 
@@ -75,7 +75,7 @@ func getenvInt(key string, defaultVal int64) (int64, error) {
 	value := os.Getenv(key)
 	if value == "" {
 		return defaultVal, nil
-	}else{
+	} else {
 		return strconv.ParseInt(value, 0, 0)
 	}
 }
