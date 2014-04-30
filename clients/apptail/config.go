@@ -5,10 +5,15 @@ import (
 	"stackato/server"
 )
 
+type leakyBucketConfig struct {
+	Size         uint16 `json:"size"`
+	LeakInterval string `json:"leak_interval"`
+}
+
 type Config struct {
-	MaxRecordSize int   `json:"max_record_size"`
-	RateLimit     int64 `json:"rate_limit"`
-	FileSizeLimit int64 `json:"read_limit"`
+	MaxRecordSize        int               `json:"max_record_size"`
+	RateLimitLeakyBucket leakyBucketConfig `json:"rate_limit_leaky_bucket"`
+	FileSizeLimit        int64             `json:"read_limit"`
 }
 
 var c *server.Config

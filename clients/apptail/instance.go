@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/ActiveState/log"
 	"github.com/ActiveState/tail"
+	"github.com/ActiveState/tail/ratelimiter"
 	"github.com/ActiveState/zmqpubsub"
 	"logyard"
 	"logyard/clients/apptail/docker"
@@ -73,6 +74,15 @@ func (instance *Instance) tailFile(name, filename string, stopCh chan bool) {
 		return
 	}
 
+	lb := GetConfig().RateLimitLeakyBucket
+	interval, err := time.ParseDuration(lb.LeakInterval)
+	if err != nil {
+		log.Errorf("Invalid duration value (%v) for leak_interval -- %v -- using default 2ms",
+			lb.LeakInterval, err)
+		interval = time.Duration(2 * time.Millisecond)
+	}
+	rateLimiter := ratelimiter.NewLeakyBucket(lb.Size, interval)
+
 	t, err := tail.TailFile(filename, tail.Config{
 		MaxLineSize: GetConfig().MaxRecordSize,
 		MustExist:   true,
@@ -80,7 +90,7 @@ func (instance *Instance) tailFile(name, filename string, stopCh chan bool) {
 		Location:    &tail.SeekInfo{-limit, os.SEEK_END},
 		ReOpen:      false,
 		Poll:        false,
-		LimitRate:   GetConfig().RateLimit})
+		RateLimiter: rateLimiter})
 	if err != nil {
 		log.Warnf("Cannot tail file (%s); %s", filename, err)
 		instance.SendTimelineEvent("ERROR -- Cannot tail file (%s); %s", name, err)
