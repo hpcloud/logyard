@@ -10,8 +10,8 @@ max_record_size: 950
 # more cpu usage if an attacker deploys an app with logging statements
 # inside an infinite loop.
 rate_limit_leaky_bucket:
-  size: 1000
-  leak_interval: "2.5ms"
+  size: 10000
+  leak_interval: "10ms"
 # Documentation for leak_interval format:
 # A duration string is a possibly signed sequence of decimal numbers, each with
 # optional fraction and a unit suffix, such as "300ms", "-1.5h" or "2h45m".
