@@ -74,9 +74,14 @@ func (instance *Instance) tailFile(name, filename string, stopCh chan bool) {
 		return
 	}
 
-	capacity := GetConfig().RateLimit
-	rate := time.Duration(int64(time.Second) / int64(capacity))
-	rateLimiter := ratelimiter.NewLeakyBucket(1000, rate)
+	lb := GetConfig().RateLimitLeakyBucket
+	interval, err := time.ParseDuration(lb.LeakInterval)
+	if err != nil {
+		log.Errorf("Invalid duration value (%v) for leak_interval -- %v -- using default 2ms",
+			lb.LeakInterval, err)
+		interval = time.Duration(2 * time.Millisecond)
+	}
+	rateLimiter := ratelimiter.NewLeakyBucket(lb.Size, interval)
 
 	t, err := tail.TailFile(filename, tail.Config{
 		MaxLineSize: GetConfig().MaxRecordSize,

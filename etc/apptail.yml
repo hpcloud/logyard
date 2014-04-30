@@ -5,11 +5,17 @@
 # log. 
 max_record_size: 950
 
-# maximum number of log lines per second that can be read from a file.
+# limit read rate of app log files using leaky bucket algorithm.
 # keep this number low, else apptail/logyard process will start using
 # more cpu usage if an attacker deploys an app with logging statements
 # inside an infinite loop.
-rate_limit: 400
+rate_limit_leaky_bucket:
+  size: 1000
+  leak_interval: "2.5ms"
+# Documentation for leak_interval format:
+# A duration string is a possibly signed sequence of decimal numbers, each with
+# optional fraction and a unit suffix, such as "300ms", "-1.5h" or "2h45m".
+# Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h". 
 
 # maximum number of megabytes that are allowed to be read from a file
 # (near the end).
