@@ -54,7 +54,6 @@ repos:
 
 compile:	$(BUILDGOROOT)
 	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go go install $(GOARGS) $(NAME)/...
-	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go go install $(GOARGS) github.com/ActiveState/tail/cmd/gotail
 	GOPATH=$(BUILDGOPATH) GOROOT=/usr/local/go go test $(GOARGS) $(GOARGS_TEST) logyard/... confdis/go/confdis/...
 
 install:	
@@ -77,7 +76,7 @@ dev-install:	fmt dev-installall
 i:	dev-install
 
 dev-installall:
-	go install $(GOARGS) logyard/... github.com/ActiveState/tail/cmd/gotail
+	go install $(GOARGS) logyard/... 
 
 fmt:
 	gofmt -w .

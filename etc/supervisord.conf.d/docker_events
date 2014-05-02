@@ -1,9 +1,0 @@
-[program:docker_events]
-command=/s/go/bin/docker_events
-priority=5
-redirect_stderr=true
-stdout_logfile=/s/logs/docker_events.log
-stdout_logfile_maxbytes=1MB
-stdout_logfile_backups=3
-autostart=false
-exitcodes=0
