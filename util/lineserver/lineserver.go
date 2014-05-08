@@ -38,6 +38,7 @@ func (srv *LineServer) GetAddr() (*net.UDPAddr, error) {
 // Start starts the server. Call as a goroutine.
 func (srv *LineServer) Start() {
 	defer srv.conn.Close()
+	defer close(srv.Ch)
 	defer srv.Done()
 	defer fmt.Println("LineServer exiting")
 
