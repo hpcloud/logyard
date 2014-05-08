@@ -30,11 +30,12 @@ func NewLineServer(addr string) (*LineServer, error) {
 // Start starts the server. Call as a goroutine.
 func (srv *LineServer) Start() {
 	scanner := bufio.NewScanner(srv.conn)
+	// Scanned tokens are limited in max size (64 * 1024); see
+	// pkg/bufio/scan.go:MaxScanTokenSize in Go source tree.
 	for scanner.Scan() {
 		srv.Ch <- scanner.Text()
 	}
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
-
 }
