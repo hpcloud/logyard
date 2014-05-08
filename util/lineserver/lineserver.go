@@ -1,4 +1,4 @@
-package cli
+package lineserver
 
 // Funtionality to emulate line-based TCP server
 
