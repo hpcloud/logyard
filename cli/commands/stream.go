@@ -53,7 +53,6 @@ func (cmd *stream) Run(args []string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
 	go srv.Start()
 
 	// Debug mode allows one to debug just the logyard related logs,
