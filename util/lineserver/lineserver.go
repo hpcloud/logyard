@@ -3,6 +3,7 @@ package lineserver
 
 import (
 	"bufio"
+	"fmt"
 	"launchpad.net/tomb"
 	"net"
 )
@@ -36,19 +37,36 @@ func (srv *LineServer) GetAddr() (*net.UDPAddr, error) {
 
 // Start starts the server. Call as a goroutine.
 func (srv *LineServer) Start() {
+	defer srv.conn.Close()
 	defer srv.Done()
+	defer fmt.Println("LineServer exiting")
 
-	scanner := bufio.NewScanner(srv.conn)
+	fmt.Println("LineServer starting")
+
+	scanner := &AsyncScanner{
+		make(chan bool),
+		bufio.NewScanner(srv.conn),
+	}
+	go scanner.Run()
+	
 	// Scanned tokens are limited in max size (64 * 1024); see
 	// pkg/bufio/scan.go:MaxScanTokenSize in Go source tree.
-	for scanner.Scan() {
+	for {
 		select {
-		case srv.Ch <- scanner.Text():
+		case _, ok := <-scanner.ReadyCh:
+			if ok {
+				select {
+				case srv.Ch <- scanner.Text():
+				case <-srv.Dying():
+					return
+				}
+			}else{
+				if err := scanner.Err(); err != nil {
+					srv.Kill(err)
+				}
+			}
 		case <-srv.Dying():
 			return
 		}
-	}
-	if err := scanner.Err(); err != nil {
-		srv.Kill(err)
 	}
 }
