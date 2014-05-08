@@ -5,77 +5,36 @@ package cli
 import (
 	"bufio"
 	"github.com/ActiveState/log"
-	"io"
 	"net"
-	"os"
-	"strconv"
 )
 
-const LINESERVER_DEFAULT_BUFSIZE = 16384
-
-// LineServer is a line-based server à la `nc -l`. Ch channel will
-// receive incoming lines from all clients.
+// LineServer is a line-based UDP server à la `nc -l`. Ch channel
+// will receive incoming lines from all clients.
 type LineServer struct {
-	listener net.Listener
-	bufSize  int
-	Ch       chan []byte
+	conn *net.UDPConn
+	Ch   chan string
 }
 
-func NewLineServer(proto, laddr string) (*LineServer, error) {
-	l, err := net.Listen(proto, laddr)
+func NewLineServer(addr string) (*LineServer, error) {
+	laddr, err := net.ResolveUDPAddr("udp", addr)
 	if err != nil {
 		return nil, err
 	}
-	bufSize, err := getenvInt(
-		"LOGYARD_CLI_STREAM_BUFSIZE", LINESERVER_DEFAULT_BUFSIZE)
+	conn, err := net.ListenUDP("udp", laddr)
 	if err != nil {
 		return nil, err
 	}
-	return &LineServer{l, int(bufSize), make(chan []byte)}, nil
+	return &LineServer{conn, make(chan string)}, nil
 }
 
 // Start starts the server. Call as a goroutine.
 func (srv *LineServer) Start() {
-	for {
-		conn, err := srv.listener.Accept()
-		if err != nil {
-			log.Fatal(err)
-		}
-		go func(conn net.Conn) {
-			reader := bufio.NewReaderSize(conn, srv.bufSize)
-			for {
-				line, isPrefix, err := reader.ReadLine()
-				if isPrefix {
-					log.Warnf("Ignoring a very long line beginning with: %s", line)
-					parts := 1
-					for isPrefix {
-						line, isPrefix, err = reader.ReadLine()
-						log.Warnf("Ignoring next part: %s", line)
-						parts++
-					}
-					log.Infof("Ignored %d parts", parts)
-					continue
-				}
-
-				if err == io.EOF {
-					// Exit silently if a client disconnects.
-					return
-				}
-
-				if err != nil {
-					log.Fatal(err)
-				}
-				srv.Ch <- line
-			}
-		}(conn)
+	scanner := bufio.NewScanner(srv.conn)
+	for scanner.Scan() {
+		srv.Ch <- scanner.Text()
 	}
-}
-
-func getenvInt(key string, defaultVal int64) (int64, error) {
-	value := os.Getenv(key)
-	if value == "" {
-		return defaultVal, nil
-	} else {
-		return strconv.ParseInt(value, 0, 0)
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
 	}
+
 }

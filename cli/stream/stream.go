@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func Stream(ch chan []byte, options MessagePrinterOptions) {
+func Stream(ch chan string, options MessagePrinterOptions) {
 	// XXX: do we need MessagePrinter at all? all it does is
 	// provide abstraction over color formatting; most other things
 	// (formatting, skipping) happen in handler.go.
@@ -24,6 +24,10 @@ func Stream(ch chan []byte, options MessagePrinterOptions) {
 
 	// Print incoming records
 	for line := range ch {
+		log.Infof(">>> %v", string(line))
+		if strings.Contains(string(line), "\n") {
+			log.Warnf("HAS NEWLINE")
+		}
 		parts := strings.SplitN(string(line), " ", 2)
 		if len(parts) != 2 {
 			printer.PrintInternalError(fmt.Sprintf(

@@ -49,7 +49,7 @@ func (cmd *stream) Run(args []string) (string, error) {
 	port := 7000 + rand.Intn(1000)
 	addr := fmt.Sprintf("%s:%d", ipaddr, port)
 
-	srv, err := cli.NewLineServer("tcp", addr)
+	srv, err := cli.NewLineServer(addr)
 	if err != nil {
 		return "", err
 	}
@@ -72,7 +72,7 @@ func (cmd *stream) Run(args []string) (string, error) {
 	name := fmt.Sprintf("tmp.logyard-cli.%s-%d", ipaddr, port)
 
 	uri, err := drain.ConstructDrainURI(
-		name, "tcp://"+addr, args, map[string]string{"format": "raw"})
+		name, "udp://"+addr, args, map[string]string{"format": "raw"})
 	if err != nil {
 		return "", err
 	}
