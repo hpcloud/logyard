@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func Stream(ch chan []byte, options MessagePrinterOptions) {
+func Stream(ch chan string, options MessagePrinterOptions) {
 	// XXX: do we need MessagePrinter at all? all it does is
 	// provide abstraction over color formatting; most other things
 	// (formatting, skipping) happen in handler.go.

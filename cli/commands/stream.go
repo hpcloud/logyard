@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"github.com/ActiveState/log"
 	"logyard"
-	"logyard/cli"
 	cli_stream "logyard/cli/stream"
 	"logyard/drain"
+	"logyard/util/lineserver"
 	"math/rand"
 	"os"
 	"os/signal"
@@ -49,11 +49,10 @@ func (cmd *stream) Run(args []string) (string, error) {
 	port := 7000 + rand.Intn(1000)
 	addr := fmt.Sprintf("%s:%d", ipaddr, port)
 
-	srv, err := cli.NewLineServer("tcp", addr)
+	srv, err := lineserver.NewLineServer(addr)
 	if err != nil {
 		return "", err
 	}
-
 	go srv.Start()
 
 	// Debug mode allows one to debug just the logyard related logs,
@@ -72,7 +71,7 @@ func (cmd *stream) Run(args []string) (string, error) {
 	name := fmt.Sprintf("tmp.logyard-cli.%s-%d", ipaddr, port)
 
 	uri, err := drain.ConstructDrainURI(
-		name, "tcp://"+addr, args, map[string]string{"format": "raw"})
+		name, "udp://"+addr, args, map[string]string{"format": "raw"})
 	if err != nil {
 		return "", err
 	}
