@@ -35,6 +35,6 @@ make dev-test  # optional
 ```
 make i
 # restart all of selected services
-sup restart logyard systail apptail logyard_sieve docker_events
+sup restart logyard logyard_remote
 ```
 
