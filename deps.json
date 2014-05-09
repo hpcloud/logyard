@@ -13,7 +13,7 @@
     },
     "stackato": {
         "repo": "git://gitolite.activestate.com/stackato-go",
-        "version": "websocket_endpoint",
+        "version": "master",
         "type": "git-clone",
         "alias": "stackato"
     }
