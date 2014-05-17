@@ -15,6 +15,8 @@ import (
 	"time"
 )
 
+const CLI_STREAM_PROTO = "tcp"
+
 type stream struct {
 	json    bool
 	raw     bool
@@ -49,7 +51,7 @@ func (cmd *stream) Run(args []string) (string, error) {
 	port := 7000 + rand.Intn(1000)
 	addr := fmt.Sprintf("%s:%d", ipaddr, port)
 
-	srv, err := lineserver.NewLineServer(addr)
+	srv, err := lineserver.NewLineServer(CLI_STREAM_PROTO, addr)
 	if err != nil {
 		return "", err
 	}
@@ -71,7 +73,10 @@ func (cmd *stream) Run(args []string) (string, error) {
 	name := fmt.Sprintf("tmp.logyard-cli.%s-%d", ipaddr, port)
 
 	uri, err := drain.ConstructDrainURI(
-		name, "udp://"+addr, args, map[string]string{"format": "raw"})
+		name,
+		fmt.Sprintf("%s://%s", CLI_STREAM_PROTO, addr),
+		args,
+		map[string]string{"format": "raw"})
 	if err != nil {
 		return "", err
 	}
