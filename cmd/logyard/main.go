@@ -7,13 +7,15 @@ import (
 	"logyard/drain"
 	"os"
 	"os/signal"
+	"runtime"
 	"stackato/server"
 	"syscall"
 )
 
 func main() {
 	major, minor, patch := gozmq.Version()
-	log.Infof("Starting logyard (zeromq %d.%d.%d)", major, minor, patch)
+	log.Infof("Starting logyard (Go %s; ZeroMQ %d.%d.%d)",
+		runtime.Version(), major, minor, patch)
 
 	m := drain.NewDrainManager()
 	log.Info("Starting drain manager")
