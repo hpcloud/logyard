@@ -1,9 +1,0 @@
-[program:systail]
-command=/s/stackon/stackon-run stackato/logyard --process systail
-priority=5
-redirect_stderr=true
-stdout_logfile=/s/logs/systail.log
-stdout_logfile_maxbytes=1MB
-stdout_logfile_backups=3
-autostart=false
-exitcodes=0

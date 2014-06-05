@@ -82,8 +82,7 @@ func (p MessagePrinter) Print(msg zmqpubsub.Message) error {
 
 	if err := json.Unmarshal([]byte(msg.Value), &record); err != nil {
 		p.PrintInternalError(fmt.Sprintf(
-			"ERROR decoding json from a message with key '%v'"+
-				" and the following value: %v",
+			"ERROR decoding json from message (key '%v'): %v",
 			msg.Key, msg.Value))
 		return nil
 	}

@@ -5,15 +5,17 @@ import (
 	"fmt"
 	"github.com/ActiveState/log"
 	"logyard"
-	"logyard/cli"
 	cli_stream "logyard/cli/stream"
 	"logyard/drain"
+	"logyard/util/lineserver"
 	"math/rand"
 	"os"
 	"os/signal"
 	"stackato/server"
 	"time"
 )
+
+const CLI_STREAM_PROTO = "tcp"
 
 type stream struct {
 	json    bool
@@ -49,11 +51,10 @@ func (cmd *stream) Run(args []string) (string, error) {
 	port := 7000 + rand.Intn(1000)
 	addr := fmt.Sprintf("%s:%d", ipaddr, port)
 
-	srv, err := cli.NewLineServer("tcp", addr)
+	srv, err := lineserver.NewLineServer(CLI_STREAM_PROTO, addr)
 	if err != nil {
 		return "", err
 	}
-
 	go srv.Start()
 
 	// Debug mode allows one to debug just the logyard related logs,
@@ -72,7 +73,10 @@ func (cmd *stream) Run(args []string) (string, error) {
 	name := fmt.Sprintf("tmp.logyard-cli.%s-%d", ipaddr, port)
 
 	uri, err := drain.ConstructDrainURI(
-		name, "tcp://"+addr, args, map[string]string{"format": "raw"})
+		name,
+		fmt.Sprintf("%s://%s", CLI_STREAM_PROTO, addr),
+		args,
+		map[string]string{"format": "raw"})
 	if err != nil {
 		return "", err
 	}

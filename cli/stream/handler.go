@@ -10,9 +10,6 @@ var datetimePatterns []*regexp.Regexp
 
 func init() {
 	datetimePatterns = []*regexp.Regexp{
-		// vcap log prefix
-		regexp.MustCompile(
-			`\[[^\]]+\] \S+ \- \S+=\S+ (.+)`),
 		// Go projects log prefix
 		regexp.MustCompile(
 			`\d+\/\d+\/\d+ \d+\:\d+\:\d+ (.+)`),
@@ -22,6 +19,9 @@ func init() {
 		// auth.log prefix
 		regexp.MustCompile(
 			`\w+ \d+ \d+\:\d+\:\d+ (.+)`),
+		// vcap log prefix
+		regexp.MustCompile(
+			`\[[^\]]+\] \S+ \- \S+=\S+ (.+)`),
 	}
 }
 

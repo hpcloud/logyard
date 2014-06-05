@@ -1,6 +1,0 @@
-# Installed by package stackato-logyard.
----
-name: logyard_sieve
-config_origin: /s/go/src/logyard/etc/sieve.yml
-roles:
-  - base
