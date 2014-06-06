@@ -88,31 +88,22 @@ func (srv *LineServer) serveConn(conn net.Conn) {
 	defer close(srv.Ch)
 	defer srv.Done()
 
-	scanner := &AsyncScanner{
-		make(chan bool),
-		bufio.NewScanner(conn),
-	}
-	// Closing conn automatically ends
-	// scanner.Run
-	go scanner.Run()
+	lineReader := NewAsyncReadline(bufio.NewReader(conn))
+	// Closing conn automatically ends lineReader goroutine.
+	go lineReader.Run()
 
 	// Scanned tokens are limited in max size (64 * 1024); see
 	// pkg/bufio/scan.go:MaxScanTokenSize in Go source tree.
 	for {
 		select {
-		case _, ok := <-scanner.ReadyCh:
-			if ok {
-				text := scanner.Text()
-				select {
-				case srv.Ch <- text:
-				case <-srv.Dying():
-					return
-				}
-			} else {
-				if err := scanner.Err(); err != nil {
-					srv.Kill(err)
-				}
+		case text := <-lineReader.LineCh:
+			select {
+			case srv.Ch <- text:
+			case <-srv.Dying():
+				return
 			}
+		case err := <-lineReader.ErrCh:
+			srv.Kill(err)
 		case <-srv.Dying():
 			return
 		}
