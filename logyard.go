@@ -15,7 +15,7 @@ func init() {
 
 	// ZeroMQ will silently fail if .sock files can't be created
 	if _, err := os.Stat("/var/stackato/run"); err != nil {
-		log.Fatalf("Cannot access /var/stackato/run: %v", err)
+		log.Errorf("Cannot access /var/stackato/run: %v", err)
 	}
 
 	log.Infof("Loygard broker config: %+v\n", Broker)
