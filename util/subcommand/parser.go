@@ -38,7 +38,11 @@ func Parse(commands ...SubCommand) {
 			fs.PrintDefaults()
 			os.Exit(1)
 		} else {
-			fmt.Printf(output)
+			if fs.FlagSet.Lookup("json").Value.String() == "true" {
+				fmt.Print(output)
+			} else {
+				fmt.Printf(output)
+			}
 		}
 	} else {
 		fmt.Fprintf(os.Stderr, "error: %s is not a valid command\n", cmdname)
