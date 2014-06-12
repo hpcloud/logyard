@@ -7,7 +7,7 @@
     },
     "github.com/ActiveState/zmqpubsub": {
         "repo": "http://git-mirrors.activestate.com/github.com/ActiveState/zmqpubsub.git",
-        "version": "master",
+        "version": "915c25d4a8bdf761f0b1060fc504e696c6711856",
         "type": "git-clone",
         "alias": "github.com/ActiveState/zmqpubsub"
     },
