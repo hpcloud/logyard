@@ -31,7 +31,7 @@ func NewDrainManager() *DrainManager {
 		server.GetClusterConfig().MbusIp+":6464",
 		"",
 		0,
-		3)
+		-1)
 	if err != nil {
 		log.Fatalf("Unable to connect to applog_redis; %v", err)
 	}
