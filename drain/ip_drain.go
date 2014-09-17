@@ -49,6 +49,13 @@ func (d *IPConnDrain) Start(config *DrainConfig) {
 		log.Infof("[drain:%s] Stop request; deferring close of connection",
 			d.name)
 		go dialer.WaitAndClose()
+
+		// [bug 105165].
+		// did not attain running state. No kill however as
+		// getting aborted by the user is not really an
+		// error. The state machine will treat it as a regular
+		// non-error exit.
+		go d.finishedStarting(false)
 		return
 	}
 	defer conn.Close()
