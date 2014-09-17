@@ -80,7 +80,7 @@ func (retry *ProgressiveRetryer) Wait(msg string) bool {
 	} else {
 		if retry.hasRetryLimit() {
 			// If there is a retry limit -- which are the tmp. and
-			// appdrain. drais -- this drain is to be considered
+			// appdrain. drains -- this drain is to be considered
 			// unimportant for the sys admins. So we do not generate
 			// a WARN, thus putting it in cloud events.
 			log.Infof("%s -- retrying after %v (max %v).", msg, delay, retry.retryLimit)

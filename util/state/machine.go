@@ -147,7 +147,7 @@ func (s *StateMachine) monitor(rev int64) {
 	if err == nil {
 		// If a process exited cleanly (no errors), then just mark it
 		// as STOPPED without retrying.
-		s.setState(rev, Stopped{s}) // rev confict here is normal.
+		s.setState(rev, Stopped{s}) // rev conflict here is normal.
 	} else {
 		s.setStateCustom(rev, func() State {
 			rev = rev + 1 // account for setting of RetryingState
