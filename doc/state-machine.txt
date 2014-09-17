@@ -1,0 +1,29 @@
+Text description for the visual state diagram shown in states.png
+(generated from states.dot)
+=================================================================
+
+* Ellipses are states.
+* Boxes are events.
+* Diamonds are threads aka goroutines.
+* Events which are not linked to a state are ignored by state.
+* The initial state is 'stopped'.
+* A (user-issued) START will transit to 'fatal' on process start failure, and 'starting' otherwise.
+* Entering the 'starting' state invokes the monitor() goroutine.
+* STOP from 'starting' may fail to 'fatal' or suceed to 'stopping'.
+* Ditto from 'running' and 'retrying'.
+* monitor/active from 'starting' indicates full start of the drain, moving to running.
+* monitor/fail indicates a bad exit or start failure, and moves to 'retrying'. The goroutine exits.
+* monitor/exit indicates an ok exit and moves back to 'stopped'. The goroutine exits.
+* Entering the 'retrying' state invokes the doretry() goroutine.
+* The doretry goroutine exits when issuing its events.
+* retry/limit indicates reaching rety-limits. Stops retrrying, moves us to 'fatal'.
+* retry/do indicates that the retry should happen now, and becomes a START.
+* START/STOP from retrying behave as usual, and auto-cancel activity from the goroutine.
+* START from 'fatal' behaves as usual.
+* STOP from 'fatal' moves us to 'stopped'. This cannot fail.
+
+Note:
+
+The monitor/* and retry/* events are virtual, i.e. they do not exist
+as actual constants in the code. The associated goroutines drive the
+state-machine directly.

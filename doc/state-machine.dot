@@ -1,0 +1,64 @@
+strict digraph {
+
+	// states
+	s_stopped	[shape="ellipse", label="stopped"];
+	s_starting	[shape="ellipse", label="starting"];
+	s_running	[shape="ellipse", label="running"];
+	s_retrying	[shape="ellipse", label="retrying"];
+	s_fatal		[shape="ellipse", label="fatal"];
+
+	// events, internal & external
+	e_start		[shape="box", label="START"];
+	e_stop		[shape="box", label="STOP"];
+	e_stop_b	[shape="box", label="STOP"];
+	e_monitor_a	[shape="box", label="monitor/active"];
+	e_monitor_x	[shape="box", label="monitor/exit"];
+	e_monitor_f	[shape="box", label="monitor/fail"];
+	e_retry_limit	[shape="box", label="retry/limit"];
+	e_retry_do	[shape="box", label="retry/do"];
+
+	// active threads
+	t_monitor	[shape="diamond", label="monitor()"];
+	t_doretry	[shape="diamond", label="doretry()"];
+
+	// and the connections
+
+	s_stopped	->	e_start;
+	e_start		->	s_starting	[label="ok"];
+	e_start		->	s_fatal		[label="fail"];
+	s_starting	->	t_monitor	[label="go"];
+	s_starting	->	e_monitor_a;
+	s_starting	->	e_monitor_f;
+	s_starting	->	e_stop;
+	e_monitor_a	->	s_running;
+	e_monitor_f	->	s_retrying;
+	e_stop		->	s_stopped	[label="ok"];
+	e_stop		->	s_fatal		[label="fail"];
+	s_running	->	e_monitor_x
+	s_running	->	e_monitor_f
+	s_running	->	e_stop
+	e_monitor_x	->	s_stopped;
+	e_monitor_x	->	t_monitor	[label="done"];
+	e_monitor_f	->	s_retrying;
+	e_monitor_f	->	s_stopped;
+	e_monitor_f	->	t_monitor	[label="done"];
+	s_retrying	->	t_doretry	[label="go"];
+	s_retrying	->	e_retry_limit;
+	s_retrying	->	e_retry_do;
+	s_retrying	->	e_stop;
+	s_retrying	->	e_start;
+	e_retry_limit	->	s_fatal;
+	e_retry_limit	->	t_doretry	[label="done"];
+	e_retry_do	->	e_start;	// internal use of start()
+	e_retry_do	->	t_doretry	[label="done"];
+	s_fatal		->	e_start;
+	s_fatal		->	e_stop_b
+	e_stop_b	->	s_stopped;
+
+	t_monitor	->	e_monitor_a;
+	t_monitor	->	e_monitor_x;
+	t_monitor	->	e_monitor_f;
+
+	t_doretry	->	e_retry_limit;
+	t_doretry	->	e_retry_do;
+}

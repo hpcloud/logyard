@@ -1,0 +1,88 @@
+
+Pieces of logyard, core and peripherals
+=======================================
+
+Applications
+------------
+
+(a1)	cmd/logyard			Core logyard process, maintains and manages the drains.
+(a2)	cmd/logyard-cli			cmdline client to controlling the logyard core.
+(a3)	cmd/logyard_remote		?
+(a4)	util/lineserver/cmd/lineserver	?
+
+Components
+----------
+(c1)	drain
+		Core drain manager and supporting types (drain
+		process, drain types). Used by the core logyard [a1].
+
+		Loads initial drain setup from the config_redis, then
+		watches for changes and adds/removes drains
+		accordingly.
+
+		State change notifications from the state-machines
+		[c2] are used to drive (saved into) the StateCache
+		[c?] (redis?)
+
+
+		Drain process is based on the "process" interface
+		[c2]. Drain types are file, ip, redis.
+
+		All drain types get their messages from a fixed ZeroMQ
+		subpub socket and forward them according to their spec
+		(i.e. write to file, redis, or socket).
+
+(c2)	util/state
+		Statemachine for drains, one instance per drain.
+		Defines interfaces/types
+			process
+			StateChangeFn
+
+		The transition table of the machine is distributed
+		across and coded into multiple state types.
+
+		Each state-machine has an associated process, retryer,
+		and change callback. All are supplied from the
+		outside, i.e. the drain manager [c1].  The process is
+		driven by the machine according to current state,
+		external events (start, stop), and internal events
+		(out of the process itself).
+
+(c3)	util/retry/retry.go
+		Interface for retryers
+
+(c4)	util/retry/progressive.go
+
+		The only existing implementation of the retryer
+		interface [c3]. (Somewhat) configurable
+		retry-limit. Exact retry behaviour (backoff sequence,
+		resets, etc. is hard-coded).
+
+(c5)	util/mapdiff
+		Used in the core manager [c1] to determine added/removed
+		drains after reloading a changed configuration.
+
+		Essentially 'set symmetric difference' applied to
+		current and new configuration.
+
+(c6)	util/statecache
+(c7)	cli/commands
+(c8)	cli/stream
+(c9)	util/subcommand_server
+(c10)	util/subcommand
+(c11)	util/lineserver
+(c12)	logyard.go
+(c13)	config.go
+
+
+
+
+
+
+
+
+
+
+
+
+

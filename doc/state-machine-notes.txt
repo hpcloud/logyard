@@ -1,0 +1,75 @@
+Logyard/Drains/Statemachine
+
+Controller Events
+	START
+	STOP
+via 'SendAction'
+
+System Events
+       wait-on-process-running	| see goro monitor()
+       wait-on-process-exit	|
+
+       retry-timer-signal	| see goro doretry()
+
+States
+	crashed
+	fatal
+	retrying
+	running
+	starting
+	stopped
+
+Transition & Action Table
+
+	Current	    START		STOP	Notes
+	-------	    -----		----	-----
+1	stopped	    start()		-/-
+		    / -> fatal
+		    / -> starting		|monitor
+						| !running
+						/ !stopped
+						/ !retrying	|doretry
+								- wait (as per retryer)
+								  / start() => [5]
+								  / !fatal 
+	-------	    -----		----	-----
+2	fatal	    start()		stopped
+	-------	    -----		----	-----
+3	starting    -/-			stop()
+					/ -> fatal
+					/ -> stopped
+	-------	    -----		----	-----
+4	running	    -/-			stop()
+	-------	    -----		----	-----
+5	retrying    start()		stop()	start auto-cancel an active retry
+	-------	    -----		----	-----
+6	crashed	    start()		-/-	Via 'stopped'	/not reachable/not used/
+	-------	    -----		----	-----
+
+The monitor() goro
+- is started when the drain transit from stopped and similar states to
+  starting, after the drain process gets started.
+
+- It monitors the process
+  - first until it is running, to set the proper state, and then
+  - watches for the process exit. Again to set the proper state of the
+    drain.
+  - In case of an error exit it starts the dorety() goro.
+
+- START actions while the goro is active happen to met states
+  starting or running, both of which take no action
+
+  => It should be impossible to have multiple monitor()s running for a
+     drain.
+
+  We do have of course one monitor() active per starting and running
+  drain.
+
+The doretry() goro is invoked when the monitor detects an abnormal
+exit of the drain process. It forces the state and then uses the
+/retryer/ for the drain to determine how long to wait before trying to
+start the drain again, or to force the drain into fatal.
+
+When doretry() is active monitor() cannot be active.  Except in the
+small windows where either monitor() invoked dorety() and has not
+exited yet, and vice versa.

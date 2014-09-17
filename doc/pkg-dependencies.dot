@@ -1,0 +1,53 @@
+strict digraph {
+	// applications
+	a_logyard		[shape="ellipse", label="logyard"];		//*
+	a_logyard_cli		[shape="ellipse", label="logyard-cli"];		//*
+	a_logyard_remote	[shape="ellipse", label="logyard-remote"];	//*
+	a_lineserver		[shape="ellipse", label="lineserver"];		//*
+
+	// logyard packages
+	p_commands		[shape="box", label="cli/commands"];		//*
+	p_stream		[shape="box", label="cli/stream"];		//*-
+	p_logyard		[shape="box", label="logyard"];			//*
+	p_drain			[shape="box", label="drain"];			//*
+	p_retry			[shape="box", label="util/retry"];		//*-
+	p_subcommand_server	[shape="box", label="util/subcommand_server"];	//*
+	p_subcommand		[shape="box", label="util/subcommand"];		//*-
+	p_lineserver		[shape="box", label="util/lineserver"];		//*-
+	p_mapdiff		[shape="box", label="util/mapdiff"];		//*-
+	p_state			[shape="box", label="util/state"];		//*
+	p_statecache		[shape="box", label="util/statecache"];		//*
+
+
+	// A -> B <=> B reqires (makes use of) A
+
+	p_logyard	->	a_logyard
+	p_drain		->	a_logyard
+
+	p_commands	->	a_logyard_cli
+	p_subcommand	->	a_logyard_cli
+
+	p_commands		->	a_logyard_remote
+	p_subcommand_server	->	a_logyard_remote
+
+	p_lineserver	->	a_lineserver
+
+	p_logyard	->	p_drain
+	p_mapdiff	->	p_drain
+	p_retry		->	p_drain
+	p_state		->	p_drain
+	p_statecache	->	p_drain
+
+	p_subcommand	->	p_commands
+	p_logyard	->	p_commands
+	p_drain		->	p_commands
+	p_statecache	->	p_commands
+	p_stream	->	p_commands
+	p_lineserver	->	p_commands
+
+	p_subcommand	->	p_subcommand_server
+
+	p_state		->	p_statecache
+
+	p_retry		->	p_state
+}
