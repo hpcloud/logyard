@@ -2,7 +2,7 @@ package logyard
 
 import (
 	"github.com/ActiveState/log"
-	"stackato/server"
+	"github.com/ActiveState/stackato-go/server"
 	"sync"
 )
 

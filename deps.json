@@ -11,10 +11,10 @@
         "type": "git-clone",
         "alias": "github.com/ActiveState/zmqpubsub"
     },
-    "stackato": {
-        "repo": "git://gitolite.activestate.com/stackato-go",
-        "version": "865065908bc4beded3a6743933e0ca98cc4bd95a",
+    "github.com/ActiveState/stackato-go": {
+        "repo": "http://git-mirrors.activestate.com/github.com/ActiveState/stackato-go.git",
+        "version": "master",
         "type": "git-clone",
-        "alias": "stackato"
+        "alias": "github.com/ActiveState/stackato-go"
     }
 }

@@ -2,13 +2,13 @@ package main
 
 import (
 	"github.com/ActiveState/log"
+	"github.com/ActiveState/stackato-go/server"
 	"github.com/alecthomas/gozmq"
 	"logyard"
 	"logyard/drain"
 	"os"
 	"os/signal"
 	"runtime"
-	"stackato/server"
 	"syscall"
 )
 

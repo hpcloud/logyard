@@ -2,9 +2,9 @@ package main
 
 import (
 	"github.com/ActiveState/log"
+	"github.com/ActiveState/stackato-go/server"
 	"logyard/cli/commands"
 	"logyard/util/subcommand_server"
-	"stackato/server"
 )
 
 func main() {

@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/ActiveState/log"
+	"github.com/ActiveState/stackato-go/server"
 	"logyard"
 	cli_stream "logyard/cli/stream"
 	"logyard/drain"
@@ -11,7 +12,6 @@ import (
 	"math/rand"
 	"os"
 	"os/signal"
-	"stackato/server"
 	"time"
 )
 

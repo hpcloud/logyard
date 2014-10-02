@@ -3,12 +3,12 @@ package drain
 import (
 	"fmt"
 	"github.com/ActiveState/log"
+	"github.com/ActiveState/stackato-go/server"
 	"logyard"
 	"logyard/util/mapdiff"
 	"logyard/util/retry"
 	"logyard/util/state"
 	"logyard/util/statecache"
-	"stackato/server"
 	"strings"
 	"sync"
 	"time"

@@ -5,10 +5,10 @@ import (
 	"flag"
 	"fmt"
 	"github.com/ActiveState/golor"
+	"github.com/ActiveState/stackato-go/server"
 	"logyard"
 	"logyard/util/statecache"
 	"sort"
-	"stackato/server"
 	"strconv"
 	"strings"
 )
