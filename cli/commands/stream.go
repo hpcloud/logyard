@@ -3,8 +3,8 @@ package commands
 import (
 	"flag"
 	"fmt"
-	"github.com/ActiveState/log"
-	"github.com/ActiveState/stackato-go/server"
+	"github.com/hpcloud/log"
+	"github.com/hpcloud/stackato-go/server"
 	"logyard"
 	cli_stream "logyard/cli/stream"
 	"logyard/drain"

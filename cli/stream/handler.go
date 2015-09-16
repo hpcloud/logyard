@@ -1,7 +1,7 @@
 package stream
 
 import (
-	"github.com/ActiveState/golor"
+	"github.com/hpcloud/golor"
 	"regexp"
 	"strings"
 )

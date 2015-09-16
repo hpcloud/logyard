@@ -2,8 +2,8 @@ package drain
 
 import (
 	"fmt"
-	"github.com/ActiveState/log"
-	"github.com/ActiveState/stackato-go/server"
+	"github.com/hpcloud/log"
+	"github.com/hpcloud/stackato-go/server"
 	"logyard"
 	"logyard/util/mapdiff"
 	"logyard/util/retry"

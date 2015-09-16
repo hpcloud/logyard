@@ -3,7 +3,7 @@ package commands
 import (
 	"flag"
 	"fmt"
-	"github.com/ActiveState/log"
+	"github.com/hpcloud/log"
 	"logyard"
 )
 

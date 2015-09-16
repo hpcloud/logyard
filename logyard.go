@@ -1,8 +1,8 @@
 package logyard
 
 import (
-	"github.com/ActiveState/log"
-	"github.com/ActiveState/zmqpubsub"
+	"github.com/hpcloud/log"
+	"github.com/hpcloud/zmqpubsub"
 	"os"
 )
 
