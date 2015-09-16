@@ -1,18 +1,18 @@
 {
     "github.com/hpcloud/golor": {
-        "repo": "git@github.com:hpcloud/golor.git",
+        "repo": "https://github.com/hpcloud/golor.git",
         "version": "dc1b58c471a0a01808e0c292210f4ce0efe50f83",
         "type": "git-clone",
         "alias": "github.com/hpcloud/golor"
     },
     "github.com/hpcloud/zmqpubsub": {
-        "repo": "git@github.com:hpcloud/zmqpubsub.git",
+        "repo": "https://github.com/hpcloud/zmqpubsub.git",
         "version": "65949cadc1189ac4ec4d48000338a6fe57949bb6",
         "type": "git-clone",
         "alias": "github.com/hpcloud/zmqpubsub"
     },
     "github.com/hpcloud/stackato-go": {
-        "repo": "git@github.com:hpcloud/stackato-go.git",
+        "repo": "https://github.com/hpcloud/stackato-go.git",
         "version": "182226c9af784bc5e8ce3d7696e4708587cf5115",
         "type": "git-clone",
         "alias": "github.com/hpcloud/stackato-go"
