@@ -1,7 +1,7 @@
 package drain
 
 import (
-	"github.com/ActiveState/log"
+	"github.com/hpcloud/log"
 	"launchpad.net/tomb"
 	"logyard"
 	"net"

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/ActiveState/log"
-	"github.com/ActiveState/stackato-go/server"
+	"github.com/hpcloud/log"
+	"github.com/hpcloud/stackato-go/server"
 	"logyard/cli/commands"
 	"logyard/util/subcommand_server"
 )

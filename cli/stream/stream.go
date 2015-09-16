@@ -2,8 +2,8 @@ package stream
 
 import (
 	"fmt"
-	"github.com/ActiveState/log"
-	"github.com/ActiveState/zmqpubsub"
+	"github.com/hpcloud/log"
+	"github.com/hpcloud/zmqpubsub"
 	"strings"
 )
 

@@ -1,7 +1,7 @@
 package drain
 
 import (
-	"github.com/ActiveState/zmqpubsub"
+	"github.com/hpcloud/zmqpubsub"
 	"testing"
 )
 

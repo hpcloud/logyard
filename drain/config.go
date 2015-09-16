@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/ActiveState/zmqpubsub"
+	"github.com/hpcloud/zmqpubsub"
 	"net/url"
 	"strconv"
 	"strings"
