@@ -3,8 +3,9 @@ package lineserver
 
 import (
 	"bufio"
-	"launchpad.net/tomb"
 	"net"
+
+	"gopkg.in/tomb.v1"
 )
 
 // LineServer is a line-based UDP server à la `nc -u -l`. Ch channel

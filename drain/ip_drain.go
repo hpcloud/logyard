@@ -1,11 +1,12 @@
 package drain
 
 import (
-	"github.com/hpcloud/log"
-	"launchpad.net/tomb"
 	"logyard"
 	"net"
 	"time"
+
+	"github.com/hpcloud/log"
+	"gopkg.in/tomb.v1"
 )
 
 // IPConnDrain is a drain based on net.IPConn
