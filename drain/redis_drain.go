@@ -2,12 +2,13 @@ package drain
 
 import (
 	"fmt"
+	"logyard"
+	"strings"
+
 	"github.com/hpcloud/log"
 	"github.com/hpcloud/stackato-go/server"
 	"github.com/vmihailenco/redis"
-	"launchpad.net/tomb"
-	"logyard"
-	"strings"
+	"gopkg.in/tomb.v1"
 )
 
 type RedisDrain struct {

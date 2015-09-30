@@ -1,10 +1,11 @@
 package drain
 
 import (
-	"github.com/hpcloud/log"
-	"launchpad.net/tomb"
 	"logyard"
 	"os"
+
+	"github.com/hpcloud/log"
+	"gopkg.in/tomb.v1"
 )
 
 // File drain is used to write to local files
